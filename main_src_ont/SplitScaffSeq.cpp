@@ -1,5 +1,5 @@
 #include "biocommon/fasta/fasta.h"
-#include "stLFR/ScaffInfo.h"
+#include "appcommon/ScaffInfo.h"
 #include <string>
 
 bool checkArgs( int argc , char **argv )

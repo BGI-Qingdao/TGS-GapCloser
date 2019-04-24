@@ -8,9 +8,9 @@
 #include "biocommon/fasta/fasta.h"
 #include "biocommon/seq/tool_func.h"
 
-#include "stLFR/fileName.h"
+#include "appcommon/fileName.h"
 
-#include "stLFR/ScaffInfo.h"
+#include "appcommon/ScaffInfo.h"
 
 #include <map>
 #include <set>

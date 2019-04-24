@@ -7,8 +7,8 @@
 #include "common/freq/freq.h"
 #include "common/multithread/MultiThread.h"
 
-#include "stLFR/ScaffInfo.h"
-#include "stLFR/SmithWaterman_OO.h"
+#include "appcommon/ScaffInfo.h"
+#include "appcommon/SmithWaterman_OO.h"
 
 #include <string>
 #include <vector>

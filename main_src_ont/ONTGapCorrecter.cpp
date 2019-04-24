@@ -12,9 +12,9 @@
 #include "biocommon/paf/PAF.h"
 #include "biocommon/seq/tool_func.h"
 
-#include "stLFR/contigPairInfo.h"
-#include "stLFR/ScaffInfo.h"
-#include "stLFR/ONT2Gap.h"
+#include "appcommon/contigPairInfo.h"
+#include "appcommon/ScaffInfo.h"
+#include "appcommon/ONT2Gap.h"
 
 #include <map>
 #include <vector>
