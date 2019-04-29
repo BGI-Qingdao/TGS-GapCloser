@@ -106,7 +106,7 @@ struct AppConfig
 
         for( const auto & pair : scaff_helper.all_scaff)
         {
-            (*out)<<">scaffold "<<pair.first<<'\n';
+            (*out)<<">scaffold_"<<pair.first<<'\n';
             std::string str ;
             for( const auto & i : pair.second.a_scaff) 
             {
