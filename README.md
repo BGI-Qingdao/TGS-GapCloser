@@ -6,7 +6,7 @@ The project is still in development
 ## How to install
 
 - downloading 
-``
+```
 git clone  https://github.com/BGI-Qingdao/TGSGapFiller.git YOUR-INSTALL-DIR
 ```
 
