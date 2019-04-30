@@ -12,10 +12,10 @@ git clone  https://github.com/BGI-Qingdao/TGSGapFiller.git YOUR-INSTALL-DIR
 
 - compiering
 
-``
+```
 cd YOUR-INSTALL-DIR/main_src_ont
 make 
-``
+```
 
 ## Usage 
 
