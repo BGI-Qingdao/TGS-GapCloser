@@ -1,4 +1,4 @@
-#include "stLFR/ScaffInfo.h"
+#include "appcommon/ScaffInfo.h"
 #include "common/string/stringtools.h"
 
 #include <cassert>

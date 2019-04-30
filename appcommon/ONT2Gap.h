@@ -2,7 +2,7 @@
 #define __STLFR_ONT2GAP_H__
 
 #include "biocommon/paf/PAF.h"
-#include "stLFR/contigPairInfo.h"
+#include "appcommon/contigPairInfo.h"
 
 #include <vector>
 

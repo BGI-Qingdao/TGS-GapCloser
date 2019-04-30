@@ -25,9 +25,9 @@ source_cpp =	../common/files/file_reader.cpp \
 				../common/log/logfilter.cpp\
 				../common/time/timetools.cpp\
 				../common/string/stringtools.cpp\
-                ../stLFR/contigPairInfo.cpp\
-                ../stLFR/ScaffInfo.cpp\
-                ../stLFR/ONT2Gap.cpp\
+                ../appcommon/contigPairInfo.cpp\
+                ../appcommon/ScaffInfo.cpp\
+                ../appcommon/ONT2Gap.cpp\
 				../common/args/argsparser.cpp\
 
 

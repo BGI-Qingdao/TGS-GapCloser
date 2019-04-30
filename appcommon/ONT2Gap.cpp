@@ -1,4 +1,4 @@
-#include "stLFR/ONT2Gap.h"
+#include "appcommon/ONT2Gap.h"
 #include <algorithm>
 namespace BGIQD {
     namespace ONT {

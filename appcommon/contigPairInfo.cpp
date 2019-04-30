@@ -1,4 +1,4 @@
-#include "stLFR/contigPairInfo.h"
+#include "appcommon/contigPairInfo.h"
 
 namespace BGIQD {
     namespace stLFR {
