@@ -89,7 +89,7 @@ int main(int argc , char **argv)
                         auto tmp = get_contig(scaff_id 
                                 , contig_id
                                 ,a_scaftig_agcts 
-                                + std::string('N',gap_size));
+                                + std::string(gap_size,'N'));
                         print_scaftig(tmp);
                     }
                     a_scaftig_agcts.clear() ;
@@ -97,16 +97,16 @@ int main(int argc , char **argv)
                 }
                 a_scaftig_agcts.push_back(x);
             }
+        }
 
-            if( ! a_scaftig_agcts.empty() )
-            {
-                assert(gap_size == 0 );
-                contig_id ++ ;
-                auto tmp = get_contig(scaff_id
-                        , contig_id
-                        , a_scaftig_agcts);
-                print_scaftig(tmp);
-            }
+        if( ! a_scaftig_agcts.empty() )
+        {
+            assert(gap_size == 0 );
+            contig_id ++ ;
+            auto tmp = get_contig(scaff_id
+                    , contig_id
+                    , a_scaftig_agcts);
+            print_scaftig(tmp);
         }
     }
     return 0 ;
