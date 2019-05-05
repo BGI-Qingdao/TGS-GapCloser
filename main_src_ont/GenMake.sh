@@ -5,6 +5,7 @@ apps="\
  ONTGapCorrecter\
  ONTGapFiller\
  SplitScaffSeq\
+ SplitScaff2NamedContig\
  ScaffInfo2Seq\
 "
 
