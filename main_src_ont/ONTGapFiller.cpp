@@ -350,18 +350,24 @@ struct AppConfig
                         cut_start = m2.target_end + 1;
                         need_reverse = true ;
                     }
-                    const auto & ont_read = reads.at(m1.target_name).atcgs ;
-                    if( cut_start<0 ||  cut_start + cut_len  >= (int) ont_read.size() )
+                    try{
+                        const auto & ont_read = reads.at(m1.target_name).atcgs ;
+                        if( cut_start<0 ||  cut_start + cut_len  >= (int) ont_read.size() )
+                        {
+                            cut_err ++ ;
+                            continue ;
+                        }
+                        std::string cut_seq =  ont_read.substr(cut_start,cut_len) ;
+                        if( need_reverse )
+                            cut_seq = BGIQD::SEQ::seqCompleteReverse(cut_seq);
+                        prev.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = cut_seq;
+                        prev.gap_size = cut_seq.size() ;
+                        break ;
+                    }
+                    catch( ... )
                     {
-                        cut_err ++ ;
                         continue ;
                     }
-                    std::string cut_seq =  ont_read.substr(cut_start,cut_len) ;
-                    if( need_reverse )
-                        cut_seq = BGIQD::SEQ::seqCompleteReverse(cut_seq);
-                    prev.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = cut_seq;
-                    prev.gap_size = cut_seq.size() ;
-                    break ;
                 }
             }
         }
