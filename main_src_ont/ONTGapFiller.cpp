@@ -21,7 +21,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
-
+#include <cstdlib>
 
 typedef BGIQD::FASTQ::Id_Desc_Head QHeader;
 
@@ -148,7 +148,7 @@ struct AppConfig
         BGIQD::LOG::timer t(loger,"LoadScaffInfo");
         scaff_info_helper.LoadAllScaff(std::cin) ;
     }
-
+    static int myrandom (int i) { return std::rand()%i;}
     void ParseAllGap()
     {
         BGIQD::LOG::timer t(loger,"ParseAllGap");
@@ -249,8 +249,8 @@ struct AppConfig
                 }
                 else if ( work_mode == 2 )
                 {
-                    std::random_shuffle(chooses.begin() , chooses.end());
-                    std::random_shuffle(chooses.begin() , chooses.end());
+                    std::random_shuffle(chooses.begin() , chooses.end(),myrandom);
+                    std::random_shuffle(chooses.begin() , chooses.end(),myrandom);
                 }
                 else
                 {
@@ -467,7 +467,7 @@ int main(int argc , char ** argv)
     config.contig_2_ont_paf_file = contig2ont_paf.to_string() ;
 
     config.Init();
-
+    srand (time(NULL));
     BGIQD::LOG::timer t(config.loger,"ONTGapFiller");
 
     config.LoadONTReads() ;
