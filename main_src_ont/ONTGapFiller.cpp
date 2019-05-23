@@ -247,6 +247,16 @@ struct AppConfig
                 {
                     BGIQD::ONT::SortMedian(chooses);
                 }
+                else if ( work_mode == 2 )
+                {
+                    std::random_shuffle(chooses.begin() , chooses.end());
+                    std::random_shuffle(chooses.begin() , chooses.end());
+                }
+                else
+                {
+                    assert(0);
+                }
+
                 gap_oo_read_freq.Touch(used_read);
                 filler_choose_freq.Touch(chooses.size());
                 if( chooses.empty() )
