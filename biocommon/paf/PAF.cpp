@@ -32,7 +32,7 @@ namespace BGIQD {
         PAF_Item PAF_Item::Flatten() const 
         {
             PAF_Item  ret = *this ;
-            if( query_start < query_end )
+            if( query_char == '+' )
             {
                 ret.query_start = 0 ;
                 ret.target_start = target_start - query_start  ;
