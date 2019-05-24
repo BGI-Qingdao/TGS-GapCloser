@@ -32,19 +32,17 @@ namespace BGIQD {
         PAF_Item PAF_Item::Flatten() const 
         {
             PAF_Item  ret = *this ;
+            ret.query_start = 0 ;
+            ret.query_end = query_len -1 ;
             if( query_char == '+' )
             {
-                ret.query_start = 0 ;
                 ret.target_start = target_start - query_start  ;
-                ret.query_end = query_len -1 ;
                 ret.target_end = target_end + ( query_len -1 - query_end) ;
             }
             else
             {
-                ret.query_start = query_len -1 ;
-                ret.target_start = target_start - ( query_len -1 - query_start ) ;
-                ret.query_end = 0  ;
-                ret.target_end = target_end + query_end ;
+                ret.target_start = target_start - ( query_len -1 - query_end ) ;
+                ret.target_end = target_end + query_start ;
             }
             // ret.len_query_match = ?
             // ret.len_target_match = ?
