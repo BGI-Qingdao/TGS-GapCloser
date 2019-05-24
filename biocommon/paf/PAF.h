@@ -31,6 +31,9 @@ namespace BGIQD {
 
             BGIQD::ALIGN_COMMON::MDData md_data;
 
+            float IDY() const {
+                return float(len_query_match)/float(len_target_match) ;
+            }
         };
     }
 }
