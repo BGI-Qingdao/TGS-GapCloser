@@ -42,7 +42,7 @@ namespace BGIQD {
             else
             {
                 ret.target_end = target_end + query_start - 1 ; /*1base*/
-                ret.target_start = ret.target_end - query_len +1 /*1base*/          
+                ret.target_start = ret.target_end - query_len +1 ;/*1base*/          
             }
             // ret.len_query_match = ?
             // ret.len_target_match = ?
