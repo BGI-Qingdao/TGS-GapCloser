@@ -9,8 +9,8 @@ namespace BGIQD {
             std::istringstream ist(line);
             ist>>query_name>>query_len>>query_start>>query_end>>query_char;
             ist>>target_name>>target_len>>target_start>>target_end;
-            ist>>len_query_match>>len_target_match>>quality;
-
+            //ist>>len_query_match>>len_target_match>>quality;
+            ist>>match_len>>aligned_len >>quality;
             std::string extra ;
 
             while( ! ist.eof() )

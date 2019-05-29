@@ -18,8 +18,10 @@ namespace BGIQD {
             int target_len ;
             int target_start ;
             int target_end ;
-            int len_query_match ;
-            int len_target_match ;
+            int match_len ;
+            int aligned_len ;
+            //int len_query_match ;
+            //int len_target_match ;
             int quality ;
 
             void InitFromString( const std::string & line );
@@ -32,7 +34,7 @@ namespace BGIQD {
             BGIQD::ALIGN_COMMON::MDData md_data;
 
             float IDY() const {
-                return float(len_query_match)/float(len_target_match) ;
+                return float(match_len)/float(aligned_len) ;
             }
         };
     }

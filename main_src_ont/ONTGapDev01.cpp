@@ -274,11 +274,11 @@ struct AppConfig
                         <<m1.target_name<<'\t'
                         <<m1.target_len<<'\t'
                         <<m1.query_len << '\t'
-                        <<float(m1.len_query_match) / float(m1.query_len)<<'\t'
-                        <<float(m1.len_target_match) / float(m1.len_query_match)<<'\t'
+                        <<float(m1.aligned_len) / float(m1.query_len)<<'\t'
+                        <<float(m1.match_len) / float(m1.aligned_len)<<'\t'
                         <<m2.query_len << '\t'
-                        <<float(m2.len_query_match) / float(m2.query_len)<<'\t'
-                        <<float(m2.len_target_match) / float(m2.len_query_match)<<'\n'
+                        <<float(m2.aligned_len) / float(m2.query_len)<<'\t'
+                        <<float(m2.match_len) / float(m2.aligned_len)<<'\n'
 
 
                         ;
