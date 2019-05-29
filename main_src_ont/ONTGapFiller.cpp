@@ -303,7 +303,7 @@ struct AppConfig
                                     pos.push_back(m1.target_end);
                                     pos.push_back(m2.target_end);
                                     std::sort( pos.begin() , pos.end()) ;
-                                    int cut_start = pos[1] + 1 ;
+                                    int cut_start = pos[1]  ;
                                     int cut_len = pos[2] - pos[1] - 1 ;
                                     const auto & ont_read = reads.at(m1.target_name).atcgs ;
                                     prev.gap_size = cut_len ;
@@ -356,11 +356,11 @@ struct AppConfig
                     if( ( m1.query_char == '+' && prev.orientation)
                     ||  ( m1.query_char == '-' && !prev.orientation ) )
                     {
-                        cut_start = m1.target_end + 1 ;
+                        cut_start = m1.target_end ;
                     }
                     else
                     {
-                        cut_start = m2.target_end + 1;
+                        cut_start = m2.target_end;
                         need_reverse = true ;
                     }
                     try{
