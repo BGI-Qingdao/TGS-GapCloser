@@ -4,6 +4,7 @@ apps="\
  ORGC\
  ONTGapCorrecter\
  ONTGapFiller\
+ ONTGapDev01\
  SplitScaffSeq\
  SplitScaff2NamedContig\
  ScaffInfo2Seq\
