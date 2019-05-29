@@ -36,13 +36,13 @@ namespace BGIQD {
             ret.query_end = query_len -1 ;
             if( query_char == '+' )
             {
-                ret.target_start = target_start - query_start  ;
-                ret.target_end = target_end + ( query_len -1 - query_end) ;
+                ret.target_start = target_start - query_start  +1 ; /*1base*/
+                ret.target_end =  ret.target_start + query_len -1; /*1base*/
             }
             else
             {
-                ret.target_start = target_start - ( query_len -1 - query_end ) ;
-                ret.target_end = target_end + query_start ;
+                ret.target_end = target_end + query_start - 1 ; /*1base*/
+                ret.target_start = ret.target_end - query_len +1 /*1base*/          
             }
             // ret.len_query_match = ?
             // ret.len_target_match = ?
