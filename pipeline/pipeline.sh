@@ -137,9 +137,9 @@ fi
 
 if [[ $USE_GAP_FILLER  == "yes" ]] ; then
     if [[ $FQ == "yes" ]] ; then
-        $BIN_DIR/ONTGapFiller --ont_reads_q $INPUT_ONT_READ_FQ --contig2ont_paf $OUT_PAF --force --work_mode $GAP_MODE <$OUT_SCAF_INFOS >$OUT_SCAF_INFOS_4 2>log_filler
+        $BIN_DIR/ONTGapFiller --ont_reads_q $INPUT_ONT_READ_FQ --contig2ont_paf $OUT_PAF  --work_mode $GAP_MODE <$OUT_SCAF_INFOS >$OUT_SCAF_INFOS_4 2>log_filler
     else
-        $BIN_DIR/ONTGapFiller --ont_reads_a $INPUT_ONT_READ_FA --contig2ont_paf $OUT_PAF --force --work_mode $GAP_MODE <$OUT_SCAF_INFOS >$OUT_SCAF_INFOS_4 2>log_filler
+        $BIN_DIR/ONTGapFiller --ont_reads_a $INPUT_ONT_READ_FA --contig2ont_paf $OUT_PAF  --work_mode $GAP_MODE <$OUT_SCAF_INFOS >$OUT_SCAF_INFOS_4 2>log_filler
     fi
     rm -rf $OUT_SCAF_INFOS
     ln -s $OUT_SCAF_INFOS_4 $OUT_SCAF_INFOS
