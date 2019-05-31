@@ -36,7 +36,7 @@ source_o		= ${source_cpp:%.cpp=%.o}
 .cpp.o:
 	${CXX} ${DEUBG_CXX} -c $< -o $@
 
-jobs = ORGC ONTGapCorrecter ONTGapFiller ONTGapDev01 SplitScaffSeq SplitScaff2NamedContig ScaffInfo2Seq
+jobs = ORGC ONTGapCorrecter ONTGapFiller ONTGapDev01 ONTGapCandidate SplitScaffSeq SplitScaff2NamedContig ScaffInfo2Seq
 
 all :  ${jobs}
 
@@ -79,6 +79,15 @@ ONTGapDev01 : clean ${ONTGapDev01_o} ${source_o} ../bin
 
 
 
+ONTGapCandidate_cpp = ONTGapCandidate.cpp
+ONTGapCandidate_o = ONTGapCandidate.o
+ONTGapCandidate : clean ${ONTGapCandidate_o} ${source_o} ../bin
+	${CXX} ${ONTGapCandidate_o} ${source_o} ${DEUBG_CXX} -o ONTGapCandidate
+	mv $@ ../bin/
+
+
+
+
 SplitScaffSeq_cpp = SplitScaffSeq.cpp
 SplitScaffSeq_o = SplitScaffSeq.o
 SplitScaffSeq : clean ${SplitScaffSeq_o} ${source_o} ../bin
@@ -104,7 +113,7 @@ ScaffInfo2Seq : clean ${ScaffInfo2Seq_o} ${source_o} ../bin
 	mv $@ ../bin/
 
 
-jobs_o=  ${ORGC_o} ${ONTGapCorrecter_o} ${ONTGapFiller_o} ${ONTGapDev01_o} ${SplitScaffSeq_o} ${SplitScaff2NamedContig_o} ${ScaffInfo2Seq_o}
+jobs_o=  ${ORGC_o} ${ONTGapCorrecter_o} ${ONTGapFiller_o} ${ONTGapDev01_o} ${ONTGapCandidate_o} ${SplitScaffSeq_o} ${SplitScaff2NamedContig_o} ${ScaffInfo2Seq_o}
 
 dirty	   =${jobs_o} ${jobs} ${source_o}
 
