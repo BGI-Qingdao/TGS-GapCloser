@@ -292,6 +292,18 @@ struct AppConfig
                         {
                             assert(0);
                         }
+                        // expand 2K from left & right
+                        int new_cut_start =cut_start - 2000 ;
+                        if(new_cut_start <0 ) new_cut_start = 0 ;
+                        cut_len += cut_start - new_cut_start ;
+                        if( new_cut_start + cut_len + 2000 >= ont_read.size() )
+                        {
+                            cut_len = ont_read.size() - new_cut_start -1 ;
+                        }
+                        else 
+                            cut_len += 2000 ;
+                        cut_start = new_cut_start;
+
                         std::string cut_seq =  ont_read.substr(cut_start,cut_len) ;
                         if( need_reverse )
                             cut_seq = BGIQD::SEQ::seqCompleteReverse(cut_seq);
