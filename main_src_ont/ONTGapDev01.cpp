@@ -266,8 +266,11 @@ struct AppConfig
                 for ( const auto & pair : chooses )
                 {
                     //auto & pair = chooses.front() ;
-                    const auto & m1 = pair.from  ;
-                    const auto & m2 = pair.to ;
+                    const auto  m1 = pair.from  ;
+                    const auto  m2 = pair.to ;
+
+                    m1 = m1.Flatten();
+                    m2 = m2.Flatten();
                     const BGIQD::stLFR::PairPN & tmp = pair.pair_info  ;
                     std::cout<<gap_id<<'\t'
                         <<prev.gap_size<<'\t'
