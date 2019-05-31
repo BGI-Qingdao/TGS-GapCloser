@@ -313,6 +313,7 @@ struct AppConfig
 
                     std::cout<<gap_id<<'\t'
                         <<prev.gap_size<<'\t'
+                        <<tmp.gap_size<<'\t'
                         <<m1.target_name<<'\t'
                         <<m1.target_len<<'\t'
                         <<m1.query_len << '\t'
