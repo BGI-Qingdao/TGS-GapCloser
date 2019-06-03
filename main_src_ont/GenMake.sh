@@ -1,6 +1,7 @@
 #!/bin/bash
 
 apps="\
+ DiffONTPilon\
  ORGC\
  ONTGapCorrecter\
  ONTGapFiller\
