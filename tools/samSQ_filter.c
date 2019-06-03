@@ -14,6 +14,7 @@ int main()
             if( sqs.find(line) == sqs.end () )
             {
                 sqs.insert(line) ;
+                std::cout<<line<<'\n';
             }
             else ;
         }
