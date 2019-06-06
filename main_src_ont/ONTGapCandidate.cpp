@@ -297,7 +297,7 @@ struct AppConfig
                         int new_cut_start =cut_start - 2000 ;
                         if(new_cut_start <0 ) new_cut_start = 0 ;
                         cut_len += cut_start - new_cut_start ;
-                        if( new_cut_start + cut_len + 2000 >= ont_read.size() )
+                        if( new_cut_start + cut_len + 2000 >= (int)ont_read.size() )
                         {
                             cut_len = ont_read.size() - new_cut_start -1 ;
                         }
@@ -309,6 +309,54 @@ struct AppConfig
                         if( need_reverse )
                             cut_seq = BGIQD::SEQ::seqCompleteReverse(cut_seq);
                         fill = cut_seq;
+                    }
+                    else if ( tmp.gap_size < 0 && tmp.gap_size >= -2000 )
+                    {
+                        int cut_start = 0 ;
+                        int cut_len = -tmp.gap_size ;
+                        bool need_reverse = false ;
+                        if( ( m1.query_char == '+' && prev.orientation)
+                                ||  ( m1.query_char == '-' && !prev.orientation ) )
+                        {
+                            cut_start = m1.target_end ;
+                        }
+                        else
+                        {
+                            cut_start = m2.target_end;
+                            need_reverse = true ;
+                        }
+                        cut_start = cut_start -cut_len +1  ;
+                        const auto & ont_read = reads.at(m1.target_name).atcgs ;
+                        //  ONT is too short.
+                        if( cut_start < 0 || cut_start + cut_len >=(int) ont_read.size() )
+                            continue ;
+                        if ( cut_len < 2000 )
+                        {
+                            int append = ( 2000 -cut_len )/2;
+                            if( cut_start > append )
+                            {
+                                cut_start = cut_start - append ;
+                                cut_len = cut_len + append ;
+                            }
+                            else
+                            {
+                                cut_len = cut_len + cut_start ;
+                                cut_start = 0 ;
+                            }
+                            if( cut_start + cut_len + append >= (int) ont_read.size() )
+                            {
+                                cut_len += (int) ont_read.size() - (cut_start + cut_len) ;
+                            }
+                            else
+                            {
+                                cut_len += append ;
+                            }
+                        }
+                        if( cut_start<0 ||  cut_start + cut_len  >= (int) ont_read.size() )
+                        {
+                            assert(0);
+                        }
+                        fill  =  ont_read.substr(cut_start,cut_len) ;
                     }
 
                     std::cout<<gap_id<<'\t'
