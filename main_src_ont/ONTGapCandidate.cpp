@@ -345,7 +345,7 @@ struct AppConfig
                             }
                             if( cut_start + cut_len + append >= (int) ont_read.size() )
                             {
-                                cut_len += (int) ont_read.size() - (cut_start + cut_len) ;
+                                cut_len += (int) ont_read.size() - (cut_start + cut_len) -1 ;
                             }
                             else
                             {
