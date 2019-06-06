@@ -217,8 +217,10 @@ struct AppConfig
                     int used_pair = 0 ;
                     for( const auto & m1  : prev_matched_infos )
                     {
+                        if ( m1.aligned_len < min_match ) continue ;
                         for( const auto & m2 : next_matched_infos )
                         {
+                            if ( m2.aligned_len < min_match ) continue ;
                             BGIQD::stLFR::PairPN ont_pn ;
                             ont_pn.InitFromPAF(m1,m2);
                             if( ont_pn.type == scaff_pn.type )
@@ -254,6 +256,10 @@ struct AppConfig
                 {
                     std::random_shuffle(chooses.begin() , chooses.end(),myrandom);
                     std::random_shuffle(chooses.begin() , chooses.end(),myrandom);
+                }
+                else if ( work_mode == 4 )
+                {
+                    BGIQD::ONT::SortMatchScoreMore(chooses,max_hang);
                 }
                 else
                 {
@@ -442,6 +448,8 @@ struct AppConfig
     std::string ont_read_a  ;
     std::string ont_read_q  ;
     int work_mode ;
+    int max_hang ;
+    int min_match ;
 } config ;
 
 int main(int argc , char ** argv)
@@ -451,13 +459,18 @@ int main(int argc , char ** argv)
         DEFINE_ARG_OPTIONAL(std::string, ont_reads_q,"the ont reads in fastq format.","");
         DEFINE_ARG_OPTIONAL(std::string, ont_reads_a,"the ont reads in fasta format.","");
         DEFINE_ARG_OPTIONAL(bool, force_fill,"will force fill as much gap as it can. ","false");
-        DEFINE_ARG_OPTIONAL(int, work_mode,"1, shortest ; 2, random ; 3, median","1");
+        DEFINE_ARG_OPTIONAL(int, work_mode,"1, shortest ; 2, random ; 3, median ;4 max_match_sore","1");
+        DEFINE_ARG_OPTIONAL(int, max_hang,"max hang for ont","2000");
+        DEFINE_ARG_OPTIONAL(int, min_match,"min match for ont","40");
     END_PARSE_ARGS;
 
     if( ! ont_reads_q.setted && ! ont_reads_a.setted )
         FATAL("please give the ont reads !!!");
+    config.max_hang = max_hang.to_int();
     config.force_fill = force_fill.to_bool() ;
     config.work_mode = work_mode.to_int();
+    config.min_match = min_match.to_int();
+
     if( ont_reads_a.setted )
     {
         config.ont_read_a  = ont_reads_a.to_string();

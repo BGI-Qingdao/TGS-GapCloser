@@ -23,6 +23,7 @@ namespace BGIQD {
         void SortMedian( std::vector<ONT2GapInfo> & data );
         void SortModifyLess( std::vector<ONT2GapInfo> & data );
         void SortNegModifyLess( std::vector<ONT2GapInfo> & data );
+        void SortMatchScoreMore( std::vector<ONT2GapInfo> & data ,int max_hang );
     }
 }
 
