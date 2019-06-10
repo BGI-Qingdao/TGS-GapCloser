@@ -10,6 +10,7 @@ apps="\
  SplitScaffSeq\
  SplitScaff2NamedContig\
  ScaffInfo2Seq\
+ samSQ_filter\
 "
 
 jobs_o=" "

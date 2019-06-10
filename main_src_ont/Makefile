@@ -36,7 +36,7 @@ source_o		= ${source_cpp:%.cpp=%.o}
 .cpp.o:
 	${CXX} ${DEUBG_CXX} -c $< -o $@
 
-jobs = DiffONTPilon ORGC ONTGapCorrecter ONTGapFiller ONTGapDev01 ONTGapCandidate SplitScaffSeq SplitScaff2NamedContig ScaffInfo2Seq
+jobs = DiffONTPilon ORGC ONTGapCorrecter ONTGapFiller ONTGapDev01 ONTGapCandidate SplitScaffSeq SplitScaff2NamedContig ScaffInfo2Seq samSQ_filter
 
 all :  ${jobs}
 
@@ -122,7 +122,16 @@ ScaffInfo2Seq : clean ${ScaffInfo2Seq_o} ${source_o} ../bin
 	mv $@ ../bin/
 
 
-jobs_o=  ${DiffONTPilon_o} ${ORGC_o} ${ONTGapCorrecter_o} ${ONTGapFiller_o} ${ONTGapDev01_o} ${ONTGapCandidate_o} ${SplitScaffSeq_o} ${SplitScaff2NamedContig_o} ${ScaffInfo2Seq_o}
+
+
+samSQ_filter_cpp = samSQ_filter.cpp
+samSQ_filter_o = samSQ_filter.o
+samSQ_filter : clean ${samSQ_filter_o} ${source_o} ../bin
+	${CXX} ${samSQ_filter_o} ${source_o} ${DEUBG_CXX} -o samSQ_filter
+	mv $@ ../bin/
+
+
+jobs_o=  ${DiffONTPilon_o} ${ORGC_o} ${ONTGapCorrecter_o} ${ONTGapFiller_o} ${ONTGapDev01_o} ${ONTGapCandidate_o} ${SplitScaffSeq_o} ${SplitScaff2NamedContig_o} ${ScaffInfo2Seq_o} ${samSQ_filter_o}
 
 dirty	   =${jobs_o} ${jobs} ${source_o}
 
