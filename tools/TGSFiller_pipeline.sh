@@ -25,56 +25,58 @@ PILON_MEM="300G"
 
 $MINIMAP2  -x ava-ont -t 30 \
     $ONT_FA $CONTIG 1>$OUT_PREFIX.sub.paf 2>$OUT_PREFIX.minimap2.01.log || exit 1
-
+echo "---- 1 ------ "
 $BIN_DIR/ONTGapCandidate --ont_reads_a $ONT_FA --contig2ont_paf $OUT_PREFIX.sub.paf \
     <$SCAFF_INFO >$OUT_PREFIX.gap_info_seqs 2>$OUT_PREFIX.cand.log || exit 1
-
+echo "---- 2 ------ "
 awk 'BEGIN{id=1;}{if($12 != "N"){gap_id=0+$1;printf(">seq_id_%d_%d\n%s\n",gap_id,id,$12);id+=1;}}' \
     <$OUT_PREFIX.gap_info_seqs >$OUT_PREFIX.ont.fasta || exit 1
-
+echo "---- 3 ------ "
 ###########################################################
 # Step 2 :
 #   pilon the sub-ont-fragments .
 ###########################################################
 
 $MINIMAP2 -t 30 -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.fasta 1>$OUT_PREFIX.minimap2.02.log 2>&1 || exit 1
+echo "---- 24 ------ "
 $MINIMAP2 -t 30 -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  --split-prefix=rel3_prefix \
     -a $OUT_PREFIX.mmi  $READ12  1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.log || exit 1
-
+echo "----25 ------ "
 $BIN_DIR/samSQ_filter < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
-
+echo "----26 ------ "
 $SAMTOOL view -bo $OUT_PREFIX.bam  $OUT_PREFIX.fiter.sam -@ 30 \
     >$OUT_PREFIX.samtool_01.log 2>&1 || exit 1
-
+echo "----27 ------ "
 $SAMTOOL sort $OUT_PREFIX.bam -o $OUT_PREFIX.sort.bam -@ 30 \
     >$OUT_PREFIX.samtool_02.log 2>&1 || exit 1
-
+echo "----28 ------ "
 $SAMTOOL index $OUT_PREFIX.sort.bam -@ 30 \
     >$OUT_PREFIX.samtool_03.log 2>&1 || exit 1
-
+echo "----29 ------ "
 $JAVA -Xmx$PILON_MEM -jar  $PILON --fix all \
     --genome $OUT_PREFIX.ont.fasta --bam $OUT_PREFIX.sort.bam \
     --output $OUT_PREFIX.ont.pilon --outdir ./ \
     --diploid  --threads 30 >$OUT_PREFIX.pilon.log 2>$OUT_PREFIX.pilon.err || exit 1
+echo "---- 20 ------ "
 
 ###########################################################
 # Step 3 :
 #   use ont-sub-fragments to fill gaps
 ###########################################################
-
-
 $MINIMAP2  -x ava-ont -t 30 $OUT_PREFIX.ont.pilon.fasta $CONTIG \
     1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
+echo "---- 31 ------ "
 
 $BIN_DIR/ONTGapFiller --ont_reads_a $OUT_PREFIX.ont.pilon.fasta \
     --contig2ont_paf $OUT_PREFIX.fill.paf --work_mode 4 <$SCAFF_INFO \
     >$OUT_PREFIX.scaff_infos 2>$OUT_PREFIX.fill.log || exit 1
-
+echo "---- 32 ------ "
 if [[ ! -f $OUT_PREFIX.contig ]] ; then
     ln -s $CONTIG $OUT_PREFIX.contig || exit 1
 else
     echo "Warning : $OUT_PREFIX.contig already exist !!! use it anyway ."
 fi
-
+echo "---- 33 ------ "
 $BIN_DIR/ScaffInfo2Seq --prefix  $OUT_PREFIX --min_n 1 --min_c 0 \
  >$OUT_PREFIX.i2s.log 2>&1  || exit 1
+echo "---- Done ------ "
