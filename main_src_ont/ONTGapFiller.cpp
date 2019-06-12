@@ -218,9 +218,11 @@ struct AppConfig
                     for( const auto & m1  : prev_matched_infos )
                     {
                         if ( m1.aligned_len < min_match ) continue ;
+                        if ( m1.IDY() < min_idy ) continue ;
                         for( const auto & m2 : next_matched_infos )
                         {
                             if ( m2.aligned_len < min_match ) continue ;
+                            if ( m2.IDY() < min_idy ) continue ;
                             BGIQD::stLFR::PairPN ont_pn ;
                             ont_pn.InitFromPAF(m1,m2);
                             if( ont_pn.type == scaff_pn.type )
@@ -450,8 +452,10 @@ struct AppConfig
     int work_mode ;
     int max_hang ;
     int min_match ;
+    float min_idy ;
     float fa;
     float fb;
+
 } config ;
 
 int main(int argc , char ** argv)
@@ -464,6 +468,7 @@ int main(int argc , char ** argv)
         DEFINE_ARG_OPTIONAL(int, work_mode,"1, shortest ; 2, random ; 3, median ;4 max_match_sore","4");
         DEFINE_ARG_OPTIONAL(int, max_hang,"max hang for ont","2000");
         DEFINE_ARG_OPTIONAL(int, min_match,"min match for ont","40");
+        DEFINE_ARG_OPTIONAL(float, min_idy,"min idy for ont","0.5");
         DEFINE_ARG_OPTIONAL(float, factor_a,"factor_a","1");
         DEFINE_ARG_OPTIONAL(float, factor_b,"factor_b","1");
     END_PARSE_ARGS;
@@ -474,6 +479,7 @@ int main(int argc , char ** argv)
     config.force_fill = force_fill.to_bool() ;
     config.work_mode = work_mode.to_int();
     config.min_match = min_match.to_int();
+    config.min_idy = min_idy.to_float() ;
     config.fa = factor_a.to_float();
     config.fb = factor_b.to_float();
     if( ont_reads_a.setted )
