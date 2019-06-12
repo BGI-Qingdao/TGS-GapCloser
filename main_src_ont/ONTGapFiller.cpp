@@ -111,9 +111,8 @@ struct AppConfig
         while( ! std::getline( *in , line ).eof()  )
         {
             tmp.InitFromString(line);
-            //if( tmp.len_target_match <= 0 
-            //        || tmp.IDY() < 0.8 )
-            //    continue ;
+            if ( tmp.aligned_len < min_match ) continue ;
+            if ( tmp.IDY() < min_idy ) continue ;
             unsigned int contig = std::stoul( tmp.query_name );
             aligned_data[contig][tmp.target_name].push_back(tmp);
             read_2_contig[tmp.target_name].insert(contig);
