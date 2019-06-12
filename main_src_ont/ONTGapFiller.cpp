@@ -259,7 +259,7 @@ struct AppConfig
                 }
                 else if ( work_mode == 4 )
                 {
-                    BGIQD::ONT::SortMatchScoreMore(chooses,max_hang);
+                    BGIQD::ONT::SortMatchScoreMore(chooses,max_hang,fa,fb);
                 }
                 else
                 {
@@ -450,6 +450,8 @@ struct AppConfig
     int work_mode ;
     int max_hang ;
     int min_match ;
+    float fa;
+    float fb;
 } config ;
 
 int main(int argc , char ** argv)
@@ -459,9 +461,11 @@ int main(int argc , char ** argv)
         DEFINE_ARG_OPTIONAL(std::string, ont_reads_q,"the ont reads in fastq format.","");
         DEFINE_ARG_OPTIONAL(std::string, ont_reads_a,"the ont reads in fasta format.","");
         DEFINE_ARG_OPTIONAL(bool, force_fill,"will force fill as much gap as it can. ","false");
-        DEFINE_ARG_OPTIONAL(int, work_mode,"1, shortest ; 2, random ; 3, median ;4 max_match_sore","1");
+        DEFINE_ARG_OPTIONAL(int, work_mode,"1, shortest ; 2, random ; 3, median ;4 max_match_sore","4");
         DEFINE_ARG_OPTIONAL(int, max_hang,"max hang for ont","2000");
         DEFINE_ARG_OPTIONAL(int, min_match,"min match for ont","40");
+        DEFINE_ARG_OPTIONAL(float, factor_a,"factor_a","1");
+        DEFINE_ARG_OPTIONAL(float, factor_b,"factor_b","1");
     END_PARSE_ARGS;
 
     if( ! ont_reads_q.setted && ! ont_reads_a.setted )
@@ -470,7 +474,8 @@ int main(int argc , char ** argv)
     config.force_fill = force_fill.to_bool() ;
     config.work_mode = work_mode.to_int();
     config.min_match = min_match.to_int();
-
+    config.fa = factor_a.to_float();
+    config.fb = factor_b.to_float();
     if( ont_reads_a.setted )
     {
         config.ont_read_a  = ont_reads_a.to_string();

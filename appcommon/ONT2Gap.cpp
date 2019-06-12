@@ -80,22 +80,28 @@ namespace BGIQD {
             };
             std::sort(data.begin() , data.end(), gap_less );
         }
-        void SortMatchScoreMore( std::vector<ONT2GapInfo> & data ,int max_hang )
+        void SortMatchScoreMore( std::vector<ONT2GapInfo> & data
+                ,int max_hang 
+                ,float fa
+                ,float fb)
         {
             if( data.size() < 2 )
                 return ;
 
-            auto score_less =[max_hang] (const ONT2GapInfo & c1 
+            auto score_less =[&] (const ONT2GapInfo & c1 
                     , const ONT2GapInfo & c2 ) -> bool 
             {
-                auto score = [max_hang](const BGIQD::PAF::PAF_Item &f,
+                auto score = [&](const BGIQD::PAF::PAF_Item &f,
                     const BGIQD::PAF::PAF_Item &t) -> float 
                 {
                     float a1 = float(f.aligned_len)/float(max_hang) * 100 ;
                     float i1 = float(f.match_len)/float(f.aligned_len) * 100 ;
                     float a2 = float(t.aligned_len)/float(max_hang) * 100 ;
                     float i2 = float(t.match_len)/float(t.aligned_len) * 100 ;
-                    return log10(a1) + log10(i1) + log10(a2) + log10(i2);
+                    return fa*log10(a1)
+                        +  fb*log10(i1) 
+                        +  fa*log10(a2) 
+                        +  fb*log10(i2);
                 };
                 return  score(c1.from,c1.to) < score(c2.from,c2.to);
             };
