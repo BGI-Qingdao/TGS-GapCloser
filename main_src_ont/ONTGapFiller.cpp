@@ -466,10 +466,10 @@ int main(int argc , char ** argv)
         DEFINE_ARG_OPTIONAL(bool, force_fill,"will force fill as much gap as it can. ","false");
         DEFINE_ARG_OPTIONAL(int, work_mode,"1, shortest ; 2, random ; 3, median ;4 max_match_sore","4");
         DEFINE_ARG_OPTIONAL(int, max_hang,"max hang for ont","2000");
-        DEFINE_ARG_OPTIONAL(int, min_match,"min match for ont","40");
-        DEFINE_ARG_OPTIONAL(float, min_idy,"min idy for ont","0.5");
+        DEFINE_ARG_OPTIONAL(int, min_match,"min match for ont","300");
+        DEFINE_ARG_OPTIONAL(float, min_idy,"min idy for ont","0.4");
         DEFINE_ARG_OPTIONAL(float, factor_a,"factor_a","1");
-        DEFINE_ARG_OPTIONAL(float, factor_b,"factor_b","1");
+        DEFINE_ARG_OPTIONAL(float, factor_b,"factor_b","6");
     END_PARSE_ARGS;
 
     if( ! ont_reads_q.setted && ! ont_reads_a.setted )
