@@ -33,9 +33,15 @@ typedef BGIQD::FASTQ::FastqReader<QONTRead> QReader ;
 
 typedef BGIQD::FASTA::Id_Desc_Head AHeader;
 
+typedef BGIQD::FASTA::SOAP2ContigHead CHeader;
+
 typedef BGIQD::FASTA::Fasta<AHeader> AONTRead;
 
+typedef BGIQD::FASTA::Fasta<CHeader> ContigRead;
+
 typedef BGIQD::FASTA::FastaReader<AONTRead> AReader ;
+
+typedef BGIQD::FASTA::FastaReader<ContigRead> ContigReader ;
 
 typedef BGIQD::SEQ::seq Seq;
 
@@ -49,6 +55,8 @@ struct AppConfig
     std::string  contig_2_ont_paf_file ;
 
     std::map<std::string , Seq> reads ;
+
+    std::map<unsigned int , Seq> contigs;
 
     std::map<unsigned int, Contig2ONTReads> aligned_data;
 
@@ -97,6 +105,21 @@ struct AppConfig
             }
             delete in ;
         }
+    }
+    std::string contig_file;
+    void LoadContig()
+    {
+        auto in = BGIQD::FILES::FileReaderFactory
+            ::GenerateReaderFromFileName(contig_file);
+        if ( in == NULL )
+            FATAL(" failed to open the contig file to read ");
+        ContigReader reader ;
+        ContigRead tmp ;
+        while( reader.LoadNextFasta(*in ,tmp) )
+        {
+            contigs[tmp.head.contigId] = tmp.seq ;
+        }
+        delete in ;
     }
 
     void LoadPAF()
@@ -163,10 +186,7 @@ struct AppConfig
         int no_match = 0 ;
         int cut_err = 0 ;
         int scaff_negotive_gap_size = 0 ;
-        int scaff_negotive_gap_size_no_choose = 0 ;
         int ont_negotive_gap_size = 0 ;
-        int ont_negotive_gap_size_no_choose = 0 ;
-        int force_fill_succ = 0 ;
 
         BGIQD::FREQ::Freq<int> gap_both_read_freq ;
         BGIQD::FREQ::Freq<int> gap_oo_read_freq ;
@@ -290,6 +310,8 @@ struct AppConfig
                     }
                     if( tmp.gap_size < 0 )
                     {
+                        // varify this overlap
+                        //TODO
                         ont_negotive_gap_size ++ ;
                         prev.gap_size = tmp.gap_size ;
                         break;
@@ -297,7 +319,7 @@ struct AppConfig
                     if( tmp.gap_size == 0 )
                     {
                         ont_negotive_gap_size ++ ;
-                        prev.gap_size = -1 ;
+                        prev.gap_size = 0 ;
                         break ;
                     }
                     int cut_start = 0 ;
@@ -425,6 +447,8 @@ int main(int argc , char ** argv)
     config.Init();
     srand (time(NULL));
     BGIQD::LOG::timer t(config.loger,"ONTGapFiller");
+
+    config.LoadContig();
 
     config.LoadONTReads() ;
 
