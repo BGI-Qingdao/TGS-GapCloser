@@ -17,6 +17,8 @@
 #include "appcommon/ScaffInfo.h"
 #include "appcommon/ONT2Gap.h"
 
+#include "minimap2/minimap.h"
+
 #include <map>
 #include <vector>
 #include <set>

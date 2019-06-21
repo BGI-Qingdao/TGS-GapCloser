@@ -26,7 +26,7 @@ echo """
 $AppName"_cpp 	=	"$AppName".cpp"
 $AppName"_o   =	"$AppName".o"
 $AppName" : clean \${"$AppName"_o} \${source_o} ../bin"
-	\${CXX} \${$AppName"_o} \${source_o} \${DEUBG_CXX}  -o "$AppName
+	\${CXX} \${$AppName"_o} \${source_o} \${LD_FLAGS} \${DEUBG_CXX} -o "$AppName
 	mv \$@ ../bin/
 
 """>>Makefile
@@ -40,8 +40,13 @@ CXX 	   =	g++
 
 CXXFLAGS   =	-std=c++11\\
 				-I../\\
+
+
+LD_FLAGS   =    -L../minimap2\\
 				-lz\\
+				-lminimap2\\
 				-lpthread\\
+
 
 DEUBG_CXX  =	\${CXXFLAGS} -g
 RELEASE_CXX=	\${CXXFLAGS}

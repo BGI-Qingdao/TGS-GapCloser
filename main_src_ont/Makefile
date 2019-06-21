@@ -5,8 +5,13 @@ CXX 	   =	g++
 
 CXXFLAGS   =	-std=c++11\
 				-I../\
+
+
+LD_FLAGS   =    -L../minimap2\
 				-lz\
+				-lminimap2\
 				-lpthread\
+
 
 DEUBG_CXX  =	${CXXFLAGS} -g
 RELEASE_CXX=	${CXXFLAGS}
@@ -46,7 +51,7 @@ all :  ${jobs}
 DiffONTPilon_cpp = DiffONTPilon.cpp
 DiffONTPilon_o = DiffONTPilon.o
 DiffONTPilon : clean ${DiffONTPilon_o} ${source_o} ../bin
-	${CXX} ${DiffONTPilon_o} ${source_o} ${DEUBG_CXX} -o DiffONTPilon
+	${CXX} ${DiffONTPilon_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o DiffONTPilon
 	mv $@ ../bin/
 
 
@@ -55,7 +60,7 @@ DiffONTPilon : clean ${DiffONTPilon_o} ${source_o} ../bin
 ORGC_cpp = ORGC.cpp
 ORGC_o = ORGC.o
 ORGC : clean ${ORGC_o} ${source_o} ../bin
-	${CXX} ${ORGC_o} ${source_o} ${DEUBG_CXX} -o ORGC
+	${CXX} ${ORGC_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o ORGC
 	mv $@ ../bin/
 
 
@@ -64,7 +69,7 @@ ORGC : clean ${ORGC_o} ${source_o} ../bin
 ONTGapCorrecter_cpp = ONTGapCorrecter.cpp
 ONTGapCorrecter_o = ONTGapCorrecter.o
 ONTGapCorrecter : clean ${ONTGapCorrecter_o} ${source_o} ../bin
-	${CXX} ${ONTGapCorrecter_o} ${source_o} ${DEUBG_CXX} -o ONTGapCorrecter
+	${CXX} ${ONTGapCorrecter_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o ONTGapCorrecter
 	mv $@ ../bin/
 
 
@@ -73,7 +78,7 @@ ONTGapCorrecter : clean ${ONTGapCorrecter_o} ${source_o} ../bin
 ONTGapFiller_cpp = ONTGapFiller.cpp
 ONTGapFiller_o = ONTGapFiller.o
 ONTGapFiller : clean ${ONTGapFiller_o} ${source_o} ../bin
-	${CXX} ${ONTGapFiller_o} ${source_o} ${DEUBG_CXX} -o ONTGapFiller
+	${CXX} ${ONTGapFiller_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o ONTGapFiller
 	mv $@ ../bin/
 
 
@@ -82,7 +87,7 @@ ONTGapFiller : clean ${ONTGapFiller_o} ${source_o} ../bin
 ONTGapDev01_cpp = ONTGapDev01.cpp
 ONTGapDev01_o = ONTGapDev01.o
 ONTGapDev01 : clean ${ONTGapDev01_o} ${source_o} ../bin
-	${CXX} ${ONTGapDev01_o} ${source_o} ${DEUBG_CXX} -o ONTGapDev01
+	${CXX} ${ONTGapDev01_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o ONTGapDev01
 	mv $@ ../bin/
 
 
@@ -91,7 +96,7 @@ ONTGapDev01 : clean ${ONTGapDev01_o} ${source_o} ../bin
 ONTGapCandidate_cpp = ONTGapCandidate.cpp
 ONTGapCandidate_o = ONTGapCandidate.o
 ONTGapCandidate : clean ${ONTGapCandidate_o} ${source_o} ../bin
-	${CXX} ${ONTGapCandidate_o} ${source_o} ${DEUBG_CXX} -o ONTGapCandidate
+	${CXX} ${ONTGapCandidate_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o ONTGapCandidate
 	mv $@ ../bin/
 
 
@@ -100,7 +105,7 @@ ONTGapCandidate : clean ${ONTGapCandidate_o} ${source_o} ../bin
 SplitScaffSeq_cpp = SplitScaffSeq.cpp
 SplitScaffSeq_o = SplitScaffSeq.o
 SplitScaffSeq : clean ${SplitScaffSeq_o} ${source_o} ../bin
-	${CXX} ${SplitScaffSeq_o} ${source_o} ${DEUBG_CXX} -o SplitScaffSeq
+	${CXX} ${SplitScaffSeq_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o SplitScaffSeq
 	mv $@ ../bin/
 
 
@@ -109,7 +114,7 @@ SplitScaffSeq : clean ${SplitScaffSeq_o} ${source_o} ../bin
 SplitScaff2NamedContig_cpp = SplitScaff2NamedContig.cpp
 SplitScaff2NamedContig_o = SplitScaff2NamedContig.o
 SplitScaff2NamedContig : clean ${SplitScaff2NamedContig_o} ${source_o} ../bin
-	${CXX} ${SplitScaff2NamedContig_o} ${source_o} ${DEUBG_CXX} -o SplitScaff2NamedContig
+	${CXX} ${SplitScaff2NamedContig_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o SplitScaff2NamedContig
 	mv $@ ../bin/
 
 
@@ -118,7 +123,7 @@ SplitScaff2NamedContig : clean ${SplitScaff2NamedContig_o} ${source_o} ../bin
 ScaffInfo2Seq_cpp = ScaffInfo2Seq.cpp
 ScaffInfo2Seq_o = ScaffInfo2Seq.o
 ScaffInfo2Seq : clean ${ScaffInfo2Seq_o} ${source_o} ../bin
-	${CXX} ${ScaffInfo2Seq_o} ${source_o} ${DEUBG_CXX} -o ScaffInfo2Seq
+	${CXX} ${ScaffInfo2Seq_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o ScaffInfo2Seq
 	mv $@ ../bin/
 
 
@@ -127,7 +132,7 @@ ScaffInfo2Seq : clean ${ScaffInfo2Seq_o} ${source_o} ../bin
 samSQ_filter_cpp = samSQ_filter.cpp
 samSQ_filter_o = samSQ_filter.o
 samSQ_filter : clean ${samSQ_filter_o} ${source_o} ../bin
-	${CXX} ${samSQ_filter_o} ${source_o} ${DEUBG_CXX} -o samSQ_filter
+	${CXX} ${samSQ_filter_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o samSQ_filter
 	mv $@ ../bin/
 
 
