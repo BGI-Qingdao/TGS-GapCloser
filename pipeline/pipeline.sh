@@ -30,11 +30,6 @@ MINMAP="/ldfssz1/ST_OCEAN/USER/xumengyang/software/minimap2/minimap2"
 CPU=30
 
 
-USE_ORDER="no"
-USE_ORIENTATION="no"
-USE_GAP_FILLER="yes"
-USE_GAP_CORRETOR="no"
-GAP_MODE=1  # 1 for shortest ; 3 for median ; 2 for random
 
 ######################################################
 #
@@ -46,9 +41,6 @@ OUT_CONTIG=$OUT_PREFIX".contig"
 OUT_PAF=$OUT_PREFIX".paf"
 OUT_SCAF_INFOS=$OUT_PREFIX".scaff_infos"
 OUT_SCAF_INFOS_0=$OUT_PREFIX".scaff_infos_0"
-OUT_SCAF_INFOS_1=$OUT_PREFIX".scaff_infos_1"
-OUT_SCAF_INFOS_2=$OUT_PREFIX".scaff_infos_2"
-OUT_SCAF_INFOS_3=$OUT_PREFIX".scaff_infos_3"
 OUT_SCAF_INFOS_4=$OUT_PREFIX".scaff_infos_4"
 
 ## prepare check ...
@@ -102,8 +94,10 @@ fi
 if [[ $USE_SCAFF_SEQ == "yes" ]] ; then
     $BIN_DIR/SplitScaffSeq <$INPUT_SCAFFOLD_SEQ  >$OUT_CONTIG 2>$OUT_SCAF_INFOS
 else
-    ln -s $INPUT_CONTIG $OUT_CONTIG
-    ln -s $INPUT_SCAFF_INFOS $OUT_SCAF_INFOS
+    if [[ $INPUT_CONTIG != $OUT_CONTIG ]] ; then
+        ln -s $INPUT_CONTIG $OUT_CONTIG
+        ln -s $INPUT_SCAFF_INFOS $OUT_SCAF_INFOS
+    fi
 fi
 
 ## step 1 . aligned if needed
@@ -121,31 +115,15 @@ fi
 
 mv $OUT_SCAF_INFOS  $OUT_SCAF_INFOS_0
 ln -sf $OUT_SCAF_INFOS_0 $OUT_SCAF_INFOS
-if [[ $USE_ORDER == "yes " ]] ; then
-    echo " Order is not valid now . continue ..."
-fi
 
-if [[ $USE_ORIENTATION == "yes " ]] ; then
-    echo " Order is not valid now . continue ..."
+if [[ $FQ == "yes" ]] ; then
+    $BIN_DIR/ONTGapFiller --ont_reads_q $INPUT_ONT_READ_FQ --contig2ont_paf $OUT_PAF  <$OUT_SCAF_INFOS >$OUT_SCAF_INFOS_4 2>log_filler
+else
+    $BIN_DIR/ONTGapFiller --ont_reads_a $INPUT_ONT_READ_FA --contig2ont_paf $OUT_PAF  <$OUT_SCAF_INFOS >$OUT_SCAF_INFOS_4 2>log_filler
 fi
-
-if [[ $USE_GAP_CORRETOR  == "yes" ]] ; then
-    $BIN_DIR/ONTGapCorrecter --contig2ont_paf $OUT_PAF --force --work_mode $GAP_MODE <$OUT_SCAF_INFOS >$OUT_SCAF_INFOS_3
-    rm -rf $OUT_SCAF_INFOS
-    ln -s $OUT_SCAF_INFOS_3 $OUT_SCAF_INFOS
-fi
-
-if [[ $USE_GAP_FILLER  == "yes" ]] ; then
-    if [[ $FQ == "yes" ]] ; then
-        $BIN_DIR/ONTGapFiller --ont_reads_q $INPUT_ONT_READ_FQ --contig2ont_paf $OUT_PAF  --work_mode $GAP_MODE <$OUT_SCAF_INFOS >$OUT_SCAF_INFOS_4 2>log_filler
-    else
-        $BIN_DIR/ONTGapFiller --ont_reads_a $INPUT_ONT_READ_FA --contig2ont_paf $OUT_PAF  --work_mode $GAP_MODE <$OUT_SCAF_INFOS >$OUT_SCAF_INFOS_4 2>log_filler
-    fi
-    rm -rf $OUT_SCAF_INFOS
-    ln -s $OUT_SCAF_INFOS_4 $OUT_SCAF_INFOS
-fi
+rm -rf $OUT_SCAF_INFOS
+ln -s $OUT_SCAF_INFOS_4 $OUT_SCAF_INFOS
 
 ## step 3. re-generate seq
 
 $BIN_DIR/ScaffInfo2Seq --prefix  $OUT_PREFIX --min_n 1 --min_c 1
-
