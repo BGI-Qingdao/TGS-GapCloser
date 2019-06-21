@@ -16,8 +16,8 @@
 #include "appcommon/contigPairInfo.h"
 #include "appcommon/ScaffInfo.h"
 #include "appcommon/ONT2Gap.h"
+//#include "appcommon/AlignMinimap2.h"
 
-#include "minimap2/minimap.h"
 
 #include <map>
 #include <vector>
@@ -234,11 +234,6 @@ struct AppConfig
                             }
                             else
                             {
-                                if( force_fill )
-                                {
-                                    chooses.push_back({ m1 , m2 , ont_pn });
-                                }
-                                    //others.push_back(std::make_pair( m1 , m2 ));
                             }
                         }
                     }
@@ -274,63 +269,7 @@ struct AppConfig
                 if( chooses.empty() )
                 {
                     no_choose ++ ;
-                    if(  force_fill )
-                    {
-                        // trust contig overlap first 
-                        if( scaff_pn.gap_size < 0 )
-                        {
-                            scaff_negotive_gap_size_no_choose ++ ;
-                        }
-                        else
-                        {
-                            // force choose some to fill ;
-                            for ( const auto & pair : others )
-                            {
-                                const auto & m1 = pair.from ;
-                                const auto & m2 = pair.to ;
-                                const BGIQD::stLFR::PairPN & tmp = pair.pair_info  ;
-                                //tmp.InitFromPAF(m1,m2);
-                                if( tmp.type == BGIQD::stLFR::OOType::Unknow  )
-                                    continue ;
-                                if( tmp.gap_size < 0 )
-                                {
-                                    prev.gap_size = tmp.gap_size ;
-                                    ont_negotive_gap_size_no_choose ++ ;
-                                    break ;
-                                }
-                                else if ( tmp.gap_size == 0 )
-                                {
-                                    prev.gap_size = -1;
-                                    ont_negotive_gap_size_no_choose ++ ;
-                                    break ;
-                                }
-                                else
-                                {
-                                    std::vector<int> pos;
-                                    pos.push_back(m1.target_start);
-                                    pos.push_back(m2.target_start);
-                                    pos.push_back(m1.target_end);
-                                    pos.push_back(m2.target_end);
-                                    std::sort( pos.begin() , pos.end()) ;
-                                    int cut_start = pos[1]  ;
-                                    int cut_len = pos[2] - pos[1] - 1 ;
-                                    const auto & ont_read = reads.at(m1.target_name).atcgs ;
-                                    prev.gap_size = cut_len ;
-                                    if( cut_len < 1 || cut_start<0 ||  cut_start + cut_len  >= (int) ont_read.size() )
-                                    {
-                                        cut_err ++ ;
-                                        continue ;
-                                    }
-                                    force_fill_succ ++ ;
-                                    std::string cut_seq =  ont_read.substr(cut_start,cut_len) ;
-                                    prev.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = cut_seq;
-                                    prev.gap_size = cut_seq.size() ;
-                                    break ;
-                                }
-                            }
-                        }
-                    }
-                        continue ;
+                    continue ;
                 }
                 // Random choose the 1th 1 choose .
                 for ( const auto & pair : chooses )
@@ -414,16 +353,6 @@ struct AppConfig
         loger<<BGIQD::LOG::lstart()<<">the ont_negotive_gap_size is "
             <<ont_negotive_gap_size<<BGIQD::LOG::lend();
 
-        if( force_fill )
-        {
-            loger<<BGIQD::LOG::lstart()<<">the scaff_negotive_gap_size_no_choose  is "
-                <<scaff_negotive_gap_size_no_choose<<BGIQD::LOG::lend();
-
-            loger<<BGIQD::LOG::lstart()<<">the force fill succ is "
-                <<force_fill_succ<<BGIQD::LOG::lend();
-            loger<<BGIQD::LOG::lstart()<<">the ont_negotive_gap_size_no_choose is "
-                <<ont_negotive_gap_size_no_choose<<BGIQD::LOG::lend();
-        }
 
         loger<<BGIQD::LOG::lstart()<<">the common reads count freq for a gap \n"
             <<gap_both_read_freq.ToString()<<BGIQD::LOG::lend();
@@ -447,7 +376,6 @@ struct AppConfig
         scaff_info_helper.PrintAllScaff(std::cout);
     }
 
-    bool force_fill ;
     std::string ont_read_a  ;
     std::string ont_read_q  ;
     int work_mode ;
@@ -465,7 +393,6 @@ int main(int argc , char ** argv)
         DEFINE_ARG_REQUIRED(std::string, contig2ont_paf ,"the paf file that map contig into ont reads.");
         DEFINE_ARG_OPTIONAL(std::string, ont_reads_q,"the ont reads in fastq format.","");
         DEFINE_ARG_OPTIONAL(std::string, ont_reads_a,"the ont reads in fasta format.","");
-        DEFINE_ARG_OPTIONAL(bool, force_fill,"will force fill as much gap as it can. ","false");
         DEFINE_ARG_OPTIONAL(int, work_mode,"1, shortest ; 2, random ; 3, median ;4 max_match_sore","4");
         DEFINE_ARG_OPTIONAL(int, max_hang,"max hang for ont","2000");
         DEFINE_ARG_OPTIONAL(int, min_match,"min match for ont","300");
@@ -477,7 +404,6 @@ int main(int argc , char ** argv)
     if( ! ont_reads_q.setted && ! ont_reads_a.setted )
         FATAL("please give the ont reads !!!");
     config.max_hang = max_hang.to_int();
-    config.force_fill = force_fill.to_bool() ;
     config.work_mode = work_mode.to_int();
     config.min_match = min_match.to_int();
     config.min_idy = min_idy.to_float() ;
@@ -509,6 +435,7 @@ int main(int argc , char ** argv)
     config.ParseAllGap();
 
     config.PrintScaffInfo() ;
+
 
     return 0 ;
 }
