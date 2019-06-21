@@ -1,0 +1,3 @@
+[submodule "minimap2"]
+	path = minimap2
+	url = https://github.com/lh3/minimap2.git
