@@ -465,6 +465,7 @@ int main(int argc , char ** argv)
 {
     START_PARSE_ARGS
         DEFINE_ARG_REQUIRED(std::string, contig2ont_paf ,"the paf file that map contig into ont reads.");
+        DEFINE_ARG_REQUIRED(std::string, contig,"contig file.");
         DEFINE_ARG_OPTIONAL(std::string, ont_reads_q,"the ont reads in fastq format.","");
         DEFINE_ARG_OPTIONAL(std::string, ont_reads_a,"the ont reads in fasta format.","");
         DEFINE_ARG_OPTIONAL(int, work_mode,"1, shortest ; 2, random ; 3, median ;4 max_match_sore","4");
@@ -474,7 +475,7 @@ int main(int argc , char ** argv)
         DEFINE_ARG_OPTIONAL(float, factor_a,"factor_a","1");
         DEFINE_ARG_OPTIONAL(float, factor_b,"factor_b","6");
     END_PARSE_ARGS;
-
+    config.contig_file = contig.to_string();
     if( ! ont_reads_q.setted && ! ont_reads_a.setted )
         FATAL("please give the ont reads !!!");
     config.max_hang = max_hang.to_int();
