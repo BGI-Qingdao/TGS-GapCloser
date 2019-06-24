@@ -212,7 +212,7 @@ struct AppConfig
         if( ret == -1 )
             return -1 ;
         else
-            return ret ;
+            return left_len - ret ;
     }
 
     static int myrandom (int i) { return std::rand()%i;}
