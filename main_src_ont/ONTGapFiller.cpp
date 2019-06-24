@@ -16,7 +16,7 @@
 #include "appcommon/contigPairInfo.h"
 #include "appcommon/ScaffInfo.h"
 #include "appcommon/ONT2Gap.h"
-//#include "appcommon/AlignMinimap2.h"
+#include "appcommon/AlignMinimap2.h"
 
 
 #include <map>
@@ -175,6 +175,46 @@ struct AppConfig
         BGIQD::LOG::timer t(loger,"LoadScaffInfo");
         scaff_info_helper.LoadAllScaff(std::cin) ;
     }
+
+    int VerifyOverlap(
+            unsigned int left  ,
+            bool l_orientation ,
+            unsigned int right ,
+            bool r_orientation ,
+            int overlap_len )
+    {
+        const auto left_contig_fa = contigs.at(left);
+        const auto right_contig_fa = contigs.at(right);
+        int cut_len = float(overlap_len) *1.5 ;
+        std::string left_str ;
+        std::string right_str ;
+
+        int left_len = left_contig_fa.Len() < cut_len ? 
+            left_contig_fa.Len() : cut_len ;
+        int left_cut_start = 0 ;
+        if( l_orientation )
+            left_cut_start = left_contig_fa.Len() - left_len ;
+        left_str = left_contig_fa.atcgs.substr(left_cut_start,left_len);
+        if( ! l_orientation )
+            left_str = BGIQD::SEQ::seqCompleteReverse(left_str);
+
+        int right_len = right_contig_fa.Len() < cut_len ? 
+            right_contig_fa.Len() : cut_len ;
+        int right_cut_start = 0 ;
+        if( ! r_orientation )
+            right_cut_start = right_contig_fa.Len() - right_len ;
+        right_str = right_contig_fa.atcgs.substr(right_cut_start,right_len);
+        if( ! r_orientation )
+            right_str = BGIQD::SEQ::seqCompleteReverse(right_str);
+
+        int ret = BGIQD::ALIGN_MINIMAP2::CheckOverlap(left_str,
+                right_str, 0.4f, 0.9f );
+        if( ret == -1 )
+            return -1 ;
+        else
+            return ret ;
+    }
+
     static int myrandom (int i) { return std::rand()%i;}
     void ParseAllGap()
     {
@@ -310,11 +350,23 @@ struct AppConfig
                     }
                     if( tmp.gap_size < 0 )
                     {
-                        // varify this overlap
-                        //TODO
-                        ont_negotive_gap_size ++ ;
-                        prev.gap_size = tmp.gap_size ;
-                        break;
+                        // verify this overlap
+                        //const auto & left = contigs
+                        int true_overlap = VerifyOverlap(
+                                prev.contig_id 
+                              , prev.orientation
+                              , next.contig_id
+                              , next.orientation
+                              , -tmp.gap_size 
+                              );
+                        if ( true_overlap > 0 ) 
+                        {
+                            ont_negotive_gap_size ++ ;
+                            prev.gap_size = - true_overlap ;
+                            break;
+                        }
+                        else
+                            continue ;
                     }
                     if( tmp.gap_size == 0 )
                     {

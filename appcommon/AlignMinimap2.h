@@ -6,8 +6,8 @@
 #include <cstring>
 #include <cassert>
 
-namespace APPCOMMON {
-    namespace ALIGN {
+namespace BGIQD {
+    namespace ALIGN_MINIMAP2 {
 
         const int max_overlap_size =10000;
 
