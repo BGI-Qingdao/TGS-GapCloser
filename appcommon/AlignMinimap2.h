@@ -5,7 +5,7 @@
 #include <string>
 #include <cstring>
 #include <cassert>
-
+#include <iostream>
 namespace BGIQD {
     namespace ALIGN_MINIMAP2 {
 
@@ -13,8 +13,9 @@ namespace BGIQD {
 
         int CheckOverlap(const std::string & left , /*ref*/
                 const std::string & right ,        /*query*/
-                float aligned_factor,              /*0.4*/
-                float idy_factor                   /*0.9*/
+                float aligned_factor,
+                float idy_factor,
+                int overlap_len
                 )
         {
             int ref_len = left.size() ;
@@ -29,8 +30,8 @@ namespace BGIQD {
             char *s;
             s = (char*)calloc(left.size() + 1, 1);
             memcpy(s, left.c_str(), left.size());
-            mm_idx_t *mi = mm_idx_str(10, /*-w*/  /* same as minimap2 default*/
-                    15,                   /*-k*/
+            mm_idx_t *mi = mm_idx_str(1, /*-w*/  /* same as minimap2 default*/
+                    11,                   /*-k*/
                     0,                    /*-H*/
                     14,                   /*bucket-bits*/
                     1,                    /*number of seq*/
@@ -43,16 +44,27 @@ namespace BGIQD {
 
             mm_reg1_t *reg;
             int j,  n_reg;
+            mopt.min_chain_score = 1; // -m 1
             reg = mm_map(mi, right.size(), right.c_str(), &n_reg, tbuf, &mopt, 0);
             int ret = -1 ;
             for (j = 0; j < n_reg; ++j) 
             {
+
                 mm_reg1_t *r = &reg[j];
                 assert(r->p); // with MM_F_CIGAR, this should not be NULL
+                std::cerr<<overlap_len<<'\t'
+                    <<ref_len<<'\t'
+                    <<r->blen<<'\t'
+                    <<float(r->blen) / float(ref_len) <<'\t'
+                    <<float(r->mlen) / float(r->blen) <<'\n';
                 if( float(r->mlen) / float(r->blen) >=idy_factor 
-                &&  float(r->blen) / float(ref_len) >= aligned_factor
+                &&  float(r->blen) / float(overlap_len) >=aligned_factor
                 && ret < 0)
+                {
                     ret = r->rs ;
+                    std::cerr<<" accept this overlap "<<'\n';
+                }
+
                 free(r->p);
             }
             free(reg);

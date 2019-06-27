@@ -186,6 +186,8 @@ struct AppConfig
         const auto left_contig_fa = contigs.at(left);
         const auto right_contig_fa = contigs.at(right);
         int cut_len = float(overlap_len) *1.5 ;
+        //at least 500 bp .
+        if ( cut_len < 500 ) cut_len = 500 ;
         std::string left_str ;
         std::string right_str ;
 
@@ -208,8 +210,8 @@ struct AppConfig
             right_str = BGIQD::SEQ::seqCompleteReverse(right_str);
 
         int ret = BGIQD::ALIGN_MINIMAP2::CheckOverlap(left_str,
-                right_str, 0.4f, 0.9f );
-        if( ret == -1 )
+                right_str, 0.2f, 0.8f, overlap_len );
+        if( ret < 0 )
             return -1 ;
         else
             return left_len - ret ;
@@ -227,6 +229,7 @@ struct AppConfig
         int cut_err = 0 ;
         int scaff_negotive_gap_size = 0 ;
         int ont_negotive_gap_size = 0 ;
+        int overlap_failed = 0 ;
 
         BGIQD::FREQ::Freq<int> gap_both_read_freq ;
         BGIQD::FREQ::Freq<int> gap_oo_read_freq ;
@@ -331,6 +334,8 @@ struct AppConfig
                     no_choose ++ ;
                     continue ;
                 }
+                bool ont_overlap = false ;
+                bool checked  = false ;
                 // Random choose the 1th 1 choose .
                 for ( const auto & pair : chooses )
                 {
@@ -346,10 +351,17 @@ struct AppConfig
                     if( scaff_pn.gap_size < 0 )
                     {
                         scaff_negotive_gap_size ++ ;
+                        checked = true ;
                         break;
                     }
                     if( tmp.gap_size < 0 )
                     {
+                        std::cerr
+                               <<"overlap check c1="<< prev.contig_id<<'\t'
+                               <<"and Try c2="<< next.contig_id<<'\t'
+                                <<tmp.gap_size<<'\n';
+
+                        ont_overlap = true ;
                         // verify this overlap
                         //const auto & left = contigs
                         int true_overlap = VerifyOverlap(
@@ -363,6 +375,7 @@ struct AppConfig
                         {
                             ont_negotive_gap_size ++ ;
                             prev.gap_size = - true_overlap ;
+                            checked = true ;
                             break;
                         }
                         else
@@ -372,6 +385,7 @@ struct AppConfig
                     {
                         ont_negotive_gap_size ++ ;
                         prev.gap_size = 0 ;
+                        checked = true ;
                         break ;
                     }
                     int cut_start = 0 ;
@@ -399,6 +413,7 @@ struct AppConfig
                             cut_seq = BGIQD::SEQ::seqCompleteReverse(cut_seq);
                         prev.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = cut_seq;
                         prev.gap_size = cut_seq.size() ;
+                        checked = true ;
                         break ;
                     }
                     catch( ... )
@@ -406,8 +421,16 @@ struct AppConfig
                         continue ;
                     }
                 }
+                if( ont_overlap &&  !checked )
+                {
+                    overlap_failed ++ ;
+                    std::cerr<<" contig overlap check failed tag !"<<'\n';
+                }
             }
         }
+
+        loger<<BGIQD::LOG::lstart()<<">the overlap cheked caused failed is "
+            <<overlap_failed<<BGIQD::LOG::lend();
 
         loger<<BGIQD::LOG::lstart()<<">the gap_total is "
             <<gap_tatal<<BGIQD::LOG::lend();
@@ -512,7 +535,6 @@ int main(int argc , char ** argv)
     config.ParseAllGap();
 
     config.PrintScaffInfo() ;
-
 
     return 0 ;
 }
