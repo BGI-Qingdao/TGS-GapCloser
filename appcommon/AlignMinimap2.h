@@ -55,7 +55,7 @@ namespace BGIQD {
                 std::cerr<<overlap_len<<'\t'
                     <<ref_len<<'\t'
                     <<r->blen<<'\t'
-                    <<float(r->blen) / float(ref_len) <<'\t'
+                    <<float(r->blen) / float(overlap_len) <<'\t'
                     <<float(r->mlen) / float(r->blen) <<'\n';
                 if( float(r->mlen) / float(r->blen) >=idy_factor 
                 &&  float(r->blen) / float(overlap_len) >=aligned_factor

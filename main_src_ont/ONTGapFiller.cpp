@@ -176,6 +176,9 @@ struct AppConfig
         scaff_info_helper.LoadAllScaff(std::cin) ;
     }
 
+    float min_idy_oc;
+    float min_af_oc ;
+    int min_contigtail_cut;
     int VerifyOverlap(
             unsigned int left  ,
             bool l_orientation ,
@@ -187,7 +190,7 @@ struct AppConfig
         const auto right_contig_fa = contigs.at(right);
         int cut_len = float(overlap_len) *1.5 ;
         //at least 500 bp .
-        if ( cut_len < 500 ) cut_len = 500 ;
+        if ( cut_len < min_contigtail_cut ) cut_len = min_contigtail_cut;
         std::string left_str ;
         std::string right_str ;
 
@@ -210,7 +213,7 @@ struct AppConfig
             right_str = BGIQD::SEQ::seqCompleteReverse(right_str);
 
         int ret = BGIQD::ALIGN_MINIMAP2::CheckOverlap(left_str,
-                right_str, 0.2f, 0.8f, overlap_len );
+                right_str, min_af_oc, min_idy_oc , overlap_len );
         if( ret < 0 )
             return -1 ;
         else
@@ -218,6 +221,7 @@ struct AppConfig
     }
 
     static int myrandom (int i) { return std::rand()%i;}
+    int max_ignored_overlap ;
     void ParseAllGap()
     {
         BGIQD::LOG::timer t(loger,"ParseAllGap");
@@ -360,6 +364,8 @@ struct AppConfig
                                <<"overlap check c1="<< prev.contig_id<<'\t'
                                <<"and Try c2="<< next.contig_id<<'\t'
                                 <<tmp.gap_size<<'\n';
+                        if( tmp.gap_size < -max_hang *1.3 )
+                            continue ;
 
                         ont_overlap = true ;
                         // verify this overlap
@@ -372,6 +378,13 @@ struct AppConfig
                               , -tmp.gap_size 
                               );
                         if ( true_overlap > 0 ) 
+                        {
+                            ont_negotive_gap_size ++ ;
+                            prev.gap_size = - true_overlap ;
+                            checked = true ;
+                            break;
+                        }
+                        else if ( tmp.gap_size >= -max_ignored_overlap )
                         {
                             ont_negotive_gap_size ++ ;
                             prev.gap_size = - true_overlap ;
@@ -495,10 +508,18 @@ int main(int argc , char ** argv)
         DEFINE_ARG_OPTIONAL(int, max_hang,"max hang for ont","2000");
         DEFINE_ARG_OPTIONAL(int, min_match,"min match for ont","300");
         DEFINE_ARG_OPTIONAL(float, min_idy,"min idy for ont","0.4");
-        DEFINE_ARG_OPTIONAL(float, factor_a,"factor_a","1");
-        DEFINE_ARG_OPTIONAL(float, factor_b,"factor_b","6");
+        DEFINE_ARG_OPTIONAL(float, factor_a,"factor_a for ont aligned factor","1");
+        DEFINE_ARG_OPTIONAL(float, factor_b,"factor_b for ont idy factor","6");
+        DEFINE_ARG_OPTIONAL(int , max_ignored_overlap , "max overlap size that can be ignored by overlap check","50");
+        DEFINE_ARG_OPTIONAL(int , min_contigtail_cut , "min sequence length for contig aligned check","500");
+        DEFINE_ARG_OPTIONAL(float ,min_idy_oc , "min idy for overlap check","0.75");
+        DEFINE_ARG_OPTIONAL(float ,min_af_oc , "min aligned factor for overlap check","0.2");
     END_PARSE_ARGS;
     config.contig_file = contig.to_string();
+    config.min_idy_oc = min_idy_oc.to_float();
+    config.min_af_oc = min_af_oc.to_float();
+    config.max_ignored_overlap = max_ignored_overlap.to_int();
+    config.min_contigtail_cut = min_contigtail_cut.to_int();
     if( ! ont_reads_q.setted && ! ont_reads_a.setted )
         FATAL("please give the ont reads !!!");
     config.max_hang = max_hang.to_int();
