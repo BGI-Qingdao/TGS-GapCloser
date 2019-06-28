@@ -226,7 +226,7 @@ namespace BGIQD{
 
         static int arg_index = 0 ;
 
-        const int arg_max = 10 ;
+        const int arg_max = 1024 ;
 
         static struct option long_options[arg_max];
 

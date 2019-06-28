@@ -515,6 +515,7 @@ int main(int argc , char ** argv)
         DEFINE_ARG_OPTIONAL(float ,min_idy_oc , "min idy for overlap check","0.75");
         DEFINE_ARG_OPTIONAL(float ,min_af_oc , "min aligned factor for overlap check","0.2");
     END_PARSE_ARGS;
+
     config.contig_file = contig.to_string();
     config.min_idy_oc = min_idy_oc.to_float();
     config.min_af_oc = min_af_oc.to_float();
@@ -541,8 +542,8 @@ int main(int argc , char ** argv)
 
     config.contig_2_ont_paf_file = contig2ont_paf.to_string() ;
 
-    config.Init();
     srand (time(NULL));
+    config.Init();
     BGIQD::LOG::timer t(config.loger,"ONTGapFiller");
 
     config.LoadContig();
