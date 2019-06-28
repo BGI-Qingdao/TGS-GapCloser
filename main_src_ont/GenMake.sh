@@ -1,5 +1,9 @@
 #!/bin/bash
 
+scripts="\
+  samSQ_filter.awk
+"
+
 apps="\
  DiffONTPilon\
  ORGC\
@@ -10,7 +14,6 @@ apps="\
  SplitScaffSeq\
  SplitScaff2NamedContig\
  ScaffInfo2Seq\
- samSQ_filter\
 "
 
 jobs_o=" "
@@ -33,7 +36,16 @@ $AppName" : clean \${"$AppName"_o} \${source_o} ../bin"
 
 }
 
-echo ".PHONY: all clean bin" >Makefile
+function GenScript()
+{
+local SS=$1
+echo """
+$SS:
+	cp $SS ../bin/
+""">>Makefile	
+}
+
+echo ".PHONY: all clean bin ${scripts}"  >Makefile
 echo """
 CC 		   =	gcc
 CXX 	   =	g++
@@ -78,9 +90,17 @@ source_o		= \${source_cpp:%.cpp=%.o}
 
 jobs =$apps
 
-all :  \${jobs}
+scripts=$scripts
+
+all :  \${jobs} \${scripts}
+
+
 
 """ >>Makefile
+for x in $scripts
+do
+    GenScript $x
+done
 for x in $apps
 do
     GenApp $x
