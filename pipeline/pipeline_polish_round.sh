@@ -78,7 +78,7 @@ $MINIMAP2  -x ava-ont -t 30 $OUT_PREFIX.ont.pilon.fasta $CONTIG  --sam-hit-only 
     1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
 
 $BIN_DIR/ONTGapFiller --ont_reads_a $OUT_PREFIX.ont.pilon.fasta \
-    --contig2ont_paf $OUT_PREFIX.fill.paf --contig $CONTIG <$SCAFF_INFO \
+    --contig2ont_paf $OUT_PREFIX.fill.paf --contig $CONTIG  <$SCAFF_INFO \
     >$OUT_PREFIX.scaff_infos 2>$OUT_PREFIX.fill.log || exit 1
 
 if [[ ! -f $OUT_PREFIX.contig ]] ; then
