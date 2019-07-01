@@ -62,9 +62,9 @@ $MINIMAP2  -x ava-ont -t $CPU --sam-hit-only \
 $BIN_DIR/ONTGapCandidate --ont_reads_a $ONT_FA --contig2ont_paf $OUT_PREFIX.sub.paf \
     <$SCAFF_INFO >$OUT_PREFIX.gap_info_seqs 2>$OUT_PREFIX.cand.log || exit 1
 
-for ((i=0; i<COV; i++))
+for ((i=0; i<CHUNK_NUM; i++))
 do
-    awk 'BEGIN{id=1;ii=0;prev=0}{if($12 != "N"){ gap_id=0+$1;ii=ii+1 ; if(prev!=gap_id){prev=gap_id;ii=1;}if(ii%(cov)==the_i){printf(">seq_id_%d_%d\n%s\n",gap_id,id,$12);}id+=1;}}' cov=$COV the_i=$i \
+    awk 'BEGIN{id=1;ii=0;prev=0}{if($12 != "N"){ gap_id=0+$1;ii=ii+1 ; if(prev!=gap_id){prev=gap_id;ii=1;}if(ii%(cov)==the_i){printf(">seq_id_%d_%d\n%s\n",gap_id,id,$12);}id+=1;}}' cov=$CHUNK_NUM the_i=$i \
         <$OUT_PREFIX.gap_info_seqs >$OUT_PREFIX.ont.$i.fasta || exit 1
 done
 
@@ -72,7 +72,7 @@ done
 # Step 3 :
 #   pilon the sub-ont-fragments .
 ###########################################################
-for ((i=0; i<COV; i++))
+for ((i=0; i<CHUNK_NUM; i++))
 do
     $MINIMAP2 -t $CPU -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$i.fasta 1>$OUT_PREFIX.minimap2.02.log 2>&1 || exit 1
     $MINIMAP2 -t $CPU -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  --split-prefix=rel3_prefix --sam-hit-only \
@@ -94,7 +94,7 @@ do
         --output $OUT_PREFIX.ont.$i.pilon --outdir ./ \
         --diploid  --threads $CPU >$OUT_PREFIX.pilon.log 2>$OUT_PREFIX.pilon.err || exit 1
 done
-for ((i=0; i<COV; i++))
+for ((i=0; i<CHUNK_NUM; i++))
 do
     cat $OUT_PREFIX.ont.$i.pilon.fasta >> $OUT_PREFIX.ont.pilon.fasta
 done
