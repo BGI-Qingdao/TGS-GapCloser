@@ -112,4 +112,4 @@ $BIN_DIR/ONTGapFiller --ont_reads_a $OUT_PREFIX.ont.pilon.fasta \
     >$OUT_PREFIX.scaff_infos 2>$OUT_PREFIX.fill.log || exit 1
 
 $BIN_DIR/ScaffInfo2Seq --prefix  $OUT_PREFIX --min_n 1 --min_c 0 \
-    >$OUT_PREFIX.i2s.log 2>&1  || exit 1
+    2>$OUT_PREFIX.i2s.log 2>&1  || exit 1
