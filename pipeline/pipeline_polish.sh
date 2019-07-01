@@ -25,7 +25,8 @@ OUT_PREFIX="gapfill_test"
 PILON_MEM="300G"
 # pilon chunk num.
 CHUNK_NUM=1
-
+# cpu for minimap2 & samtools & pilon
+CPU=30
 #######################################
 # basic 3rd part tools settings.
 #######################################
@@ -55,7 +56,7 @@ $BIN_DIR/SplitScaffSeq <$INPUT_SCAFF_FA >$TMP_INPUT_SCAFTIG 2>$TMP_INPUT_SCAFF_I
 #   generate sub-ont-fragments for all gaps .
 ###########################################################
 
-$MINIMAP2  -x ava-ont -t 30 --sam-hit-only \
+$MINIMAP2  -x ava-ont -t $CPU --sam-hit-only \
     $ONT_FA $TMP_INPUT_SCAFTIG 1>$OUT_PREFIX.sub.paf 2>$OUT_PREFIX.minimap2.01.log || exit 1
 
 $BIN_DIR/ONTGapCandidate --ont_reads_a $ONT_FA --contig2ont_paf $OUT_PREFIX.sub.paf \
@@ -73,25 +74,25 @@ done
 ###########################################################
 for ((i=0; i<COV; i++))
 do
-    $MINIMAP2 -t 30 -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$i.fasta 1>$OUT_PREFIX.minimap2.02.log 2>&1 || exit 1
-    $MINIMAP2 -t 30 -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  --split-prefix=rel3_prefix --sam-hit-only \
+    $MINIMAP2 -t $CPU -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$i.fasta 1>$OUT_PREFIX.minimap2.02.log 2>&1 || exit 1
+    $MINIMAP2 -t $CPU -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  --split-prefix=rel3_prefix --sam-hit-only \
         -a $OUT_PREFIX.mmi  $READ12  1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.log || exit 1
     awk -f $BIN_DIR/samSQ_filter.awk < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
     #$BIN_DIR/samSQ_filter < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
 
-    $SAMTOOL view -bo $OUT_PREFIX.bam  $OUT_PREFIX.fiter.sam -@ 30 \
+    $SAMTOOL view -bo $OUT_PREFIX.bam  $OUT_PREFIX.fiter.sam -@ $CPU \
         >$OUT_PREFIX.samtool_01.log 2>&1 || exit 1
 
-    $SAMTOOL sort $OUT_PREFIX.bam -o $OUT_PREFIX.sort.bam -@ 30 \
+    $SAMTOOL sort $OUT_PREFIX.bam -o $OUT_PREFIX.sort.bam -@ $CPU \
         >$OUT_PREFIX.samtool_02.log 2>&1 || exit 1
 
-    $SAMTOOL index $OUT_PREFIX.sort.bam -@ 30 \
+    $SAMTOOL index $OUT_PREFIX.sort.bam -@ $CPU \
         >$OUT_PREFIX.samtool_03.log 2>&1 || exit 1
 
     $JAVA -Xmx$PILON_MEM -jar  $PILON --fix all \
         --genome $OUT_PREFIX.ont.$i.fasta --bam $OUT_PREFIX.sort.bam \
         --output $OUT_PREFIX.ont.$i.pilon --outdir ./ \
-        --diploid  --threads 30 >$OUT_PREFIX.pilon.log 2>$OUT_PREFIX.pilon.err || exit 1
+        --diploid  --threads $CPU >$OUT_PREFIX.pilon.log 2>$OUT_PREFIX.pilon.err || exit 1
 done
 for ((i=0; i<COV; i++))
 do
@@ -104,7 +105,7 @@ done
 ###########################################################
 
 
-$MINIMAP2  -x ava-ont -t 30 $OUT_PREFIX.ont.pilon.fasta $TMP_INPUT_SCAFTIG --sam-hit-only \
+$MINIMAP2  -x ava-ont -t $CPU $OUT_PREFIX.ont.pilon.fasta $TMP_INPUT_SCAFTIG --sam-hit-only \
     1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
 
 $BIN_DIR/ONTGapFiller --ont_reads_a $OUT_PREFIX.ont.pilon.fasta \

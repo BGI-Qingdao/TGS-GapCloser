@@ -19,7 +19,8 @@ ONT_FA="/home/xumengyang/ONT/chr19_eva/Extract_Chr19_rel3.fa"
 
 # prefix of output files.
 OUT_PREFIX="gapfill_test"
-
+# -t for minimap2
+CPU=30
 #######################################
 # basic 3rd part tools settings.
 #######################################
@@ -45,7 +46,7 @@ $BIN_DIR/SplitScaffSeq <$INPUT_SCAFF_FA >$TMP_INPUT_SCAFTIG 2>$TMP_INPUT_SCAFF_I
 ###########################################################
 
 
-$MINIMAP2  -x ava-ont -t 30 $ONT_FA $TMP_INPUT_SCAFTIG --sam-hit-only \
+$MINIMAP2  -x ava-ont -t $CPU $ONT_FA $TMP_INPUT_SCAFTIG --sam-hit-only \
     1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
 
 $BIN_DIR/ONTGapFiller --ont_reads_a $ONT_FA \
