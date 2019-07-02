@@ -1,42 +1,24 @@
 #include "biocommon/fasta/fasta.h"
 #include "appcommon/ScaffInfo.h"
+#include "appcommon/fileName.h"
+#include "common/args/argsparser.h"
+#include "common/files/file_reader.h"
+#include "common/files/file_writer.h"
+#include "common/error/Error.h"
 #include <string>
-
-bool checkArgs( int argc , char **argv )
-{
-    if( argc > 1 )
-    {
-        std::string argv1(argv[1]);
-        if( argv1  == "h" 
-                ||  argv1  == "-h"
-                ||  argv1  == "help"
-                ||  argv1  == "--help" )
-        {
-            std::cerr<<"Usage : \n\t"
-                <<argv[0]
-                <<" <xxx.scaffseq >xxx.scafftig 2>xxx.scaff_infos"
-                <<std::endl;
-            return false ;
-        }
-        else
-        {
-            std::cerr<<"ERROR : argument is not needed !! "<<std::endl;
-            std::cerr<<"Usage : \n\t"
-                <<argv[0]
-                <<" <xxx.scaffseq >xxx.scafftig 2>xxx.scaff_infos"
-                <<std::endl;
-            return false ;
-        }
-    }
-    return true ;
-}
 
 int main(int argc , char **argv)
 {
-    if( !checkArgs( argc , argv ) )
-    {
-        return 0 ;
-    }
+    START_PARSE_ARGS
+    DEFINE_ARG_REQUIRED(std::string , input_scaff , " the input scaffold fasta file");
+    DEFINE_ARG_REQUIRED(std::string , prefix , " the prefix of output files , will output :\n\
+                                prefix.contig\n\
+                                prefix.orignial_scaff_infos\n\
+                                prefix.name_map");
+    END_PARSE_ARGS
+
+    BGIQD::SOAP2::FileNames fNames;
+    fNames.Init(prefix.to_string() );
 
     typedef BGIQD::FASTA::Id_Desc_Head  Header ;
     typedef BGIQD::FASTA::Fasta<Header> Fa;
@@ -46,10 +28,15 @@ int main(int argc , char **argv)
 
     BGIQD::FASTA::FastaReader<Fa> Reader ;
 
-    Reader.LoadAllFasta(std::cin ,AllScaff); 
+    // Load the input scaff 
+    auto in_scaff = BGIQD::FILES::FileReaderFactory::GenerateReaderFromFileName(input_scaff.to_string() );
+    if( in_scaff  == NULL )
+        FATAL(" failed to open input_scaff for read!!!");
+    Reader.LoadAllFasta(*in_scaff ,AllScaff);
+    delete in_scaff ;
 
+    // parse the input scaff 
     BGIQD::stLFR::ScaffInfoHelper helper;
-
     auto get_contig = [](long contig_id 
             , const std::string & seq ) -> Fa
     {
@@ -87,9 +74,11 @@ int main(int argc , char **argv)
 
     long index = 0 ;
     long scaff_id = 0 ;
+    std::map<long , std::string > name_map ;
     for( const auto & a_scaff : AllScaff)
     {
         scaff_id ++ ;
+        name_map[scaff_id] = a_scaff.head.Id;
         const auto &seq = a_scaff.seq.atcgs ;
         std::string a_scaftig_agcts = "";
         bool n_prev = false ;
@@ -169,10 +158,31 @@ int main(int argc , char **argv)
             }
         }
     }
+
+    // print contig
+    auto contig_f= BGIQD::FILES::FileWriterFactory::GenerateWriterFromFileName(fNames.contig());
+    if( contig_f== NULL )
+        FATAL( "failed to open xxx.contig for write !!!");
     for( const  auto & a_scaftig : AllScafftigs )
     {
-        std::cout<<a_scaftig.head.Head()<<'\n';
-        std::cout<<a_scaftig.seq.Seq(100);
+        (*contig_f)<<a_scaftig.head.Head()<<'\n';
+        (*contig_f)<<a_scaftig.seq.Seq(100);
     }
-    helper.PrintAllScaff(std::cerr);
+    delete contig_f;
+    // print orignial_scaff_infos
+    helper.FormatAllIndex();
+    helper.FormatAllStartPos();
+    auto out_scaff_infos = BGIQD::FILES::FileWriterFactory::GenerateWriterFromFileName(fNames.orignial_scaff_infos());
+    if( out_scaff_infos == NULL )
+        FATAL( "failed to open xxx.orignial_scaff_infos for write !!!");
+    helper.PrintAllScaff(*out_scaff_infos);
+    delete out_scaff_infos ;
+
+    // print name_map
+    auto name_map_f = BGIQD::FILES::FileWriterFactory::GenerateWriterFromFileName(fNames.name_map());
+    if(name_map_f == NULL )
+        FATAL( "failed to open xxx.name_map for write !!!");
+    for( const auto & p : name_map )
+        (*name_map_f)<<p.first<<'\t'<<p.second<<'\n';
+    delete name_map_f ;
 }

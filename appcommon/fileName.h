@@ -127,9 +127,14 @@ namespace BGIQD {
 
             DEFINE_SUFFIX(scaff_seqs,".scaff_seqs");
             DEFINE_SUFFIX(scaff_infos,".scaff_infos");
+            DEFINE_SUFFIX(orignial_scaff_infos,".orignial_scaff_infos");
+            DEFINE_SUFFIX(updated_scaff_infos,".updated_scaff_infos");
             DEFINE_SUFFIX(scaff_gap2filler_seqs,".scaff_gap2filler_seqs");
+            DEFINE_SUFFIX(name_map,".name_map");
 
             DEFINE_SUFFIX(trunk_fill,".trunk_fill");
+
+            DEFINE_SUFFIX(gap_fill_detail,".gap_fill_detail");
 
             DEFINE_SUFFIX(seed_extern_fill ,".seed_extern_fill");
 
