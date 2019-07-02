@@ -77,8 +77,8 @@ do
     $MINIMAP2 -t $CPU -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$i.fasta 1>$OUT_PREFIX.minimap2.02.log 2>&1 || exit 1
     $MINIMAP2 -t $CPU -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  --split-prefix=rel3_prefix --sam-hit-only \
         -a $OUT_PREFIX.mmi  $READ12  1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.log || exit 1
-    awk -f $BIN_DIR/samSQ_filter.awk < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
-    #$BIN_DIR/samSQ_filter < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
+
+    awk 'BEGIN{t["none"]=1;}{if( $1 == "@SQ" ){if( $2 in t ){;}else{t[$2]=1;print $0;}}else{print $0;}}' < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
 
     $SAMTOOL view -bo $OUT_PREFIX.bam  $OUT_PREFIX.fiter.sam -@ $CPU \
         >$OUT_PREFIX.samtool_01.log 2>&1 || exit 1

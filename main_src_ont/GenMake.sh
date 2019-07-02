@@ -1,18 +1,12 @@
 #!/bin/bash
 
 scripts="\
-  samSQ_filter.awk
 "
 
 apps="\
- DiffONTPilon\
- ORGC\
- ONTGapCorrecter\
  ONTGapFiller\
- ONTGapDev01\
  ONTGapCandidate\
  SplitScaffSeq\
- SplitScaff2NamedContig\
  ScaffInfo2Seq\
 "
 

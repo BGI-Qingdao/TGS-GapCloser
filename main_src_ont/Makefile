@@ -1,5 +1,4 @@
-.PHONY: all clean bin   samSQ_filter.awk
-
+.PHONY: all clean bin 
 
 CC 		   =	gcc
 CXX 	   =	g++
@@ -42,45 +41,13 @@ source_o		= ${source_cpp:%.cpp=%.o}
 .cpp.o:
 	${CXX} ${DEUBG_CXX} -c $< -o $@
 
-jobs = DiffONTPilon ORGC ONTGapCorrecter ONTGapFiller ONTGapDev01 ONTGapCandidate SplitScaffSeq SplitScaff2NamedContig ScaffInfo2Seq
+jobs = ONTGapFiller ONTGapCandidate SplitScaffSeq ScaffInfo2Seq
 
-scripts=  samSQ_filter.awk
-
+scripts=
 
 all :  ${jobs} ${scripts}
 
 
-
-
-
-samSQ_filter.awk:
-	cp samSQ_filter.awk ../bin/
-
-
-
-DiffONTPilon_cpp = DiffONTPilon.cpp
-DiffONTPilon_o = DiffONTPilon.o
-DiffONTPilon : clean ${DiffONTPilon_o} ${source_o} ../bin
-	${CXX} ${DiffONTPilon_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o DiffONTPilon
-	mv $@ ../bin/
-
-
-
-
-ORGC_cpp = ORGC.cpp
-ORGC_o = ORGC.o
-ORGC : clean ${ORGC_o} ${source_o} ../bin
-	${CXX} ${ORGC_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o ORGC
-	mv $@ ../bin/
-
-
-
-
-ONTGapCorrecter_cpp = ONTGapCorrecter.cpp
-ONTGapCorrecter_o = ONTGapCorrecter.o
-ONTGapCorrecter : clean ${ONTGapCorrecter_o} ${source_o} ../bin
-	${CXX} ${ONTGapCorrecter_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o ONTGapCorrecter
-	mv $@ ../bin/
 
 
 
@@ -89,15 +56,6 @@ ONTGapFiller_cpp = ONTGapFiller.cpp
 ONTGapFiller_o = ONTGapFiller.o
 ONTGapFiller : clean ${ONTGapFiller_o} ${source_o} ../bin
 	${CXX} ${ONTGapFiller_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o ONTGapFiller
-	mv $@ ../bin/
-
-
-
-
-ONTGapDev01_cpp = ONTGapDev01.cpp
-ONTGapDev01_o = ONTGapDev01.o
-ONTGapDev01 : clean ${ONTGapDev01_o} ${source_o} ../bin
-	${CXX} ${ONTGapDev01_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o ONTGapDev01
 	mv $@ ../bin/
 
 
@@ -121,15 +79,6 @@ SplitScaffSeq : clean ${SplitScaffSeq_o} ${source_o} ../bin
 
 
 
-SplitScaff2NamedContig_cpp = SplitScaff2NamedContig.cpp
-SplitScaff2NamedContig_o = SplitScaff2NamedContig.o
-SplitScaff2NamedContig : clean ${SplitScaff2NamedContig_o} ${source_o} ../bin
-	${CXX} ${SplitScaff2NamedContig_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o SplitScaff2NamedContig
-	mv $@ ../bin/
-
-
-
-
 ScaffInfo2Seq_cpp = ScaffInfo2Seq.cpp
 ScaffInfo2Seq_o = ScaffInfo2Seq.o
 ScaffInfo2Seq : clean ${ScaffInfo2Seq_o} ${source_o} ../bin
@@ -137,7 +86,7 @@ ScaffInfo2Seq : clean ${ScaffInfo2Seq_o} ${source_o} ../bin
 	mv $@ ../bin/
 
 
-jobs_o=  ${DiffONTPilon_o} ${ORGC_o} ${ONTGapCorrecter_o} ${ONTGapFiller_o} ${ONTGapDev01_o} ${ONTGapCandidate_o} ${SplitScaffSeq_o} ${SplitScaff2NamedContig_o} ${ScaffInfo2Seq_o}
+jobs_o=  ${ONTGapFiller_o} ${ONTGapCandidate_o} ${SplitScaffSeq_o} ${ScaffInfo2Seq_o}
 
 dirty	   =${jobs_o} ${jobs} ${source_o}
 
