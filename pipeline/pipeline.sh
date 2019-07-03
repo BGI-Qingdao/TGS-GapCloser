@@ -22,7 +22,7 @@ OUT_PREFIX="gapfill_test"
 # -t for minimap2
 CPU=30
 #######################################
-# basic 3rd part tools settings.
+# basic tools settings.
 #######################################
 
 # this is a directory
@@ -35,23 +35,27 @@ MINIMAP2="/home/softwares/minimap2-master/minimap2"
 #   preprocess input file
 ###########################################################
 
-TMP_INPUT_SCAFTIG=$OUT_PREFIX".contig"
-TMP_INPUT_SCAFF_INFO=$OUT_PREFIX".input.scaff_infos"
-
-$BIN_DIR/SplitScaffSeq <$INPUT_SCAFF_FA >$TMP_INPUT_SCAFTIG 2>$TMP_INPUT_SCAFF_INFO
+$BIN_DIR/TGSSeqSplit --input_scaff $INPUT_SCAFF_FA --prefix $OUT_PREFIX
 
 ###########################################################
 # Step 2 :
-#   use ont-sub-fragments to fill gaps
+#   map contig into ONT reads
 ###########################################################
 
+TMP_INPUT_SCAFTIG=$OUT_PREFIX".contig"
 
 $MINIMAP2  -x ava-ont -t $CPU $ONT_FA $TMP_INPUT_SCAFTIG --sam-hit-only \
     1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
 
-$BIN_DIR/ONTGapFiller --ont_reads_a $ONT_FA \
-    --contig2ont_paf $OUT_PREFIX.fill.paf --contig $TMP_INPUT_SCAFTIG <$TMP_INPUT_SCAFF_INFO\
-    >$OUT_PREFIX.scaff_infos 2>$OUT_PREFIX.fill.log || exit 1
+###########################################################
+# Step 3 :
+#   process gap filling .
+###########################################################
+$BIN_DIR/TGSGapFiller --ont_reads_a $ONT_FA  --contig2ont_paf $OUT_PREFIX.fill.paf \
+    --prefix $OUT_PREFIX 1>$OUT_PREFIX.fill.log 2>&1 || exit 1
 
-$BIN_DIR/ScaffInfo2Seq --prefix  $OUT_PREFIX --min_n 1 --min_c 0 \
-    >$OUT_PREFIX.i2s.log 2>&1  || exit 1
+###########################################################
+# Step 4 :
+#   generate final sequences and changing details .
+###########################################################
+$BIN_DIR/TGSSeqGen --prefix $OUT_PREFIX 1>$OUT_PREFIX.i2s.log 2>&1  || exit 1

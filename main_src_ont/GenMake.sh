@@ -4,10 +4,10 @@ scripts="\
 "
 
 apps="\
- ONTGapFiller\
- ONTGapCandidate\
- SplitScaffSeq\
- ScaffInfo2Seq\
+ TGSGapFiller\
+ TGSGapCandidate\
+ TGSSeqSplit\
+ TGSSeqGen\
 "
 
 jobs_o=" "

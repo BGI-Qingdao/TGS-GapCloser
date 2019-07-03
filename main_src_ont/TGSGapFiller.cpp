@@ -17,7 +17,7 @@
 #include "appcommon/ScaffInfo.h"
 #include "appcommon/ONT2Gap.h"
 #include "appcommon/AlignMinimap2.h"
-
+#include "appcommon/fileName.h"
 
 #include <map>
 #include <vector>
@@ -64,10 +64,12 @@ struct AppConfig
 
     BGIQD::LOG::logger loger;
 
-    void Init()
+    BGIQD::SOAP2::FileNames fNames;
+    void Init( const std::string & prefix )
     {
+        fNames.Init(prefix);
         BGIQD::LOG::logfilter::singleton().
-            get("ONTGapFiller",BGIQD::LOG::loglevel::INFO, loger);
+            get("TGSGapFiller",BGIQD::LOG::loglevel::INFO, loger);
     }
 
 
@@ -106,11 +108,10 @@ struct AppConfig
             delete in ;
         }
     }
-    std::string contig_file;
     void LoadContig()
     {
         auto in = BGIQD::FILES::FileReaderFactory
-            ::GenerateReaderFromFileName(contig_file);
+            ::GenerateReaderFromFileName(fNames.contig());
         if ( in == NULL )
             FATAL(" failed to open the contig file to read ");
         ContigReader reader ;
@@ -173,7 +174,13 @@ struct AppConfig
     void LoadScaffInfo()
     {
         BGIQD::LOG::timer t(loger,"LoadScaffInfo");
-        scaff_info_helper.LoadAllScaff(std::cin) ;
+        auto in = BGIQD::FILES::FileReaderFactory
+            ::GenerateReaderFromFileName( fNames.orignial_scaff_infos() );
+        if ( in == NULL )
+            FATAL(" failed to open the xxx.orignal_scaff_infos to read ");
+
+        scaff_info_helper.LoadAllScaff(*in) ;
+        delete in;
     }
 
     float min_idy_oc;
@@ -220,7 +227,6 @@ struct AppConfig
             return left_len - ret ;
     }
 
-    static int myrandom (int i) { return std::rand()%i;}
     int max_ignored_overlap ;
     void ParseAllGap()
     {
@@ -308,28 +314,7 @@ struct AppConfig
                         used_read ++ ;
                     a_read_oo_choose_freq.Touch(used_pair);
                 }
-                if( work_mode == 1 )
-                {
-                    BGIQD::ONT::SortModifyLess(chooses);
-                    //BGIQD::ONT::SortLess(chooses);
-                }
-                else if ( work_mode == 3 )
-                {
-                    BGIQD::ONT::SortMedian(chooses);
-                }
-                else if ( work_mode == 2 )
-                {
-                    std::random_shuffle(chooses.begin() , chooses.end(),myrandom);
-                    std::random_shuffle(chooses.begin() , chooses.end(),myrandom);
-                }
-                else if ( work_mode == 4 )
-                {
-                    BGIQD::ONT::SortMatchScoreMore(chooses,max_hang,fa,fb);
-                }
-                else
-                {
-                    assert(0);
-                }
+                BGIQD::ONT::SortMatchScoreMore(chooses,max_hang,fa,fb);
 
                 gap_oo_read_freq.Touch(used_read);
                 filler_choose_freq.Touch(chooses.size());
@@ -483,12 +468,17 @@ struct AppConfig
     void PrintScaffInfo()
     {
         BGIQD::LOG::timer t(loger,"PrintScaffInfo");
-        scaff_info_helper.PrintAllScaff(std::cout);
+        auto out = BGIQD::FILES::FileWriterFactory
+            ::GenerateWriterFromFileName( fNames.updated_scaff_infos() );
+        if ( out == NULL )
+            FATAL(" failed to open the xxx.orignal_scaff_infos to read ");
+
+        scaff_info_helper.PrintAllScaff(*out);
+        delete out ;
     }
 
     std::string ont_read_a  ;
     std::string ont_read_q  ;
-    int work_mode ;
     int max_hang ;
     int min_match ;
     float min_idy ;
@@ -500,11 +490,17 @@ struct AppConfig
 int main(int argc , char ** argv)
 {
     START_PARSE_ARGS
+        DEFINE_ARG_REQUIRED(std::string, prefix,"the file prefix \n\
+                                                Input\n\
+                                                    xxx.contig\n\
+                                                    xxx.orignal_scaff_infos\n\
+                                                Output\n\
+                                                    xxx.updated_scaff_infos");
+
         DEFINE_ARG_REQUIRED(std::string, contig2ont_paf ,"the paf file that map contig into ont reads.");
-        DEFINE_ARG_REQUIRED(std::string, contig,"contig file.");
         DEFINE_ARG_OPTIONAL(std::string, ont_reads_q,"the ont reads in fastq format.","");
         DEFINE_ARG_OPTIONAL(std::string, ont_reads_a,"the ont reads in fasta format.","");
-        DEFINE_ARG_OPTIONAL(int, work_mode,"1, shortest ; 2, random ; 3, median ;4 max_match_sore","4");
+
         DEFINE_ARG_OPTIONAL(int, max_hang,"max hang for ont","2000");
         DEFINE_ARG_OPTIONAL(int, min_match,"min match for ont","300");
         DEFINE_ARG_OPTIONAL(float, min_idy,"min idy for ont","0.4");
@@ -516,7 +512,6 @@ int main(int argc , char ** argv)
         DEFINE_ARG_OPTIONAL(float ,min_af_oc , "min aligned factor for overlap check","0.2");
     END_PARSE_ARGS;
 
-    config.contig_file = contig.to_string();
     config.min_idy_oc = min_idy_oc.to_float();
     config.min_af_oc = min_af_oc.to_float();
     config.max_ignored_overlap = max_ignored_overlap.to_int();
@@ -524,7 +519,6 @@ int main(int argc , char ** argv)
     if( ! ont_reads_q.setted && ! ont_reads_a.setted )
         FATAL("please give the ont reads !!!");
     config.max_hang = max_hang.to_int();
-    config.work_mode = work_mode.to_int();
     config.min_match = min_match.to_int();
     config.min_idy = min_idy.to_float() ;
     config.fa = factor_a.to_float();
@@ -543,8 +537,8 @@ int main(int argc , char ** argv)
     config.contig_2_ont_paf_file = contig2ont_paf.to_string() ;
 
     srand (time(NULL));
-    config.Init();
-    BGIQD::LOG::timer t(config.loger,"ONTGapFiller");
+    config.Init(prefix.to_string());
+    BGIQD::LOG::timer t(config.loger,"TGSGapFiller");
 
     config.LoadContig();
 

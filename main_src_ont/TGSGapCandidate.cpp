@@ -57,7 +57,7 @@ struct AppConfig
     void Init()
     {
         BGIQD::LOG::logfilter::singleton().
-            get("ONTGapFiller",BGIQD::LOG::loglevel::INFO, loger);
+            get("TGSGapCandidate",BGIQD::LOG::loglevel::INFO, loger);
     }
 
 
@@ -160,12 +160,6 @@ struct AppConfig
         int no_common = 0 ;
         int no_choose = 0 ;
         int no_match = 0 ;
-        int cut_err = 0 ;
-        int scaff_negotive_gap_size = 0 ;
-        int scaff_negotive_gap_size_no_choose = 0 ;
-        int ont_negotive_gap_size = 0 ;
-        int ont_negotive_gap_size_no_choose = 0 ;
-        int force_fill_succ = 0 ;
 
         BGIQD::FREQ::Freq<int> gap_both_read_freq ;
         BGIQD::FREQ::Freq<int> gap_oo_read_freq ;
@@ -210,8 +204,6 @@ struct AppConfig
                 int used_read = 0 ;
                 BGIQD::ONT::ONT2GapInfos chooses ;
                 BGIQD::ONT::ONT2GapInfos others;
-                //std::vector< std::pair< BGIQD::PAF::PAF_Item , BGIQD::PAF::PAF_Item> > chooses;
-                //std::vector< std::pair< BGIQD::PAF::PAF_Item , BGIQD::PAF::PAF_Item> > others;
                 for( const auto & read_name : commons )
                 {
                     auto & prev_matched_infos = map_info1.at(read_name) ;
@@ -238,25 +230,6 @@ struct AppConfig
                         used_read ++ ;
                     a_read_oo_choose_freq.Touch(used_pair);
                 }
-                if( work_mode == 1 )
-                {
-                    BGIQD::ONT::SortModifyLess(chooses);
-                    //BGIQD::ONT::SortLess(chooses);
-                }
-                else if ( work_mode == 3 )
-                {
-                    BGIQD::ONT::SortMedian(chooses);
-                }
-                else if ( work_mode == 2 )
-                {
-                    std::random_shuffle(chooses.begin() , chooses.end(),myrandom);
-                    std::random_shuffle(chooses.begin() , chooses.end(),myrandom);
-                }
-                else
-                {
-                    assert(0);
-                }
-
                 gap_oo_read_freq.Touch(used_read);
                 filler_choose_freq.Touch(chooses.size());
                 if( chooses.empty() )
@@ -390,13 +363,6 @@ struct AppConfig
         loger<<BGIQD::LOG::lstart()<<">the no common is "
             <<no_common<<BGIQD::LOG::lend();
 
-        loger<<BGIQD::LOG::lstart()<<">the scaff_negotive_gap_size is "
-            <<scaff_negotive_gap_size<<BGIQD::LOG::lend();
-
-        loger<<BGIQD::LOG::lstart()<<">the ont_negotive_gap_size is "
-            <<ont_negotive_gap_size<<BGIQD::LOG::lend();
-
-
         loger<<BGIQD::LOG::lstart()<<">the common reads count freq for a gap \n"
             <<gap_both_read_freq.ToString()<<BGIQD::LOG::lend();
 
@@ -409,19 +375,10 @@ struct AppConfig
         loger<<BGIQD::LOG::lstart()<<">the one read provide filler choose count freq for a gap \n"
             <<a_read_oo_choose_freq.ToString()<<BGIQD::LOG::lend();
 
-        loger<<BGIQD::LOG::lstart()<<">the cut error is "
-            <<cut_err<<BGIQD::LOG::lend();
-    }
-
-    void PrintScaffInfo()
-    {
-        BGIQD::LOG::timer t(loger,"PrintScaffInfo");
-        scaff_info_helper.PrintAllScaff(std::cout);
     }
 
     std::string ont_read_a  ;
     std::string ont_read_q  ;
-    int work_mode ;
 } config ;
 
 int main(int argc , char ** argv)
@@ -430,12 +387,10 @@ int main(int argc , char ** argv)
         DEFINE_ARG_REQUIRED(std::string, contig2ont_paf ,"the paf file that map contig into ont reads.");
         DEFINE_ARG_OPTIONAL(std::string, ont_reads_q,"the ont reads in fastq format.","");
         DEFINE_ARG_OPTIONAL(std::string, ont_reads_a,"the ont reads in fasta format.","");
-        DEFINE_ARG_OPTIONAL(int, work_mode,"1, shortest ; 2, random ; 3, median","1");
     END_PARSE_ARGS;
 
     if( ! ont_reads_q.setted && ! ont_reads_a.setted )
         FATAL("please give the ont reads !!!");
-    config.work_mode = work_mode.to_int();
     if( ont_reads_a.setted )
     {
         config.ont_read_a  = ont_reads_a.to_string();
@@ -450,8 +405,7 @@ int main(int argc , char ** argv)
     config.contig_2_ont_paf_file = contig2ont_paf.to_string() ;
 
     config.Init();
-    srand (time(NULL));
-    BGIQD::LOG::timer t(config.loger,"ONTGapFiller");
+    BGIQD::LOG::timer t(config.loger,"TGSGapCandidata");
 
     config.LoadONTReads() ;
 

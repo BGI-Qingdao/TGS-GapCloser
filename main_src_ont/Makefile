@@ -41,7 +41,7 @@ source_o		= ${source_cpp:%.cpp=%.o}
 .cpp.o:
 	${CXX} ${DEUBG_CXX} -c $< -o $@
 
-jobs = ONTGapFiller ONTGapCandidate SplitScaffSeq ScaffInfo2Seq
+jobs = TGSGapFiller TGSGapCandidate TGSSeqSplit TGSSeqGen
 
 scripts=
 
@@ -52,41 +52,41 @@ all :  ${jobs} ${scripts}
 
 
 
-ONTGapFiller_cpp = ONTGapFiller.cpp
-ONTGapFiller_o = ONTGapFiller.o
-ONTGapFiller : clean ${ONTGapFiller_o} ${source_o} ../bin
-	${CXX} ${ONTGapFiller_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o ONTGapFiller
+TGSGapFiller_cpp = TGSGapFiller.cpp
+TGSGapFiller_o = TGSGapFiller.o
+TGSGapFiller : clean ${TGSGapFiller_o} ${source_o} ../bin
+	${CXX} ${TGSGapFiller_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o TGSGapFiller
 	mv $@ ../bin/
 
 
 
 
-ONTGapCandidate_cpp = ONTGapCandidate.cpp
-ONTGapCandidate_o = ONTGapCandidate.o
-ONTGapCandidate : clean ${ONTGapCandidate_o} ${source_o} ../bin
-	${CXX} ${ONTGapCandidate_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o ONTGapCandidate
+TGSGapCandidate_cpp = TGSGapCandidate.cpp
+TGSGapCandidate_o = TGSGapCandidate.o
+TGSGapCandidate : clean ${TGSGapCandidate_o} ${source_o} ../bin
+	${CXX} ${TGSGapCandidate_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o TGSGapCandidate
 	mv $@ ../bin/
 
 
 
 
-SplitScaffSeq_cpp = SplitScaffSeq.cpp
-SplitScaffSeq_o = SplitScaffSeq.o
-SplitScaffSeq : clean ${SplitScaffSeq_o} ${source_o} ../bin
-	${CXX} ${SplitScaffSeq_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o SplitScaffSeq
+TGSSeqSplit_cpp = TGSSeqSplit.cpp
+TGSSeqSplit_o = TGSSeqSplit.o
+TGSSeqSplit : clean ${TGSSeqSplit_o} ${source_o} ../bin
+	${CXX} ${TGSSeqSplit_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o TGSSeqSplit
 	mv $@ ../bin/
 
 
 
 
-ScaffInfo2Seq_cpp = ScaffInfo2Seq.cpp
-ScaffInfo2Seq_o = ScaffInfo2Seq.o
-ScaffInfo2Seq : clean ${ScaffInfo2Seq_o} ${source_o} ../bin
-	${CXX} ${ScaffInfo2Seq_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o ScaffInfo2Seq
+TGSSeqGen_cpp = TGSSeqGen.cpp
+TGSSeqGen_o = TGSSeqGen.o
+TGSSeqGen : clean ${TGSSeqGen_o} ${source_o} ../bin
+	${CXX} ${TGSSeqGen_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o TGSSeqGen
 	mv $@ ../bin/
 
 
-jobs_o=  ${ONTGapFiller_o} ${ONTGapCandidate_o} ${SplitScaffSeq_o} ${ScaffInfo2Seq_o}
+jobs_o=  ${TGSGapFiller_o} ${TGSGapCandidate_o} ${TGSSeqSplit_o} ${TGSSeqGen_o}
 
 dirty	   =${jobs_o} ${jobs} ${source_o}
 

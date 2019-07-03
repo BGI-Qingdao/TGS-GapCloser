@@ -36,7 +36,7 @@ struct AppConfig
     void Init( const std::string & prefix )
     {
         fNames.Init(prefix);
-        BGIQD::LOG::logfilter::singleton().get("ScaffInfo2Seqs",BGIQD::LOG::loglevel::INFO, loger);
+        BGIQD::LOG::logfilter::singleton().get("TGSSeqGen",BGIQD::LOG::loglevel::INFO, loger);
     }
 
     void LoadScaffInfos()
@@ -276,7 +276,7 @@ int main(int argc , char ** argv)
                                                     xxx.fill_detail");
     END_PARSE_ARGS;
     config.Init( prefix.to_string() );
-    BGIQD::LOG::timer t(config.loger,"ScaffInfo2Seqs");
+    BGIQD::LOG::timer t(config.loger,"TGSSeqGen");
 
     config.LoadScaffInfos();
     config.LoadContigs();

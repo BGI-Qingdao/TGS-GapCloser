@@ -28,7 +28,7 @@ CHUNK_NUM=1
 # cpu for minimap2 & samtools & pilon
 CPU=30
 #######################################
-# basic 3rd part tools settings.
+# basic tools settings.
 #######################################
 
 # this is a directory
@@ -48,19 +48,22 @@ PILON="/dellfsqd1/ST_OCEAN/ST_OCEAN/USRS/xumengyang/software/pilon-1.23.jar"
 ###########################################################
 
 TMP_INPUT_SCAFTIG=$OUT_PREFIX".contig"
-TMP_INPUT_SCAFF_INFO=$OUT_PREFIX".input.scaff_infos"
+TMP_INPUT_SCAFF_INFO=$OUT_PREFIX".orignial_scaff_infos"
 
-$BIN_DIR/SplitScaffSeq <$INPUT_SCAFF_FA >$TMP_INPUT_SCAFTIG 2>$TMP_INPUT_SCAFF_INFO
+$BIN_DIR/TGSSeqSplit --input_scaff $INPUT_SCAFF_FA --prefix $OUT_PREFIX
 ###########################################################
 # Step 2 :
 #   generate sub-ont-fragments for all gaps .
 ###########################################################
 
 $MINIMAP2  -x ava-ont -t $CPU --sam-hit-only \
-    $ONT_FA $TMP_INPUT_SCAFTIG 1>$OUT_PREFIX.sub.paf 2>$OUT_PREFIX.minimap2.01.log || exit 1
+    $ONT_FA $TMP_INPUT_SCAFTIG \
+    1>$OUT_PREFIX.sub.paf 2>$OUT_PREFIX.minimap2.01.log || exit 1
 
-$BIN_DIR/ONTGapCandidate --ont_reads_a $ONT_FA --contig2ont_paf $OUT_PREFIX.sub.paf \
-    <$TMP_INPUT_SCAFF_INFO >$OUT_PREFIX.gap_info_seqs 2>$OUT_PREFIX.cand.log || exit 1
+$BIN_DIR/ONTGapCandidate --ont_reads_a $ONT_FA \
+    --contig2ont_paf $OUT_PREFIX.sub.paf \
+    <$TMP_INPUT_SCAFF_INFO >$OUT_PREFIX.gap_info_seqs \
+    2>$OUT_PREFIX.cand.log || exit 1
 
 for ((i=0; i<CHUNK_NUM; i++))
 do
@@ -74,11 +77,15 @@ done
 ###########################################################
 for ((i=0; i<CHUNK_NUM; i++))
 do
-    $MINIMAP2 -t $CPU -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$i.fasta 1>$OUT_PREFIX.minimap2.02.log 2>&1 || exit 1
-    $MINIMAP2 -t $CPU -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  --split-prefix=rel3_prefix --sam-hit-only \
-        -a $OUT_PREFIX.mmi  $READ12  1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.log || exit 1
+    $MINIMAP2 -t $CPU -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$i.fasta \
+        1>$OUT_PREFIX.minimap2.02.log 2>&1 || exit 1
+    $MINIMAP2 -t $CPU -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  \
+        --split-prefix=rel3_prefix --sam-hit-only \
+        -a $OUT_PREFIX.mmi  $READ12  \
+        1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.log || exit 1
 
-    awk 'BEGIN{t["none"]=1;}{if( $1 == "@SQ" ){if( $2 in t ){;}else{t[$2]=1;print $0;}}else{print $0;}}' < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
+     awk 'BEGIN{t["none"]=1;}{if( $1 == "@SQ" ){if( $2 in t ){;}else{t[$2]=1;print $0;}}else{print $0;}}'\
+         < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
 
     $SAMTOOL view -bo $OUT_PREFIX.bam  $OUT_PREFIX.fiter.sam -@ $CPU \
         >$OUT_PREFIX.samtool_01.log 2>&1 || exit 1
@@ -105,12 +112,12 @@ done
 ###########################################################
 
 
-$MINIMAP2  -x ava-ont -t $CPU $OUT_PREFIX.ont.pilon.fasta $TMP_INPUT_SCAFTIG --sam-hit-only \
+$MINIMAP2  -x ava-ont -t $CPU --sam-hit-only \
+    $OUT_PREFIX.ont.pilon.fasta $TMP_INPUT_SCAFTIG  \
     1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
 
-$BIN_DIR/ONTGapFiller --ont_reads_a $OUT_PREFIX.ont.pilon.fasta \
-    --contig2ont_paf $OUT_PREFIX.fill.paf --contig $TMP_INPUT_SCAFTIG <$TMP_INPUT_SCAFF_INFO\
-    >$OUT_PREFIX.scaff_infos 2>$OUT_PREFIX.fill.log || exit 1
+$BIN_DIR/TGSGapFiller --ont_reads_a $OUT_PREFIX.ont.pilon.fasta \
+    --contig2ont_paf $OUT_PREFIX.fill.paf \
+    --prefix $OUT_PREFIX 1>$OUT_PREFIX.fill.log  2>&1|| exit 1
 
-$BIN_DIR/ScaffInfo2Seq --prefix  $OUT_PREFIX --min_n 1 --min_c 0 \
-    >$OUT_PREFIX.i2s.log 2>&1  || exit 1
+$BIN_DIR/TGSSeqGen --prefix  $OUT_PREFIX 1>$OUT_PREFIX.i2s.log 2>&1  || exit 1
