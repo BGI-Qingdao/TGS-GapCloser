@@ -60,7 +60,7 @@ $MINIMAP2  -x ava-ont -t $CPU --sam-hit-only \
     $ONT_FA $TMP_INPUT_SCAFTIG \
     1>$OUT_PREFIX.sub.paf 2>$OUT_PREFIX.minimap2.01.log || exit 1
 
-$BIN_DIR/ONTGapCandidate --ont_reads_a $ONT_FA \
+$BIN_DIR/TGSGapCandidate --ont_reads_a $ONT_FA \
     --contig2ont_paf $OUT_PREFIX.sub.paf \
     <$TMP_INPUT_SCAFF_INFO >$OUT_PREFIX.gap_info_seqs \
     2>$OUT_PREFIX.cand.log || exit 1
