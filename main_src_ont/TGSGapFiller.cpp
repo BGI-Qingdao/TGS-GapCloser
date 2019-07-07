@@ -372,7 +372,7 @@ struct AppConfig
                         else if ( tmp.gap_size >= -max_ignored_overlap )
                         {
                             ont_negotive_gap_size ++ ;
-                            prev.gap_size = - true_overlap ;
+                            prev.gap_size = tmp.gap_size ;
                             checked = true ;
                             break;
                         }
