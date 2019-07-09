@@ -93,6 +93,8 @@ struct AppConfig
             {
                 reads[tmp.head.Id] = tmp.seq ;
             }
+	    loger<<BGIQD::LOG::lstart()<<">total load ONT reads : \n"
+		    <<reads.size()<<BGIQD::LOG::lend();
             delete in ;
         }
     }

@@ -178,44 +178,93 @@ namespace BGIQD {
                     fa.Reset();
                 }
 
-                static bool LoadNextFasta(std::istream & ist , Fasta & fa)
-                {
-                    std::string line ;
-                    fa.Reset();
-                    while( ! std::getline(ist,line).eof() )
-                    {
-                        if( IsHead(line) )
-                        {
-                            fa.AddHead(line);
-                            break ;
-                        }
-                    }
-                    if( ist.eof() || ! fa.Is_Set_head() )
-                        return false ;
+		static bool LoadNextFasta(std::istream & ist , Fasta & fa)
+		{
+			static std::string pre_line("") ;
+			fa.Reset();
+			if(pre_line != "")
+			{
+				if( IsHead(pre_line) )
+				{
+					fa.AddHead(pre_line);
+				}
+				pre_line = "";
+			}
+			std::string line ;
+			if( ! fa.Is_Set_head() )
+			{
+				while( ! std::getline(ist,line).eof() )
+				{
+					if( IsHead(line) )
+					{
+						fa.AddHead(line);
+						break ;
+					}
+				}
+			}
+			if( ist.eof() || ! fa.Is_Set_head() )
+				return false ;
 
-                    while( ! std::getline(ist,line).eof() )
-                    {
-                        if( IsHead(line) )
-                        {
-                            break ;
-                        }
-                        else
-                        {
-                            fa.AddSeq(line);
-                        }
-                    }
-                    // Put the head line back into istream
-                    if ( ! ist.eof() )
-                    {
-                        ist.rdbuf()->sputbackc('\n');
-                        for( auto  i = line.rbegin() ; i!= line.rend() ; i++ )
-                        {
-                            ist.rdbuf()->sputbackc(*i);
-                        }
-                    }
+			while( ! std::getline(ist,line).eof() )
+			{
+				if( IsHead(line) )
+				{
+					break ;
+				}
+				else
+				{
+					fa.AddSeq(line);
+				}
+			}
+			if ( ! ist.eof()  && fa.Is_Setted() )
+			{
+				pre_line = line ;
+			}
 
-                    return  fa.Is_Setted();
-                }
+			return  fa.Is_Setted();
+		}
+
+
+
+
+                //static bool LoadNextFasta(std::istream & ist , Fasta & fa)
+                //{
+                //    std::string line ;
+                //    fa.Reset();
+                //    while( ! std::getline(ist,line).eof() )
+                //    {
+                //        if( IsHead(line) )
+                //        {
+                //            fa.AddHead(line);
+                //            break ;
+                //        }
+                //    }
+                //    if( ist.eof() || ! fa.Is_Set_head() )
+                //        return false ;
+
+                //    while( ! std::getline(ist,line).eof() )
+                //    {
+                //        if( IsHead(line) )
+                //        {
+                //            break ;
+                //        }
+                //        else
+                //        {
+                //            fa.AddSeq(line);
+                //        }
+                //    }
+                //    // Put the head line back into istream
+                //    if ( ! ist.eof() )
+                //    {
+                //        ist.rdbuf()->sputbackc('\n');
+                //        for( auto  i = line.rbegin() ; i!= line.rend() ; i++ )
+                //        {
+                //            ist.rdbuf()->sputbackc(*i);
+                //        }
+                //    }
+
+                //    return  fa.Is_Setted();
+                //}
             };
     }
 }
