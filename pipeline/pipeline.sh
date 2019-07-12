@@ -2,7 +2,7 @@
 
 ###########################################################
 # Step 0 :
-#   edit configuration .
+#   edit configuration . please double check every detail.
 ###########################################################
 
 #######################################
@@ -26,14 +26,25 @@ CPU=30
 #######################################
 
 # this is a directory
-BIN_DIR="/dellfsqd1/ST_OCEAN/ST_OCEAN/USRS/guolidong/software/source_dir/TGSGapFiller/bin"
-# this is a executive file 
-MINIMAP2="/home/softwares/minimap2-master/minimap2"
+TGSGapFiller_DIR="/dellfsqd1/ST_OCEAN/ST_OCEAN/USRS/guolidong/software/TGSGapFiller"
 
+###########################################################
+# Step 0.5 :
+#   sanity check . normally do not modify any code below.
+###########################################################
+## check subdir here. below
+BIN_DIR=$TGSGapFiller_DIR"/bin"
+MINIMAP2=$TGSGapFiller_DIR"/minimap2/minimap2"
+
+if [[ ! -d $BIN_DIR || ! -e $MINIMAP2 ]] ; then 
+    echo "ERROR :$BIN_DIR is not exist or $MINIMAP2 is not executable !!! exit ..."
+    exit 1;
+fi
 ###########################################################
 # Step 1 :
 #   preprocess input file
 ###########################################################
+
 
 $BIN_DIR/TGSSeqSplit --input_scaff $INPUT_SCAFF_FA --prefix $OUT_PREFIX
 
