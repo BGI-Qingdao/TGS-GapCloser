@@ -20,7 +20,8 @@ git clone  https://github.com/BGI-Qingdao/TGSGapFiller.git YOUR-INSTALL-DIR
 - If you already have a minimap2 installed, you can link it here
 
 ```
-ln -s MINIMAP2-PATH YOUR-INSTALL-DIR/minimap2
+rm -rf YOUR-INSTALL-DIR/minimap2
+ln -s MINIMAP2-PATH YOUR-INSTALL-DIR/
 ```
 - Otherwise you need to download it by :
 
