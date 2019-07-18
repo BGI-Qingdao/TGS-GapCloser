@@ -11,7 +11,7 @@
 # the input scaffold sequence file
 INPUT_SCAFF_FA="xxx"
 # the Third generation long reads ( raw data here )
-ONT_FA="/home/xumengyang/ONT/chr19_eva/Extract_Chr19_rel3.fa"
+TGS_FA="/home/xumengyang/ONT/chr19_eva/Extract_Chr19_rel3.fa"
 # NGS reads to polish above long reads. please concatenate read1 and read2 into 1 file. 
 READ12="/home/guolidong/chr19/chr19_reads12.clean.fastq"
 
@@ -27,6 +27,8 @@ PILON_MEM="300G"
 CHUNK_NUM=1
 # cpu for minimap2 & samtools & pilon
 CPU=30
+#minimp2 parameters
+MINIMAP2_PARAM=" -x ava-ont "
 #######################################
 # basic tools settings.
 #######################################
@@ -81,11 +83,11 @@ $BIN_DIR/TGSSeqSplit --input_scaff $INPUT_SCAFF_FA --prefix $OUT_PREFIX || exit 
 #   generate sub-ont-fragments for all gaps .
 ###########################################################
 
-$MINIMAP2  -x ava-ont -t $CPU --sam-hit-only \
-    $ONT_FA $TMP_INPUT_SCAFTIG \
+$MINIMAP2  $MINIMAP2_PARAM  -t $CPU  \
+    $TGS_FA $TMP_INPUT_SCAFTIG \
     1>$OUT_PREFIX.sub.paf 2>$OUT_PREFIX.minimap2.01.log || exit 1
 
-$BIN_DIR/TGSGapCandidate --ont_reads_a $ONT_FA \
+$BIN_DIR/TGSGapCandidate --ont_reads_a $TGS_FA \
     --contig2ont_paf $OUT_PREFIX.sub.paf \
     <$TMP_INPUT_SCAFF_INFO >$OUT_PREFIX.gap_info_seqs \
     2>$OUT_PREFIX.cand.log || exit 1
@@ -105,7 +107,7 @@ do
     $MINIMAP2 -t $CPU -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$i.fasta \
         1>$OUT_PREFIX.minimap2.02.log 2>&1 || exit 1
     $MINIMAP2 -t $CPU -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  \
-        --split-prefix=rel3_prefix --sam-hit-only \
+        --split-prefix=rel3_prefix \
         -a $OUT_PREFIX.mmi  $READ12  \
         1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.log || exit 1
 
@@ -137,7 +139,7 @@ done
 ###########################################################
 
 
-$MINIMAP2  -x ava-ont -t $CPU --sam-hit-only \
+$MINIMAP2  $MINIMAP2_PARAM  -t $CPU  \
     $OUT_PREFIX.ont.pilon.fasta $TMP_INPUT_SCAFTIG  \
     1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
 
