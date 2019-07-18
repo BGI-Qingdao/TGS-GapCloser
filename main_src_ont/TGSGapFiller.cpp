@@ -245,6 +245,7 @@ struct AppConfig
         BGIQD::FREQ::Freq<int> gap_oo_read_freq ;
         BGIQD::FREQ::Freq<int> filler_choose_freq ;
         BGIQD::FREQ::Freq<int> a_read_oo_choose_freq ;
+        BGIQD::FREQ::Freq<int> idy_freq;;
 
         for( auto & pair : scaff_info_helper.all_scaff )
         {
@@ -340,6 +341,8 @@ struct AppConfig
                     if( scaff_pn.gap_size < 0 )
                     {
                         scaff_negotive_gap_size ++ ;
+                        idy_freq.Touch(int(m1.IDY()*100));
+                        idy_freq.Touch(int(m2.IDY()*100));
                         checked = true ;
                         break;
                     }
@@ -367,12 +370,16 @@ struct AppConfig
                             ont_negotive_gap_size ++ ;
                             prev.gap_size = - true_overlap ;
                             checked = true ;
+                            idy_freq.Touch(int(m1.IDY()*100));
+                            idy_freq.Touch(int(m2.IDY()*100));
                             break;
                         }
                         else if ( tmp.gap_size >= -max_ignored_overlap )
                         {
                             ont_negotive_gap_size ++ ;
                             prev.gap_size = tmp.gap_size ;
+                            idy_freq.Touch(int(m1.IDY()*100));
+                            idy_freq.Touch(int(m2.IDY()*100));
                             checked = true ;
                             break;
                         }
@@ -384,8 +391,12 @@ struct AppConfig
                         ont_negotive_gap_size ++ ;
                         prev.gap_size = 0 ;
                         checked = true ;
+                        idy_freq.Touch(int(m1.IDY()*100));
+                        idy_freq.Touch(int(m2.IDY()*100));
                         break ;
                     }
+                    idy_freq.Touch(int(m1.IDY()*100));
+                    idy_freq.Touch(int(m2.IDY()*100));
                     int cut_start = 0 ;
                     int cut_len = tmp.gap_size ;
                     bool need_reverse = false ;
@@ -451,6 +462,9 @@ struct AppConfig
 
         loger<<BGIQD::LOG::lstart()<<">the common reads count freq for a gap \n"
             <<gap_both_read_freq.ToString()<<BGIQD::LOG::lend();
+
+        loger<<BGIQD::LOG::lstart()<<">the used idy freq is \n"
+            <<idy_freq.ToString()<<BGIQD::LOG::lend();
 
         loger<<BGIQD::LOG::lstart()<<">the correct oo reads count freq for a gap \n"
             <<gap_oo_read_freq.ToString()<<BGIQD::LOG::lend();
