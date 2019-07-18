@@ -75,7 +75,7 @@ fi
 TMP_INPUT_SCAFTIG=$OUT_PREFIX".contig"
 TMP_INPUT_SCAFF_INFO=$OUT_PREFIX".orignial_scaff_infos"
 
-$BIN_DIR/TGSSeqSplit --input_scaff $INPUT_SCAFF_FA --prefix $OUT_PREFIX
+$BIN_DIR/TGSSeqSplit --input_scaff $INPUT_SCAFF_FA --prefix $OUT_PREFIX || exit 1
 ###########################################################
 # Step 2 :
 #   generate sub-ont-fragments for all gaps .
