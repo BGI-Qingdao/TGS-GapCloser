@@ -113,9 +113,8 @@ struct AppConfig
         while( ! std::getline( *in , line ).eof()  )
         {
             tmp.InitFromString(line);
-            //if( tmp.len_target_match <= 0 
-            //        || tmp.IDY() < 0.8 )
-            //    continue ;
+            if ( tmp.aligned_len < min_match ) continue ;
+            if ( tmp.IDY() < min_idy ) continue ;
             unsigned int contig = std::stoul( tmp.query_name );
             aligned_data[contig][tmp.target_name].push_back(tmp);
             read_2_contig[tmp.target_name].insert(contig);
@@ -408,6 +407,8 @@ struct AppConfig
 
     std::string ont_read_a  ;
     std::string ont_read_q  ;
+    int min_match ;
+    float min_idy ;
 } config ;
 
 int main(int argc , char ** argv)
@@ -419,6 +420,8 @@ int main(int argc , char ** argv)
         DEFINE_ARG_OPTIONAL(int, max_hang,"max hang for ont","2000");
         DEFINE_ARG_OPTIONAL(float, factor_a,"factor_a for ont aligned factor","1");
         DEFINE_ARG_OPTIONAL(float, factor_b,"factor_b for ont idy factor","6");
+        DEFINE_ARG_OPTIONAL(int, min_match,"min match for ont","300");
+        DEFINE_ARG_OPTIONAL(float, min_idy,"min idy for ont","0.4");
     END_PARSE_ARGS;
 
     if( ! ont_reads_q.setted && ! ont_reads_a.setted )
@@ -436,6 +439,8 @@ int main(int argc , char ** argv)
     config.max_hang = max_hang.to_int();
     config.fa = factor_a.to_float();
     config.fb = factor_b.to_float();
+    config.min_match = min_match.to_int();
+    config.min_idy = min_idy.to_float() ;
 
     config.contig_2_ont_paf_file = contig2ont_paf.to_string() ;
 
