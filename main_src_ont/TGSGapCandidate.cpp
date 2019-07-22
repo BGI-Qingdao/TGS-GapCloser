@@ -153,7 +153,11 @@ struct AppConfig
         BGIQD::LOG::timer t(loger,"LoadScaffInfo");
         scaff_info_helper.LoadAllScaff(std::cin) ;
     }
-    static int myrandom (int i) { return std::rand()%i;}
+
+    int max_hang ;
+    float fa ;
+    float fb ;
+
     void ParseAllGap()
     {
         BGIQD::LOG::timer t(loger,"ParseAllGap");
@@ -238,6 +242,29 @@ struct AppConfig
                 {
                     no_choose ++ ;
                 }
+                // let 1 ont reads ONLY provide 1 candidate choose for this gap
+                std::map<std::string , BGIQD::ONT::ONT2GapInfos>  all_choose ;
+
+                for ( const auto & pair : chooses )
+                {
+                    //auto & pair = chooses.front() ;
+                    auto  target  = pair.from.target_name  ;
+                    all_choose[target].push_back(pair);
+                }
+                for( auto & itr : all_choose )
+                {
+                    if( itr.second.size() >1 )
+                    {
+                        //TODO sort by score
+                        BGIQD::ONT::SortMatchScoreMore(itr.second,max_hang,fa,fb);
+                    }
+                }
+                chooses.clear();
+                for( auto & itr : all_choose )
+                {
+                    chooses.push_back(itr.second.front());
+                }
+
                 for ( const auto & pair : chooses )
                 {
                     //auto & pair = chooses.front() ;
@@ -386,9 +413,12 @@ struct AppConfig
 int main(int argc , char ** argv)
 {
     START_PARSE_ARGS
-        DEFINE_ARG_REQUIRED(std::string, contig2ont_paf ,"the paf file that map contig into ont reads.");
-        DEFINE_ARG_OPTIONAL(std::string, ont_reads_q,"the ont reads in fastq format.","");
-        DEFINE_ARG_OPTIONAL(std::string, ont_reads_a,"the ont reads in fasta format.","");
+        DEFINE_ARG_REQUIRED(std::string,contig2ont_paf ,"the paf file that map contig into ont reads.");
+        DEFINE_ARG_OPTIONAL(std::string,ont_reads_q,"the ont reads in fastq format.","");
+        DEFINE_ARG_OPTIONAL(std::string,ont_reads_a,"the ont reads in fasta format.","");
+        DEFINE_ARG_OPTIONAL(int, max_hang,"max hang for ont","2000");
+        DEFINE_ARG_OPTIONAL(float, factor_a,"factor_a for ont aligned factor","1");
+        DEFINE_ARG_OPTIONAL(float, factor_b,"factor_b for ont idy factor","6");
     END_PARSE_ARGS;
 
     if( ! ont_reads_q.setted && ! ont_reads_a.setted )
@@ -403,6 +433,9 @@ int main(int argc , char ** argv)
         config.ont_read_q  = ont_reads_q.to_string();
         config.ont_read_a  = "" ;
     }
+    config.max_hang = max_hang.to_int();
+    config.fa = factor_a.to_float();
+    config.fb = factor_b.to_float();
 
     config.contig_2_ont_paf_file = contig2ont_paf.to_string() ;
 
