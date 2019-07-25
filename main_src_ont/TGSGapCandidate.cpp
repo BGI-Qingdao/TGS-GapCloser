@@ -16,6 +16,7 @@
 #include "appcommon/contigPairInfo.h"
 #include "appcommon/ScaffInfo.h"
 #include "appcommon/ONT2Gap.h"
+#include "appcommon/SubSets.h"
 
 #include <map>
 #include <vector>
@@ -157,6 +158,7 @@ struct AppConfig
     float fa ;
     float fb ;
 
+    std::map<std::string , BGIQD::SUBSETS::SubSets> pos_caches;
     void ParseAllGap()
     {
         BGIQD::LOG::timer t(loger,"ParseAllGap");
@@ -272,7 +274,6 @@ struct AppConfig
                     const BGIQD::stLFR::PairPN & tmp = pair.pair_info  ;
                     m1 = m1.Flatten();
                     m2 = m2.Flatten();
-                    std::string fill = "N" ;
 
                     if (tmp.gap_size > 0 )
                     {
@@ -305,11 +306,7 @@ struct AppConfig
                         else 
                             cut_len += 2000 ;
                         cut_start = new_cut_start;
-
-                        std::string cut_seq =  ont_read.substr(cut_start,cut_len) ;
-                        if( need_reverse )
-                            cut_seq = BGIQD::SEQ::seqCompleteReverse(cut_seq);
-                        fill = cut_seq;
+                        pos_caches[m1.target_name].Push(cut_start , cut_start+cut_len-1);
                     }
                     else if ( tmp.gap_size < 0 && tmp.gap_size >= -2000 )
                     {
@@ -357,52 +354,45 @@ struct AppConfig
                         {
                             assert(0);
                         }
-                        fill  =  ont_read.substr(cut_start,cut_len) ;
+                        pos_caches[m1.target_name].Push(cut_start , cut_start+cut_len-1);
                     }
-
-                    std::cout<<gap_id<<'\t'
-                        <<prev.gap_size<<'\t'
-                        <<tmp.gap_size<<'\t'
-                        <<m1.target_name<<'\t'
-                        <<m1.target_len<<'\t'
-                        <<m1.query_len << '\t'
-                        <<float(m1.aligned_len) / float(m1.query_len)<<'\t'
-                        <<float(m1.match_len) / float(m1.aligned_len)<<'\t'
-                        <<m2.query_len << '\t'
-                        <<float(m2.aligned_len) / float(m2.query_len)<<'\t'
-                        <<float(m2.match_len) / float(m2.aligned_len)<<'\t'
-                        <<fill
-                        <<'\n'
-
-                        ;
                 }
             }
         }
 
-        loger<<BGIQD::LOG::lstart()<<">the gap_total is "
-            <<gap_tatal<<BGIQD::LOG::lend();
+    }
 
-        loger<<BGIQD::LOG::lstart()<<">the no_match is "
-            <<no_match<<BGIQD::LOG::lend();
-
-        loger<<BGIQD::LOG::lstart()<<">the no choose is "
-            <<no_choose<<BGIQD::LOG::lend();
-
-        loger<<BGIQD::LOG::lstart()<<">the no common is "
-            <<no_common<<BGIQD::LOG::lend();
-
-        loger<<BGIQD::LOG::lstart()<<">the common reads count freq for a gap \n"
-            <<gap_both_read_freq.ToString()<<BGIQD::LOG::lend();
-
-        loger<<BGIQD::LOG::lstart()<<">the correct oo reads count freq for a gap \n"
-            <<gap_oo_read_freq.ToString()<<BGIQD::LOG::lend();
-
-        loger<<BGIQD::LOG::lstart()<<">the filler choose count freq for a gap \n"
-            <<filler_choose_freq.ToString()<<BGIQD::LOG::lend();
-
-        loger<<BGIQD::LOG::lstart()<<">the one read provide filler choose count freq for a gap \n"
-            <<a_read_oo_choose_freq.ToString()<<BGIQD::LOG::lend();
-
+    void PrintCandidate()
+    {
+        BGIQD::FREQ::Freq<int>  cut_freq ;
+        long long candidate_id = 0;
+        long long total_used_base = 0 ;
+        long long total_cut = 0;
+        for( auto & pair : pos_caches )
+        {
+            const auto & ont_read = reads.at(pair.first).atcgs ;
+            total_used_base += ont_read.size();
+            long long this_cut = 0 ;
+            int s , e ;
+            while( pair.second.Pop(s,e) )
+            {
+                candidate_id ++ ;
+                this_cut += e-s+1 ;
+                AONTRead tmp ;
+                tmp.AddSeq(std::to_string(candidate_id)) ;
+                tmp.AddSeq(ont_read.substr(s,this_cut));
+                std::cout<<'>'<<tmp.head.Head()<<'\n';
+                std::cout<<tmp.seq.Seq(100);
+            }
+            total_cut += this_cut ;
+            cut_freq.Touch( (this_cut) *100/ont_read.size() );
+        }
+        loger<<BGIQD::LOG::lstart()<<" Total orignal sequence length : "
+            <<total_used_base<<BGIQD::LOG::lend() ;
+        loger<<BGIQD::LOG::lstart()<<" Total sub sequence length : "
+            <<total_cut<<BGIQD::LOG::lend() ;
+        loger<<BGIQD::LOG::lstart()<<" Sub sequence percent freq : \n"
+            <<cut_freq.ToString()<<BGIQD::LOG::lend() ;
     }
 
     std::string ont_read_a  ;
@@ -454,6 +444,8 @@ int main(int argc , char ** argv)
     config.LoadScaffInfo();
 
     config.ParseAllGap();
+
+    config.PrintCandidate();
 
     return 0 ;
 }
