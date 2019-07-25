@@ -378,11 +378,8 @@ struct AppConfig
             {
                 candidate_id ++ ;
                 this_cut += e-s+1 ;
-                AONTRead tmp ;
-                tmp.AddHead(">"+std::to_string(candidate_id)) ;
-                tmp.AddSeq(ont_read.substr(s,this_cut));
-                std::cout<<'>'<<tmp.head.Head()<<'\n';
-                std::cout<<tmp.seq.Seq(100);
+                std::cout<<'>'<<candidate_id<<'\n';
+                std::cout<<ont_read.substr(s,e-s+1)<<'\n';
             }
             total_cut += this_cut ;
             cut_freq.Touch( (this_cut) *100/ont_read.size() );

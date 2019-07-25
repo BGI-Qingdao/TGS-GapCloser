@@ -46,6 +46,7 @@ namespace BGIQD {
                     auto itr1 = std::next(itr);
                     for(int i = 0 ; i< (int) ranges.size() -1 ; i ++ )
                     {
+                        assert(itr->first < itr1->first);
                         if(itr->second >= itr1->first) 
                         {
                             if( itr1->second > itr->second )
