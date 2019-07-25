@@ -379,7 +379,7 @@ struct AppConfig
                 candidate_id ++ ;
                 this_cut += e-s+1 ;
                 AONTRead tmp ;
-                tmp.AddHead(std::to_string(candidate_id)) ;
+                tmp.AddHead(">"+std::to_string(candidate_id)) ;
                 tmp.AddSeq(ont_read.substr(s,this_cut));
                 std::cout<<'>'<<tmp.head.Head()<<'\n';
                 std::cout<<tmp.seq.Seq(100);
