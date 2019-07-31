@@ -94,8 +94,8 @@ struct AppConfig
             {
                 reads[tmp.head.Id] = tmp.seq ;
             }
-	    loger<<BGIQD::LOG::lstart()<<">total load ONT reads : \n"
-		    <<reads.size()<<BGIQD::LOG::lend();
+            loger<<BGIQD::LOG::lstart()<<">total load ONT reads : \n"
+                <<reads.size()<<BGIQD::LOG::lend();
             delete in ;
         }
     }
@@ -159,6 +159,170 @@ struct AppConfig
     float fb ;
 
     std::map<std::string , BGIQD::SUBSETS::SubSets> pos_caches;
+    std::map<std::string , std::vector<int[2]> > pos_caches_split;
+
+    void UpdatePosCache(const std::string & name , int s , int e )
+    {
+        if( candidate_merge )
+            pos_caches[name].Push(s,e);
+        else
+            pos_caches_split[name].push_back( { s  , e } );
+    }
+
+    void LogAllChoose(const BGIQD::ONT::ONT2GapInfos & chooses ,
+            const BGIQD::stLFR::ContigDetail & prev )
+    {
+        for ( const auto & pair : chooses )
+        {
+            //auto & pair = chooses.front() ;
+            auto  m1 = pair.from  ;
+            auto  m2 = pair.to ;
+            const BGIQD::stLFR::PairPN & tmp = pair.pair_info  ;
+            m1 = m1.Flatten();
+            m2 = m2.Flatten();
+
+            if (tmp.gap_size > 0 )
+            {
+                int cut_start = 0 ;
+                int cut_len = tmp.gap_size ;
+                bool need_reverse = false ;
+                if( ( m1.query_char == '+' && prev.orientation)
+                        ||  ( m1.query_char == '-' && !prev.orientation ) )
+                {
+                    cut_start = m1.target_end ;
+                }
+                else
+                {
+                    cut_start = m2.target_end;
+                    need_reverse = true ;
+                }
+                const auto & ont_read = reads.at(m1.target_name).atcgs ;
+                if( cut_start<0 ||  cut_start + cut_len  >= (int) ont_read.size() )
+                {
+                    assert(0);
+                }
+                // expand 2K from left & right
+                int new_cut_start =cut_start - 2000 ;
+                if(new_cut_start <0 ) new_cut_start = 0 ;
+                cut_len += cut_start - new_cut_start ;
+                if( new_cut_start + cut_len + 2000 >= (int)ont_read.size() )
+                {
+                    cut_len = ont_read.size() - new_cut_start -1 ;
+                }
+                else 
+                    cut_len += 2000 ;
+                cut_start = new_cut_start;
+                UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1);
+            }
+            else if ( tmp.gap_size < 0 && tmp.gap_size >= -2000 )
+            {
+                int cut_start = 0 ;
+                int cut_len = -tmp.gap_size ;
+                bool need_reverse = false ;
+                if( ( m1.query_char == '+' && prev.orientation)
+                        ||  ( m1.query_char == '-' && !prev.orientation ) )
+                {
+                    cut_start = m1.target_end ;
+                }
+                else
+                {
+                    cut_start = m2.target_end;
+                    need_reverse = true ;
+                }
+                cut_start = cut_start -cut_len +1  ;
+                const auto & ont_read = reads.at(m1.target_name).atcgs ;
+                //  ONT is too short.
+                if( cut_start < 0 || cut_start + cut_len >=(int) ont_read.size() )
+                    continue ;
+                if ( cut_len < 2000 )
+                {
+                    int append = ( 2000 -cut_len )/2;
+                    if( cut_start > append )
+                    {
+                        cut_start = cut_start - append ;
+                        cut_len = cut_len + append ;
+                    }
+                    else
+                    {
+                        cut_len = cut_len + cut_start ;
+                        cut_start = 0 ;
+                    }
+                    if( cut_start + cut_len + append >= (int) ont_read.size() )
+                    {
+                        cut_len += (int) ont_read.size() - (cut_start + cut_len) -1 ;
+                    }
+                    else
+                    {
+                        cut_len += append ;
+                    }
+                }
+                if( cut_start<0 ||  cut_start + cut_len  >= (int) ont_read.size() )
+                {
+                    assert(0);
+                }
+                UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1);
+            }
+        }
+    }
+
+
+    void SortAndFilterChoose( BGIQD::ONT::ONT2GapInfos & chooses  )
+    {
+        std::map<std::string , BGIQD::ONT::ONT2GapInfos>  all_choose ;
+
+        for ( const auto & pair : chooses )
+        {
+            //auto & pair = chooses.front() ;
+            auto  target  = pair.from.target_name  ;
+            all_choose[target].push_back(pair);
+        }
+        for( auto & itr : all_choose )
+        {
+            if( itr.second.size() >1 )
+            {
+                //TODO sort by score
+                BGIQD::ONT::SortMatchScoreMore(itr.second,max_hang,fa,fb);
+            }
+        }
+        chooses.clear();
+        for( auto & itr : all_choose )
+        {
+            int i = 0 ;
+            for( const auto & item : itr.second )
+            {
+                chooses.push_back(item);
+                i++ ;
+                if( i >= candidate_max )
+                    break ;
+            }
+        }
+    }
+
+    int FindChoose(const Contig2ONTReads & map_info1 
+            , const Contig2ONTReads & map_info2
+            , const std::string & read_name 
+            , const BGIQD::stLFR::PairPN & scaff_pn
+            , BGIQD::ONT::ONT2GapInfos & chooses 
+            ){
+        auto & prev_matched_infos = map_info1.at(read_name) ;
+        auto & next_matched_infos = map_info2.at(read_name) ;
+        int used_pair = 0 ;
+        for( const auto & m1  : prev_matched_infos )
+        {
+            for( const auto & m2 : next_matched_infos )
+            {
+                BGIQD::stLFR::PairPN ont_pn ;
+                ont_pn.InitFromPAF(m1,m2);
+                if( ont_pn.type == scaff_pn.type )
+                {
+                    used_pair ++ ;
+                    chooses.push_back({ m1 , m2 , ont_pn });
+                    //chooses.push_back(std::make_pair( m1 , m2 ));
+                }
+            }
+        }
+        return used_pair ;
+    }
     void ParseAllGap()
     {
         BGIQD::LOG::timer t(loger,"ParseAllGap");
@@ -213,26 +377,8 @@ struct AppConfig
                 BGIQD::ONT::ONT2GapInfos others;
                 for( const auto & read_name : commons )
                 {
-                    auto & prev_matched_infos = map_info1.at(read_name) ;
-                    auto & next_matched_infos = map_info2.at(read_name) ;
-                    int used_pair = 0 ;
-                    for( const auto & m1  : prev_matched_infos )
-                    {
-                        for( const auto & m2 : next_matched_infos )
-                        {
-                            BGIQD::stLFR::PairPN ont_pn ;
-                            ont_pn.InitFromPAF(m1,m2);
-                            if( ont_pn.type == scaff_pn.type )
-                            {
-                                used_pair ++ ;
-                                chooses.push_back({ m1 , m2 , ont_pn });
-                                //chooses.push_back(std::make_pair( m1 , m2 ));
-                            }
-                            else
-                            {
-                            }
-                        }
-                    }
+                    int used_pair = FindChoose(map_info1,map_info2
+                            ,read_name,scaff_pn,chooses);
                     if( used_pair > 0 )
                         used_read ++ ;
                     a_read_oo_choose_freq.Touch(used_pair);
@@ -242,121 +388,11 @@ struct AppConfig
                 if( chooses.empty() )
                 {
                     no_choose ++ ;
+                    continue;
                 }
-                // let 1 ont reads ONLY provide 1 candidate choose for this gap
-                std::map<std::string , BGIQD::ONT::ONT2GapInfos>  all_choose ;
-
-                for ( const auto & pair : chooses )
-                {
-                    //auto & pair = chooses.front() ;
-                    auto  target  = pair.from.target_name  ;
-                    all_choose[target].push_back(pair);
-                }
-                for( auto & itr : all_choose )
-                {
-                    if( itr.second.size() >1 )
-                    {
-                        //TODO sort by score
-                        BGIQD::ONT::SortMatchScoreMore(itr.second,max_hang,fa,fb);
-                    }
-                }
-                chooses.clear();
-                for( auto & itr : all_choose )
-                {
-                    chooses.push_back(itr.second.front());
-                }
-
-                for ( const auto & pair : chooses )
-                {
-                    //auto & pair = chooses.front() ;
-                    auto  m1 = pair.from  ;
-                    auto  m2 = pair.to ;
-                    const BGIQD::stLFR::PairPN & tmp = pair.pair_info  ;
-                    m1 = m1.Flatten();
-                    m2 = m2.Flatten();
-
-                    if (tmp.gap_size > 0 )
-                    {
-                        int cut_start = 0 ;
-                        int cut_len = tmp.gap_size ;
-                        bool need_reverse = false ;
-                        if( ( m1.query_char == '+' && prev.orientation)
-                                ||  ( m1.query_char == '-' && !prev.orientation ) )
-                        {
-                            cut_start = m1.target_end ;
-                        }
-                        else
-                        {
-                            cut_start = m2.target_end;
-                            need_reverse = true ;
-                        }
-                        const auto & ont_read = reads.at(m1.target_name).atcgs ;
-                        if( cut_start<0 ||  cut_start + cut_len  >= (int) ont_read.size() )
-                        {
-                            assert(0);
-                        }
-                        // expand 2K from left & right
-                        int new_cut_start =cut_start - 2000 ;
-                        if(new_cut_start <0 ) new_cut_start = 0 ;
-                        cut_len += cut_start - new_cut_start ;
-                        if( new_cut_start + cut_len + 2000 >= (int)ont_read.size() )
-                        {
-                            cut_len = ont_read.size() - new_cut_start -1 ;
-                        }
-                        else 
-                            cut_len += 2000 ;
-                        cut_start = new_cut_start;
-                        pos_caches[m1.target_name].Push(cut_start , cut_start+cut_len-1);
-                    }
-                    else if ( tmp.gap_size < 0 && tmp.gap_size >= -2000 )
-                    {
-                        int cut_start = 0 ;
-                        int cut_len = -tmp.gap_size ;
-                        bool need_reverse = false ;
-                        if( ( m1.query_char == '+' && prev.orientation)
-                                ||  ( m1.query_char == '-' && !prev.orientation ) )
-                        {
-                            cut_start = m1.target_end ;
-                        }
-                        else
-                        {
-                            cut_start = m2.target_end;
-                            need_reverse = true ;
-                        }
-                        cut_start = cut_start -cut_len +1  ;
-                        const auto & ont_read = reads.at(m1.target_name).atcgs ;
-                        //  ONT is too short.
-                        if( cut_start < 0 || cut_start + cut_len >=(int) ont_read.size() )
-                            continue ;
-                        if ( cut_len < 2000 )
-                        {
-                            int append = ( 2000 -cut_len )/2;
-                            if( cut_start > append )
-                            {
-                                cut_start = cut_start - append ;
-                                cut_len = cut_len + append ;
-                            }
-                            else
-                            {
-                                cut_len = cut_len + cut_start ;
-                                cut_start = 0 ;
-                            }
-                            if( cut_start + cut_len + append >= (int) ont_read.size() )
-                            {
-                                cut_len += (int) ont_read.size() - (cut_start + cut_len) -1 ;
-                            }
-                            else
-                            {
-                                cut_len += append ;
-                            }
-                        }
-                        if( cut_start<0 ||  cut_start + cut_len  >= (int) ont_read.size() )
-                        {
-                            assert(0);
-                        }
-                        pos_caches[m1.target_name].Push(cut_start , cut_start+cut_len-1);
-                    }
-                }
+                if( candidate_max > 0 )
+                    SortAndFilterChoose(chooses);
+                LogAllChoose(chooses,prev);
             }
         }
 
@@ -384,6 +420,24 @@ struct AppConfig
             total_cut += this_cut ;
             cut_freq.Touch( (this_cut) *100/ont_read.size() );
         }
+        for(const auto & pair : pos_caches_split )
+        {
+            const auto & ont_read = reads.at(pair.first).atcgs ;
+            total_used_base += ont_read.size();
+            long long this_cut = 0 ;
+            int s , e ;
+            for( const auto & arr : pair.second )
+            {
+                s = arr[0];
+                e = arr[1];
+                candidate_id ++ ;
+                this_cut += e-s+1 ;
+                std::cout<<'>'<<candidate_id<<'\n';
+                std::cout<<ont_read.substr(s,e-s+1)<<'\n';
+            }
+            total_cut += this_cut ;
+            cut_freq.Touch( (this_cut) *100/ont_read.size() );
+        }
         loger<<BGIQD::LOG::lstart()<<" Total orignal sequence length : "
             <<total_used_base<<BGIQD::LOG::lend() ;
         loger<<BGIQD::LOG::lstart()<<" Total sub sequence length : "
@@ -396,19 +450,23 @@ struct AppConfig
     std::string ont_read_q  ;
     int min_match ;
     float min_idy ;
+    bool candidate_merge ;
+    int candidate_max ;
 } config ;
 
 int main(int argc , char ** argv)
 {
     START_PARSE_ARGS
         DEFINE_ARG_REQUIRED(std::string,contig2ont_paf ,"the paf file that map contig into ont reads.");
-        DEFINE_ARG_OPTIONAL(std::string,ont_reads_q,"the ont reads in fastq format.","");
-        DEFINE_ARG_OPTIONAL(std::string,ont_reads_a,"the ont reads in fasta format.","");
-        DEFINE_ARG_OPTIONAL(int, max_hang,"max hang for ont","2000");
-        DEFINE_ARG_OPTIONAL(float, factor_a,"factor_a for ont aligned factor","1");
-        DEFINE_ARG_OPTIONAL(float, factor_b,"factor_b for ont idy factor","6");
-        DEFINE_ARG_OPTIONAL(int, min_match,"min match for ont","300");
-        DEFINE_ARG_OPTIONAL(float, min_idy,"min idy for ont","0.4");
+    DEFINE_ARG_OPTIONAL(std::string,ont_reads_q,"the ont reads in fastq format.","");
+    DEFINE_ARG_OPTIONAL(std::string,ont_reads_a,"the ont reads in fasta format.","");
+    DEFINE_ARG_OPTIONAL(int, max_hang,"max hang for ont","2000");
+    DEFINE_ARG_OPTIONAL(float, factor_a,"factor_a for ont aligned factor","1");
+    DEFINE_ARG_OPTIONAL(float, factor_b,"factor_b for ont idy factor","6");
+    DEFINE_ARG_OPTIONAL(int, min_match,"min match for ont","0");
+    DEFINE_ARG_OPTIONAL(float, min_idy,"min idy for ont","0");
+    DEFINE_ARG_OPTIONAL(bool , candidate_merge , "merge cadidates from same reads with overlaps ","0");
+    DEFINE_ARG_OPTIONAL(int , candidate_max , "max number of candidates that 1 reads can provide for 1 gap , -1 means all","-1");
     END_PARSE_ARGS;
 
     if( ! ont_reads_q.setted && ! ont_reads_a.setted )
@@ -423,13 +481,15 @@ int main(int argc , char ** argv)
         config.ont_read_q  = ont_reads_q.to_string();
         config.ont_read_a  = "" ;
     }
+
     config.max_hang = max_hang.to_int();
     config.fa = factor_a.to_float();
     config.fb = factor_b.to_float();
     config.min_match = min_match.to_int();
     config.min_idy = min_idy.to_float() ;
-
     config.contig_2_ont_paf_file = contig2ont_paf.to_string() ;
+    config.candidate_merge = candidate_merge.to_bool();
+    config.candidate_max = candidate_max.to_int();
 
     config.Init();
     BGIQD::LOG::timer t(config.loger,"TGSGapCandidata");
