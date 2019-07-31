@@ -89,15 +89,18 @@ $MINIMAP2  $MINIMAP2_PARAM  -t $CPU  \
 
 $BIN_DIR/TGSGapCandidate --ont_reads_a $TGS_FA \
     --contig2ont_paf $OUT_PREFIX.sub.paf \
-    <$TMP_INPUT_SCAFF_INFO >$OUT_PREFIX.gap_info_seqs \
+    <$TMP_INPUT_SCAFF_INFO >$OUT_PREFIX.ont.fasta \
     2>$OUT_PREFIX.cand.log || exit 1
 
-for ((i=0; i<CHUNK_NUM; i++))
-do
-    awk 'BEGIN{id=1;ii=0;prev=0}{if($12 != "N"){ gap_id=0+$1;ii=ii+1 ; if(prev!=gap_id){prev=gap_id;ii=1;}if(ii%(cov)==the_i){printf(">seq_id_%d_%d\n%s\n",gap_id,id,$12);}id+=1;}}' cov=$CHUNK_NUM the_i=$i \
-        <$OUT_PREFIX.gap_info_seqs >$OUT_PREFIX.ont.$i.fasta || exit 1
-done
-
+if [[ $CHUNK_NUM != "1" ]] ; then
+    for ((i=0; i<CHUNK_NUM; i++))
+    do
+        awk 'BEGIN{id=0}{if($1 ~ />/ ){id=id+1;} if(id % cov == the_i) {print $0;} }' cov=$CHUNK_NUM the_i=$i \
+            <$OUT_PREFIX.ont.fasta >$OUT_PREFIX.ont.$i.fasta || exit 1
+    done
+else
+    ln -s $OUT_PREFIX.ont.fasta $OUT_PREFIX.ont.0.fasta
+fi
 ###########################################################
 # Step 3 :
 #   pilon the sub-ont-fragments .
@@ -128,11 +131,14 @@ do
         --output $OUT_PREFIX.ont.$i.pilon --outdir ./ \
         --diploid  --threads $CPU >$OUT_PREFIX.pilon.log 2>$OUT_PREFIX.pilon.err || exit 1
 done
-for ((i=0; i<CHUNK_NUM; i++))
-do
-    cat $OUT_PREFIX.ont.$i.pilon.fasta >> $OUT_PREFIX.ont.pilon.fasta
-done
-
+if [[ $CHUNK_NUM != "1" ]] ; then 
+    for ((i=0; i<CHUNK_NUM; i++))
+    do
+        cat $OUT_PREFIX.ont.$i.pilon.fasta >> $OUT_PREFIX.ont.pilon.fasta
+    done
+else
+    ln -s $OUT_PREFIX.ont.0.pilon.fasta  $OUT_PREFIX.ont.pilon.fasta
+fi
 ###########################################################
 # Step 4 :
 #   use ont-sub-fragments to fill gaps
