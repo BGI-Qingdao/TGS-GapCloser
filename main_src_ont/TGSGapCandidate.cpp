@@ -159,14 +159,14 @@ struct AppConfig
     float fb ;
 
     std::map<std::string , BGIQD::SUBSETS::SubSets> pos_caches;
-    std::map<std::string , std::vector<int[2]> > pos_caches_split;
+    std::map<std::string , std::vector<std::pair<int,int>> > pos_caches_split;
 
     void UpdatePosCache(const std::string & name , int s , int e )
     {
         if( candidate_merge )
             pos_caches[name].Push(s,e);
         else
-            pos_caches_split[name].push_back( { s  , e } );
+            pos_caches_split[name].push_back( std::make_pair( s  , e  ) );
     }
 
     void LogAllChoose(const BGIQD::ONT::ONT2GapInfos & chooses ,
@@ -428,8 +428,8 @@ struct AppConfig
             int s , e ;
             for( const auto & arr : pair.second )
             {
-                s = arr[0];
-                e = arr[1];
+                s = arr.first;
+                e = arr.second;
                 candidate_id ++ ;
                 this_cut += e-s+1 ;
                 std::cout<<'>'<<candidate_id<<'\n';
