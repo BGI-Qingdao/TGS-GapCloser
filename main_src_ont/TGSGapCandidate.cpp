@@ -202,19 +202,19 @@ struct AppConfig
                     assert(0);
                 }
                 // expand 2K from left & right
-                int new_cut_start =cut_start - 2000 ;
+                int new_cut_start =cut_start - max_hang;
                 if(new_cut_start <0 ) new_cut_start = 0 ;
                 cut_len += cut_start - new_cut_start ;
-                if( new_cut_start + cut_len + 2000 >= (int)ont_read.size() )
+                if( new_cut_start + cut_len +max_hang >= (int)ont_read.size() )
                 {
                     cut_len = ont_read.size() - new_cut_start -1 ;
                 }
                 else 
-                    cut_len += 2000 ;
+                    cut_len += max_hang ;
                 cut_start = new_cut_start;
                 UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1);
             }
-            else if ( tmp.gap_size < 0 && tmp.gap_size >= -2000 )
+            else if ( tmp.gap_size < 0 && tmp.gap_size >= -max_hang )
             {
                 int cut_start = 0 ;
                 int cut_len = -tmp.gap_size ;
@@ -234,9 +234,9 @@ struct AppConfig
                 //  ONT is too short.
                 if( cut_start < 0 || cut_start + cut_len >=(int) ont_read.size() )
                     continue ;
-                if ( cut_len < 2000 )
+                if ( cut_len < max_hang )
                 {
-                    int append = ( 2000 -cut_len )/2;
+                    int append = ( max_hang -cut_len )/2;
                     if( cut_start > append )
                     {
                         cut_start = cut_start - append ;
