@@ -49,6 +49,7 @@ test_cpp   =	test.cpp\
 				../common/files/file_test.cpp\
 				../biocommon/sam_bam/sam_parser_test.cpp\
 				../appcommon/SubSets_test.cpp\
+				../appcommon/NonRepeatFilter_test.cpp\
 
 
 source_o		= ${source_cpp:%.cpp=%.o}
