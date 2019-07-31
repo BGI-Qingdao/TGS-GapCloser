@@ -16,7 +16,7 @@ namespace BGIQD {
                     int overlap = 0 ;
                     int total = pair.second - pair.first +1 ;
                     if ( pair.first < start )
-                        overlap = pair.second - end + 1 ;
+                        overlap = pair.second - start + 1 ;
                     else 
                         overlap = end - pair.first +1 ;
                     if( overlap > 0  

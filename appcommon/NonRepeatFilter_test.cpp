@@ -2,7 +2,7 @@
 #include "appcommon/NonRepeatFilter.h"
 TEST_MODULE_INIT(NonRepeatFilter)
 
-TEST(Subsets01)
+TEST(NonRepeatFilter01)
 {
     int s , e ;
     BGIQD::NONREPEAT::NonRepeatFilter test01;
