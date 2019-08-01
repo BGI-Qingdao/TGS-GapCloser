@@ -160,18 +160,18 @@ struct AppConfig
     float fb ;
 
     std::map<std::string , BGIQD::SUBSETS::SubSets> pos_caches;
-    std::map<std::string , BGIQD::SUBSETS::SubSets> pos_caches_non;
-    std::vector<std::tuple<std::string ,int,int> > pos_caches_split;
+    std::map<std::string , BGIQD::NONREPEAT::NonRepeatFilter> pos_caches_non;
+    std::vector<std::tuple<std::string ,int,int , bool > > pos_caches_split;
 
-    void UpdatePosCache(const std::string & name , int s , int e )
+    void UpdatePosCache(const std::string & name , int s , int e ,bool need_reverse )
     {
         if( candidate_merge )
             pos_caches[name].Push(s,e);
         else
-            pos_caches_split.push_back( std::make_tuple( name ,s  , e  ) );
+            pos_caches_split.push_back( std::make_tuple( name ,s  , e ,need_reverse ) );
     }
 
-    void UpdateNonRepeatCache(const std::string & name , int s , int e )
+    void UpdateNonRepeatCache(const std::string & name , int s , int e  )
     {
         pos_caches_non[name].Push(s,e);
     }
@@ -183,7 +183,7 @@ struct AppConfig
             const auto & name = pair.first ;
             int s , e ;
             while( pair.second.Pop(s,e))
-                UpdatePosCache(name,s,e);
+                UpdatePosCache(name,s,e,false);
         }
         pos_caches_non.clear();
     }
@@ -231,7 +231,7 @@ struct AppConfig
                     cut_len += max_hang ;
                 cut_start = new_cut_start;
                 if( ! candidate_shake_filter )
-                    UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1);
+                    UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1 , need_reverse);
                 else
                     UpdateNonRepeatCache(m1.target_name,cut_start , cut_start+cut_len-1);
             }
@@ -282,7 +282,7 @@ struct AppConfig
                     assert(0);
                 }
                 if( ! candidate_shake_filter )
-                    UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1);
+                    UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1, need_reverse);
                 else
                     UpdateNonRepeatCache(m1.target_name,cut_start , cut_start+cut_len-1);
             }
@@ -447,12 +447,15 @@ struct AppConfig
         }
         for(const auto & data: pos_caches_split )
         {
-            std::string name ; int s , e ;
-            std::tie(name,s,e)=data;
+            std::string name ; int s , e ;bool need_reverse;
+            std::tie(name,s,e,need_reverse)=data;
             const auto & ont_read = reads.at(name).atcgs ;
             candidate_id ++ ;
             std::cout<<'>'<<candidate_id<<'\n';
-            std::cout<<ont_read.substr(s,e-s+1)<<'\n';
+            if( ! need_reverse )
+                std::cout<<ont_read.substr(s,e-s+1)<<'\n';
+            else 
+                std::cout<<BGIQD::SEQ::seqCompleteReverse(ont_read.substr(s,e-s+1))<<'\n';
         }
         if( candidate_merge )
         {
