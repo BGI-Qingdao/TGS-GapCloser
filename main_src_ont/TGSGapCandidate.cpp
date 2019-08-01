@@ -231,7 +231,7 @@ struct AppConfig
                     cut_len += max_hang ;
                 cut_start = new_cut_start;
                 if( ! candidate_shake_filter )
-                    UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1 , need_reverse);
+                    UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1 , false);
                 else
                     UpdateNonRepeatCache(m1.target_name,cut_start , cut_start+cut_len-1);
             }
@@ -282,7 +282,7 @@ struct AppConfig
                     assert(0);
                 }
                 if( ! candidate_shake_filter )
-                    UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1, need_reverse);
+                    UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1, false);
                 else
                     UpdateNonRepeatCache(m1.target_name,cut_start , cut_start+cut_len-1);
             }
