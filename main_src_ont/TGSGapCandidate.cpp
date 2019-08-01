@@ -439,7 +439,7 @@ struct AppConfig
             {
                 candidate_id ++ ;
                 this_cut += e-s+1 ;
-                std::cout<<'>'<<candidate_id<<'\n';
+                std::cout<<">seq_"<<candidate_id<<'\n';
                 std::cout<<ont_read.substr(s,e-s+1)<<'\n';
             }
             total_cut += this_cut ;
