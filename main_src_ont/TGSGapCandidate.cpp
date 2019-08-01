@@ -17,6 +17,7 @@
 #include "appcommon/ScaffInfo.h"
 #include "appcommon/ONT2Gap.h"
 #include "appcommon/SubSets.h"
+#include "appcommon/NonRepeatFilter.h"
 
 #include <map>
 #include <vector>
@@ -159,16 +160,33 @@ struct AppConfig
     float fb ;
 
     std::map<std::string , BGIQD::SUBSETS::SubSets> pos_caches;
-    std::map<std::string , std::vector<std::pair<int,int>> > pos_caches_split;
+    std::map<std::string , BGIQD::SUBSETS::SubSets> pos_caches_non;
+    std::vector<std::tuple<std::string ,int,int> > pos_caches_split;
 
     void UpdatePosCache(const std::string & name , int s , int e )
     {
         if( candidate_merge )
             pos_caches[name].Push(s,e);
         else
-            pos_caches_split[name].push_back( std::make_pair( s  , e  ) );
+            pos_caches_split.push_back( std::make_tuple( name ,s  , e  ) );
     }
 
+    void UpdateNonRepeatCache(const std::string & name , int s , int e )
+    {
+        pos_caches_non[name].Push(s,e);
+    }
+
+    void CleanNonRepeatCache()
+    {
+        for(auto & pair : pos_caches_non )
+        {
+            const auto & name = pair.first ;
+            int s , e ;
+            while( pair.second.Pop(s,e))
+                UpdatePosCache(name,s,e);
+        }
+        pos_caches_non.clear();
+    }
     void LogAllChoose(const BGIQD::ONT::ONT2GapInfos & chooses ,
             const BGIQD::stLFR::ContigDetail & prev )
     {
@@ -212,7 +230,10 @@ struct AppConfig
                 else 
                     cut_len += max_hang ;
                 cut_start = new_cut_start;
-                UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1);
+                if( ! candidate_shake_filter )
+                    UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1);
+                else
+                    UpdateNonRepeatCache(m1.target_name,cut_start , cut_start+cut_len-1);
             }
             else if ( tmp.gap_size < 0 && tmp.gap_size >= -max_hang )
             {
@@ -260,9 +281,13 @@ struct AppConfig
                 {
                     assert(0);
                 }
-                UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1);
+                if( ! candidate_shake_filter )
+                    UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1);
+                else
+                    UpdateNonRepeatCache(m1.target_name,cut_start , cut_start+cut_len-1);
             }
         }
+        CleanNonRepeatCache();
     }
 
 
@@ -292,7 +317,7 @@ struct AppConfig
             {
                 chooses.push_back(item);
                 i++ ;
-                if( i >= candidate_max )
+                if( i >= candidate_max && ( !candidate_shake_filter ) )
                     break ;
             }
         }
@@ -420,30 +445,24 @@ struct AppConfig
             total_cut += this_cut ;
             cut_freq.Touch( (this_cut) *100/ont_read.size() );
         }
-        for(const auto & pair : pos_caches_split )
+        for(const auto & data: pos_caches_split )
         {
-            const auto & ont_read = reads.at(pair.first).atcgs ;
-            total_used_base += ont_read.size();
-            long long this_cut = 0 ;
-            int s , e ;
-            for( const auto & arr : pair.second )
-            {
-                s = arr.first;
-                e = arr.second;
-                candidate_id ++ ;
-                this_cut += e-s+1 ;
-                std::cout<<'>'<<candidate_id<<'\n';
-                std::cout<<ont_read.substr(s,e-s+1)<<'\n';
-            }
-            total_cut += this_cut ;
-            cut_freq.Touch( (this_cut) *100/ont_read.size() );
+            std::string name ; int s , e ;
+            std::tie(name,s,e)=data;
+            const auto & ont_read = reads.at(name).atcgs ;
+            candidate_id ++ ;
+            std::cout<<'>'<<candidate_id<<'\n';
+            std::cout<<ont_read.substr(s,e-s+1)<<'\n';
         }
-        loger<<BGIQD::LOG::lstart()<<" Total orignal sequence length : "
-            <<total_used_base<<BGIQD::LOG::lend() ;
-        loger<<BGIQD::LOG::lstart()<<" Total sub sequence length : "
-            <<total_cut<<BGIQD::LOG::lend() ;
-        loger<<BGIQD::LOG::lstart()<<" Sub sequence percent freq : \n"
-            <<cut_freq.ToString()<<BGIQD::LOG::lend() ;
+        if( candidate_merge )
+        {
+            loger<<BGIQD::LOG::lstart()<<" Total orignal sequence length : "
+                <<total_used_base<<BGIQD::LOG::lend() ;
+            loger<<BGIQD::LOG::lstart()<<" Total sub sequence length : "
+                <<total_cut<<BGIQD::LOG::lend() ;
+            loger<<BGIQD::LOG::lstart()<<" Sub sequence percent freq : \n"
+                <<cut_freq.ToString()<<BGIQD::LOG::lend() ;
+        }
     }
 
     std::string ont_read_a  ;
@@ -452,6 +471,9 @@ struct AppConfig
     float min_idy ;
     bool candidate_merge ;
     int candidate_max ;
+    bool candidate_shake_filter ;
+    float candidate_shake_factor ;
+
 } config ;
 
 int main(int argc , char ** argv)
@@ -466,6 +488,8 @@ int main(int argc , char ** argv)
     DEFINE_ARG_OPTIONAL(int, min_match,"min match for ont","0");
     DEFINE_ARG_OPTIONAL(float, min_idy,"min idy for ont","0");
     DEFINE_ARG_OPTIONAL(bool , candidate_merge , "merge cadidates from same reads with overlaps ","0");
+    DEFINE_ARG_OPTIONAL(bool , candidate_shake_filter, "filter cadidates that overlaps with others","0");
+    DEFINE_ARG_OPTIONAL(float , candidate_shake_factor, "factor to detect a overlaps","0.7");
     DEFINE_ARG_OPTIONAL(int , candidate_max , "max number of candidates that 1 reads can provide for 1 gap , -1 means all","-1");
     END_PARSE_ARGS;
 
@@ -490,6 +514,8 @@ int main(int argc , char ** argv)
     config.contig_2_ont_paf_file = contig2ont_paf.to_string() ;
     config.candidate_merge = candidate_merge.to_bool();
     config.candidate_max = candidate_max.to_int();
+    config.candidate_shake_factor = candidate_shake_factor.to_float();
+    config.candidate_shake_filter = candidate_shake_filter.to_bool();
 
     config.Init();
     BGIQD::LOG::timer t(config.loger,"TGSGapCandidata");
