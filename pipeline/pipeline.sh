@@ -47,7 +47,8 @@ fi
 ###########################################################
 
 
-$BIN_DIR/TGSSeqSplit --input_scaff $INPUT_SCAFF_FA --prefix $OUT_PREFIX || exit 1
+$BIN_DIR/TGSSeqSplit --input_scaff $INPUT_SCAFF_FA \
+    --prefix $OUT_PREFIX 2>$OUT_PREFIX.seq_split.log || exit 1
 
 ###########################################################
 # Step 2 :
