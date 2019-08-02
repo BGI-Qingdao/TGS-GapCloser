@@ -90,6 +90,8 @@ $MINIMAP2  $MINIMAP2_PARAM  -t $CPU  \
 
 $BIN_DIR/TGSGapCandidate --ont_reads_a $TGS_FA \
     --contig2ont_paf $OUT_PREFIX.sub.paf \
+    --candidate_max 10 --candidate_shake_filter \
+    --candidate_merge \
     <$TMP_INPUT_SCAFF_INFO >$OUT_PREFIX.ont.fasta \
     2>$OUT_PREFIX.cand.log || exit 1
 
