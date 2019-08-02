@@ -173,6 +173,7 @@ struct AppConfig
 
     void UpdateNonRepeatCache(const std::string & name , int s , int e  )
     {
+        pos_caches_non[name].Init(candidate_max, candidate_shake_factor);
         pos_caches_non[name].Push(s,e);
     }
 
