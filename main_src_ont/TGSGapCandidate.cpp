@@ -451,7 +451,7 @@ struct AppConfig
             std::tie(name,s,e,need_reverse)=data;
             const auto & ont_read = reads.at(name).atcgs ;
             candidate_id ++ ;
-            std::cout<<'>'<<candidate_id<<'\n';
+            std::cout<<">seq_"<<candidate_id<<'\n';
             if( ! need_reverse )
                 std::cout<<ont_read.substr(s,e-s+1)<<'\n';
             else 
