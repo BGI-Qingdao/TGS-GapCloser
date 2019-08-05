@@ -23,6 +23,9 @@ OUT_PREFIX="gapfill_test"
 CPU=30
 # minimap2 parameters
 MINIMAP2_PARAM=" -x ava-ont "
+#filter for TGSGapFiiler
+MinIDY="0.3"
+MinMatch=300
 #######################################
 # basic tools settings.
 #######################################
@@ -65,6 +68,7 @@ $MINIMAP2  $MINIMAP2_PARAM -t $CPU $TGS_FA $TMP_INPUT_SCAFTIG  \
 #   process gap filling .
 ###########################################################
 $BIN_DIR/TGSGapFiller --ont_reads_a $TGS_FA  --contig2ont_paf $OUT_PREFIX.fill.paf \
+    --min_match=$MinMatch --min_idy=$MinIDY \
     --prefix $OUT_PREFIX 1>$OUT_PREFIX.fill.log 2>&1 || exit 1
 
 ###########################################################

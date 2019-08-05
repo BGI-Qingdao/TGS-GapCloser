@@ -29,6 +29,10 @@ CHUNK_NUM=1
 CPU=30
 #minimp2 parameters
 MINIMAP2_PARAM=" -x ava-ont "
+#filter for TGSGapFiiler
+MinIDY="0.3"
+MinMatch=300
+
 #######################################
 # basic tools settings.
 #######################################
@@ -154,6 +158,7 @@ $MINIMAP2  $MINIMAP2_PARAM  -t $CPU  \
 
 $BIN_DIR/TGSGapFiller --ont_reads_a $OUT_PREFIX.ont.pilon.fasta \
     --contig2ont_paf $OUT_PREFIX.fill.paf \
+    --min_match=$MinMatch --min_idy=$MinIDY \
     --prefix $OUT_PREFIX 1>$OUT_PREFIX.fill.log  2>&1|| exit 1
 
 $BIN_DIR/TGSSeqGen --prefix  $OUT_PREFIX 1>$OUT_PREFIX.i2s.log 2>&1  || exit 1
