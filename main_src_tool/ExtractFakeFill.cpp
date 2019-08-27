@@ -29,15 +29,16 @@ void printFill(std::ostream & ost , const std::string & line )
     static int c2 = 2 ;
 
     int scaff_id =0 , Ls=0, Le = 0 , N = 0 , Rs = 0 , Re = 0 ;
-    scanf(line.c_str() , ">scaffold_%d\tL:%d,%d\tN:%d\tR:%d,%d" , &scaff_id , &Ls, &Le, &N, &Rs, &Re );
+		//        >scaffold_1\tL:60001,85000\tN:2000\tR:87001,112000
+    sscanf(line.c_str() , ">scaffold_%d\tL:%d,%d\tN:%d\tR:%d,%d" , &scaff_id , &Ls, &Le, &N, &Rs, &Re );
 
     int fill_start = Le ;
     int fill_len = N ;
     std::string fill = ref.seq.atcgs.substr(Le,N);
-    c1+=2;
-    c2+=2;
     ost<<'>'<<c1<<'_'<<c2<<'\n';
     ost<<fill<<'\n';
+    c1+=2;
+    c2+=2;
 }
 
 void ProcessEachLine(const std::string & ifile , const std::string &ofile )
