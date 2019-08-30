@@ -127,7 +127,7 @@ do
     $SAMTOOL view -bo $OUT_PREFIX.bam  $OUT_PREFIX.fiter.sam -@ $CPU \
         >$OUT_PREFIX.samtool_01.log 2>&1 || exit 1
 
-    $SAMTOOL sort $OUT_PREFIX.bam -o $OUT_PREFIX.sort.bam -@ $CPU \
+    $SAMTOOL sort -m 8G $OUT_PREFIX.bam -o $OUT_PREFIX.sort.bam -@ $CPU \
         >$OUT_PREFIX.samtool_02.log 2>&1 || exit 1
 
     $SAMTOOL index $OUT_PREFIX.sort.bam -@ $CPU \
