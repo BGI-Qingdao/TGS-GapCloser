@@ -41,7 +41,7 @@ source_o		= ${source_cpp:%.cpp=%.o}
 .cpp.o:
 	${CXX} ${DEUBG_CXX} -c $< -o $@
 
-jobs =      FakeRef2Scaff       ExtractFakeFill 
+jobs =      FakeRef2Scaff       ExtractFakeFill       Ref2Gap 
 
 scripts=
 
@@ -68,7 +68,16 @@ ExtractFakeFill : clean ${ExtractFakeFill_o} ${source_o} ../tool
 	mv $@ ../tool/
 
 
-jobs_o=  ${FakeRef2Scaff_o} ${ExtractFakeFill_o}
+
+
+Ref2Gap_cpp = Ref2Gap.cpp
+Ref2Gap_o = Ref2Gap.o
+Ref2Gap : clean ${Ref2Gap_o} ${source_o} ../tool
+	${CXX} ${Ref2Gap_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o Ref2Gap
+	mv $@ ../tool/
+
+
+jobs_o=  ${FakeRef2Scaff_o} ${ExtractFakeFill_o} ${Ref2Gap_o}
 
 dirty	   =${jobs_o} ${jobs} ${source_o}
 

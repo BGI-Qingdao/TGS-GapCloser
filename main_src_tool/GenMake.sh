@@ -6,6 +6,7 @@ scripts="\
 apps="\
       FakeRef2Scaff \
       ExtractFakeFill \
+      Ref2Gap \
 "
 
 jobs_o=" "

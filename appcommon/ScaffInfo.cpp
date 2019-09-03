@@ -7,6 +7,7 @@ namespace BGIQD {
     namespace stLFR {
 
         const std::string ContigDetail::ONT_FILL = "ONT_FILL" ;
+        const std::string ContigDetail::GAP_TYPE = "GAP_TYPE" ;
 
         void ContigDetail::InitFromString(const std::string &line)
         {

@@ -3,18 +3,26 @@
 #include "common/files/file_writer.h"
 #include "common/args/argsparser.h"
 #include "common/error/Error.h"
+#include "appcommon/ScaffInfo.h"
 
 #include <sstream>
 #include <fstream>
 #include <cassert>
 #include <map>
 
+/********** Defines *******************************************/
 typedef BGIQD::FASTA::Id_Desc_Head  Header ;
 typedef BGIQD::FASTA::Fasta<Header> Fa;
 typedef BGIQD::FASTA::FastaReader<Fa> Reader;
-Fa ref ;
+struct ContigAlign ;
+
+/********** Global data *******************************************/
 
 std::map<std::string , std::string> ref_seqs;
+BGIQD::stLFR::ScaffInfoHelper scaff_helper;
+std::map< int , ContigAlign > contig_aligns;
+
+/********** Functions *******************************************/
 
 void LoadRef( const std::string & file )
 {
@@ -26,11 +34,9 @@ void LoadRef( const std::string & file )
 
     for(const auto & i : refs )
     {
-        ref_seqs[i.head.Head()]= i.seqs.atcgs ;
+        ref_seqs[i.head.Head()]= i.seq.atcgs ;
     }
 }
-
-BGIQD::stLFR::ScaffInfoHelper scaff_helper;
 
 void LoadScaffInfos(const std::string & file )
 {
@@ -51,27 +57,26 @@ struct AllAligned
     int E2;
     std::string ref ;
     int contig;
-    float IDY;
 
     void Init( const std::string & line )
     {
         char ref_name[1024];
-        for( int i = 0; i < 1024 ; i++ ) ref_name = 0 ;
-        sscanf(line.c_str() , "%d\t%d\t%d\t%d\t%s\t%d\t%f\t%s",
+        for( int i = 0; i < 1024 ; i++ ) ref_name[i] = 0 ;
+        sscanf(line.c_str() , "%d\t%d\t%d\t%d\t%s\t%d\t",
                 &S1,
-                &E1，
+                &E1,
                 &S2,
                 &S2,
-                &ref_name[0]
-                &contig,
-                &IDY
+                &(ref_name[0]) ,
+                &contig
+              );
         ref=std::string(ref_name);
     }
 };
 
 struct ContigAlign
 {
-    char type[120];
+    std::string type ;
     std::string ref ;
     int len;
     int contig_id ;
@@ -81,20 +86,22 @@ struct ContigAlign
 
     void Init( const std::string & line , const std::vector<AllAligned> & aligns )
     {
+        char buffer[120];
         for(int i = 0; i < 120 ; i++ ) type[i] = 0 ;
-        sscanf(line.c_str(),"CONTIG\t%d\t%d%s", &contig_id , &len , &type[0]);
+        sscanf(line.c_str(),"CONTIG\t%d\t%d%s", &contig_id , &len , &buffer[0]);
+        type = std::string(buffer);
         InitSE(aligns); 
     }
     void InitSE( const std::vector<AllAligned> & aligns )
     {
-        if(aligns.empty() || strcmp("correct",type ) != 0 )
+        if(aligns.empty() || type != "correct" )
         {
             ref_S = 0 ;
             ref_E = 0 ;
             return ;
         }
         int biggest = -1 ; int biggest_index = -1 ;
-        for( size i = 0 ; i < aligns.size() ; i++ )
+        for( size_t i = 0 ; i < aligns.size() ; i++ )
         {
             int as = std::abs(aligns[i].E2 - aligns[i].S2);
             if(as > biggest )
@@ -104,8 +111,9 @@ struct ContigAlign
             }
         }
         assert( biggest > 0 );
-        AllAligned info = aligns[i] ;
+        AllAligned info = aligns[biggest_index] ;
         int cs = 0 ; int ce = 0 ;
+        ref = info.ref;
         if( info.S2 < info.E2 )
         {
             orient = true ;
@@ -123,16 +131,14 @@ struct ContigAlign
         ref_E = info.E1 ;
 
         if( cs > 1 )
-            ref_S = ref_s - cs +1  ;
+            ref_S = ref_S - cs +1  ;
         if( ce < len )
-            ref_E = ref_e + ( len - cs ) ;
+            ref_E = ref_E + ( len - cs ) ;
     }
 };
 
-std::map< int , ContigAlign > contig_aligns;
 void LoadAllAligned(const std::string & file)
 {
-
     auto  in = BGIQD::FILES::FileReaderFactory
         ::GenerateReaderFromFileName(file);
     if( in == NULL )
@@ -148,13 +154,13 @@ void LoadAllAligned(const std::string & file)
             ContigAlign tmp;
             tmp.Init(line,buffer);
             buffer.clear();
-            contig_aligns[tmp.contig_id] = tmp;.
+            contig_aligns[tmp.contig_id] = tmp;
         }
         if( std::isdigit(line[0]) )
         {
-           AllAligned tmp;
-           tmp.Init(line);
-           buffer.push_back(line);
+            AllAligned tmp;
+            tmp.Init(line);
+            buffer.push_back(tmp);
         }
         line.clear() ;
     }
@@ -163,30 +169,106 @@ void LoadAllAligned(const std::string & file)
         ContigAlign tmp;
         tmp.Init(line,buffer);
         buffer.clear();
-        contig_aligns[tmp.contig_id] = tmp;.
+        contig_aligns[tmp.contig_id] = tmp;
     }
 }
 
 void ProcessEachGap()
 {
+    for( auto & pair : scaff_helper.all_scaff)
+    {
+        auto & a_scaff = pair.second.a_scaff ;
+        if( a_scaff.size() < 2 ) continue ;
+        for( int i = 0 ; i < a_scaff.size() -1 ; i ++ )
+        {
+            auto & c1 = a_scaff[i] ;
+            auto & c2 = a_scaff[i+1] ;
+            // TYPE is not correct 
+            if( contig_aligns.find(c1.contig_id) == contig_aligns.end() || 
+                    contig_aligns.find(c2.contig_id) == contig_aligns.end() )
+            {
+                c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "Unaligned";
+                continue ;
+            }
+            auto & c1_a = contig_aligns.at(c1.contig_id);
+            auto & c2_a = contig_aligns.at(c2.contig_id);
+            if( c1_a.type != "correct" || "correct" != c2_a.type )
+            {
+                c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "Uncorrect";
+                continue ;
+            }
+            if( c1_a.ref != c2_a.ref )
+            {
+                c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "DiffRef";
+                continue ;
+            }
+            assert( c1.orientation && c2.orientation );
+            if( c1_a.orient != c2_a.orient )
+            {
+                c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "OOWrong";
+                continue ;
+            }
+            if( c1_a.ref_S < c2_a.ref_S && c1_a.ref_E < c2_a.ref_E )
+            {
+                if( c1_a.ref_E >= c2_a.ref_S )
+                {
+                    c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "Overlap";
+                    c1.gap_size = - c1_a.ref_E + c2_a.ref_S ;
+                    continue ;
+                }
+                else
+                {
+                    c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "FILL";
+                    c1.gap_size = c2_a.ref_S - c1_a.ref_E ;
+                    c1.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = ref_seqs[c1_a.ref].substr(c1_a.ref_E ,c1.gap_size);
+                    continue ;
+                }
+            }
+            else if ( c1_a.ref_S > c2_a.ref_S && c1_a.ref_E > c2_a.ref_E )
+            {
+                if( c2_a.ref_E >= c1_a.ref_S )
+                {
+                    c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "Overlap";
+                    c1.gap_size = - c2_a.ref_E + c1_a.ref_S ;
+                    continue ;
+                }
+                else
+                {
+                    c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "FILL";
+                    c1.gap_size = c1_a.ref_S - c2_a.ref_E ;
+                    c1.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = ref_seqs[c1_a.ref].substr(c2_a.ref_E,c1.gap_size);
+                    continue ;
+                }
+            }
+            else
+                c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "NotLinear";
 
+        }
+    }
 }
 
 void PrintOutput(const  std::string & file)
 {
+    auto out = BGIQD::FILES::FileWriterFactory
+        ::GenerateWriterFromFileName(file);
+    if ( out == NULL )
+        FATAL(" failed to open the xxx.orignal_scaff_infos to write ");
 
+    scaff_helper.PrintAllScaff(*out);
+    delete out ;
 }
 
+/********** Main Function *******************************************/
 int main(int argc , char **argv)
 {
     START_PARSE_ARGS
         DEFINE_ARG_REQUIRED(std::string,ref,"the input reference file");
-        DEFINE_ARG_REQUIRED(std::string,scaff_info ,"the input scaff_info file");
-        DEFINE_ARG_REQUIRED(std::string,allaligned, "the allaligned file from quast")
-        DEFINE_ARG_REQUIRED(std::string,output ,"the output scaff_info file");
+    DEFINE_ARG_REQUIRED(std::string,scaff_info ,"the input scaff_info file");
+    DEFINE_ARG_REQUIRED(std::string,allaligned, "the allaligned file from quast");
+    DEFINE_ARG_REQUIRED(std::string,output ,"the output scaff_info file");
     END_PARSE_ARGS
 
-    LoadRef(ref.to_string());
+        LoadRef(ref.to_string());
     LoadAllAligned( allaligned.to_string());
     LoadScaffInfos(scaff_info.to_string());
     ProcessEachGap();
