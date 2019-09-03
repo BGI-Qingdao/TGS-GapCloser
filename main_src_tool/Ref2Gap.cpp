@@ -34,7 +34,7 @@ void LoadRef( const std::string & file )
 
     for(const auto & i : refs )
     {
-        ref_seqs[i.head.Head()]= i.seq.atcgs ;
+        ref_seqs[i.head.Id]= i.seq.atcgs ;
     }
 }
 
@@ -218,10 +218,19 @@ void ProcessEachGap()
                 }
                 else
                 {
-                    c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "FILL";
-                    c1.gap_size = c2_a.ref_S - c1_a.ref_E ;
-                    c1.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = ref_seqs[c1_a.ref].substr(c1_a.ref_E ,c1.gap_size);
-                    continue ;
+                    int gap_size =  c2_a.ref_S - c1_a.ref_E ;
+                    if( gap_size < 30000 )
+                    {
+                        c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "FILL";
+                        c1.gap_size = c2_a.ref_S - c1_a.ref_E ;
+                        c1.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = ref_seqs[c1_a.ref].substr(c1_a.ref_E ,c1.gap_size);
+                        continue ;
+                    }
+                    else
+                    {
+                        c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "GAP_BIG";
+                        continue ;
+                    }
                 }
             }
             else if ( c1_a.ref_S > c2_a.ref_S && c1_a.ref_E > c2_a.ref_E )
@@ -234,10 +243,19 @@ void ProcessEachGap()
                 }
                 else
                 {
-                    c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "FILL";
-                    c1.gap_size = c1_a.ref_S - c2_a.ref_E ;
-                    c1.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = ref_seqs[c1_a.ref].substr(c2_a.ref_E,c1.gap_size);
-                    continue ;
+                    int gap_size =  c1_a.ref_S - c2_a.ref_E ;
+                    if( gap_size < 30000 )
+                    {
+                        c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "FILL";
+                        c1.gap_size = c1_a.ref_S - c2_a.ref_E ;
+                        c1.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = ref_seqs[c1_a.ref].substr(c2_a.ref_E,c1.gap_size);
+                        continue ;
+                    }
+                    else
+                    {
+                        c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "GAP_BIG";
+                        continue ;
+                    }
                 }
             }
             else
@@ -267,8 +285,8 @@ int main(int argc , char **argv)
     DEFINE_ARG_REQUIRED(std::string,allaligned, "the allaligned file from quast");
     DEFINE_ARG_REQUIRED(std::string,output ,"the output scaff_info file");
     END_PARSE_ARGS
-
-        LoadRef(ref.to_string());
+    
+    LoadRef(ref.to_string());
     LoadAllAligned( allaligned.to_string());
     LoadScaffInfos(scaff_info.to_string());
     ProcessEachGap();
