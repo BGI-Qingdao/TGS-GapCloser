@@ -21,6 +21,7 @@ struct ContigAlign ;
 std::map<std::string , std::string> ref_seqs;
 BGIQD::stLFR::ScaffInfoHelper scaff_helper;
 std::map< int , ContigAlign > contig_aligns;
+int max_gap_size ;
 
 /********** Functions *******************************************/
 
@@ -219,7 +220,7 @@ void ProcessEachGap()
                 else
                 {
                     int gap_size =  c2_a.ref_S - c1_a.ref_E ;
-                    if( gap_size < 30000 )
+                    if( gap_size < max_gap_size )
                     {
                         c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "FILL";
                         c1.gap_size = c2_a.ref_S - c1_a.ref_E ;
@@ -244,7 +245,7 @@ void ProcessEachGap()
                 else
                 {
                     int gap_size =  c1_a.ref_S - c2_a.ref_E ;
-                    if( gap_size < 30000 )
+                    if( gap_size < max_gap_size)
                     {
                         c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "FILL";
                         c1.gap_size = c1_a.ref_S - c2_a.ref_E ;
@@ -284,8 +285,9 @@ int main(int argc , char **argv)
     DEFINE_ARG_REQUIRED(std::string,scaff_info ,"the input scaff_info file");
     DEFINE_ARG_REQUIRED(std::string,allaligned, "the allaligned file from quast");
     DEFINE_ARG_REQUIRED(std::string,output ,"the output scaff_info file");
+    DEFINE_ARG_OPTIONAL(int , max_gap , "the max allowd gap size","30000");
     END_PARSE_ARGS
-    
+    max_gap_size = max_gap.to_int() ;
     LoadRef(ref.to_string());
     LoadAllAligned( allaligned.to_string());
     LoadScaffInfos(scaff_info.to_string());
