@@ -135,7 +135,7 @@ struct ContigAlign
         if( cs > 1 )
             ref_S = ref_S - cs +1  ;
         if( ce < len )
-            ref_E = ref_E + ( len - cs ) ;
+            ref_E = ref_E + ( len - ce ) ;
     }
 };
 
