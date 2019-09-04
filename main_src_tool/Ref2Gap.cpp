@@ -131,11 +131,20 @@ struct ContigAlign
 
         ref_S = info.S1 ;
         ref_E = info.E1 ;
-
-        if( cs > 1 )
-            ref_S = ref_S - cs +1  ;
-        if( ce < len )
-            ref_E = ref_E + ( len - ce ) ;
+        if ( orient )
+        {
+            if( cs > 1 )
+                ref_S = ref_S - cs +1  ;
+            if( ce < len )
+                ref_E = ref_E + ( len - ce ) ;
+        }
+        else
+        {
+            if( cs > 1 )
+                ref_E = ref_E + cs - 1  ;
+            if( ce < len )
+                ref_S = ref_S - ( len - ce ) ;
+        }
     }
 };
 
