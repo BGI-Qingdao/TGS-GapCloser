@@ -305,7 +305,7 @@ int main(int argc , char **argv)
     DEFINE_ARG_REQUIRED(std::string,scaff_info ,"the input scaff_info file");
     DEFINE_ARG_REQUIRED(std::string,allaligned, "the allaligned file from quast");
     DEFINE_ARG_REQUIRED(std::string,output ,"the output scaff_info file");
-    DEFINE_ARG_OPTIONAL(int , max_gap , "the max allowd gap size","30000");
+    DEFINE_ARG_OPTIONAL(int , max_gap , "the max allowd gap size","1000000");
     END_PARSE_ARGS
     max_gap_size = max_gap.to_int() ;
     LoadRef(ref.to_string());
