@@ -68,7 +68,7 @@ struct AllAligned
                 &S1,
                 &E1,
                 &S2,
-                &S2,
+                &E2,
                 &(ref_name[0]) ,
                 &contig
               );
