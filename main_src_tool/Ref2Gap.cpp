@@ -223,16 +223,22 @@ void ProcessEachGap()
                 if( c1_a.ref_E >= c2_a.ref_S )
                 {
                     c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "Overlap";
-                    c1.gap_size = - c1_a.ref_E + c2_a.ref_S ;
+                    c1.gap_size = - c1_a.ref_E + c2_a.ref_S -1 ;
                     continue ;
                 }
                 else
                 {
-                    int gap_size =  c2_a.ref_S - c1_a.ref_E ;
+                    int gap_size =  c2_a.ref_S - c1_a.ref_E -1 ;
+                    if ( gap_size == 0 )
+                    {
+                        c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "GAP_ZERO";
+                        c1.gap_size = 0 ;
+                        continue ;
+                    }
                     if( gap_size < max_gap_size )
                     {
                         c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "FILL";
-                        c1.gap_size = c2_a.ref_S - c1_a.ref_E ;
+                        c1.gap_size = gap_size ;
                         c1.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = ref_seqs[c1_a.ref].substr(c1_a.ref_E ,c1.gap_size);
                         continue ;
                     }
@@ -256,16 +262,22 @@ void ProcessEachGap()
                 if( c2_a.ref_E >= c1_a.ref_S )
                 {
                     c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "Overlap";
-                    c1.gap_size = - c2_a.ref_E + c1_a.ref_S ;
+                    c1.gap_size = - c2_a.ref_E + c1_a.ref_S -1;
                     continue ;
                 }
                 else
                 {
-                    int gap_size =  c1_a.ref_S - c2_a.ref_E ;
+                    int gap_size =  c1_a.ref_S - c2_a.ref_E -1 ;
+                    if ( gap_size == 0 )
+                    {
+                        c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "GAP_ZERO";
+                        c1.gap_size = 0 ;
+                        continue ;
+                    }
                     if( gap_size < max_gap_size)
                     {
                         c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "FILL";
-                        c1.gap_size = c1_a.ref_S - c2_a.ref_E ;
+                        c1.gap_size = gap_size  ;
                         c1.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = 
                             BGIQD::SEQ::seqCompleteReverse( 
                             ref_seqs[c1_a.ref].substr(c2_a.ref_E,c1.gap_size)
