@@ -4,6 +4,7 @@
 #include "common/args/argsparser.h"
 #include "common/error/Error.h"
 #include "appcommon/ScaffInfo.h"
+#include "biocommon/seq/tool_func.h"
 
 #include <sstream>
 #include <fstream>
@@ -211,6 +212,14 @@ void ProcessEachGap()
             }
             if( c1_a.ref_S < c2_a.ref_S && c1_a.ref_E < c2_a.ref_E )
             {
+                if( ! c1_a.orient )
+                {
+                    if( c1_a.orient != c2_a.orient )
+                    {
+                        c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "OOWrong";
+                        continue ;
+                    }
+                }
                 if( c1_a.ref_E >= c2_a.ref_S )
                 {
                     c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "Overlap";
@@ -236,6 +245,14 @@ void ProcessEachGap()
             }
             else if ( c1_a.ref_S > c2_a.ref_S && c1_a.ref_E > c2_a.ref_E )
             {
+                if(  c1_a.orient )
+                {
+                    if( c1_a.orient != c2_a.orient )
+                    {
+                        c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "OOWrong";
+                        continue ;
+                    }
+                }
                 if( c2_a.ref_E >= c1_a.ref_S )
                 {
                     c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "Overlap";
@@ -249,7 +266,10 @@ void ProcessEachGap()
                     {
                         c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "FILL";
                         c1.gap_size = c1_a.ref_S - c2_a.ref_E ;
-                        c1.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = ref_seqs[c1_a.ref].substr(c2_a.ref_E,c1.gap_size);
+                        c1.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = 
+                            BGIQD::SEQ::seqCompleteReverse( 
+                            ref_seqs[c1_a.ref].substr(c2_a.ref_E,c1.gap_size)
+                            ) ;
                         continue ;
                     }
                     else
