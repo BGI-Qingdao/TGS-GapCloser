@@ -89,7 +89,7 @@ struct ContigAlign
     void Init( const std::string & line , const std::vector<AllAligned> & aligns )
     {
         char buffer[120];
-        for(int i = 0; i < 120 ; i++ ) type[i] = 0 ;
+        for(int i = 0; i < 120 ; i++ ) buffer[i] = 0 ;
         sscanf(line.c_str(),"CONTIG\t%d\t%d%s", &contig_id , &len , &buffer[0]);
         type = std::string(buffer);
         InitSE(aligns); 
