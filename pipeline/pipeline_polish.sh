@@ -136,15 +136,19 @@ do
     $JAVA -Xmx$PILON_MEM -jar  $PILON --fix all \
         --genome $OUT_PREFIX.ont.$i.fasta --bam $OUT_PREFIX.sort.bam \
         --output $OUT_PREFIX.ont.$i.pilon --outdir ./ \
-        --diploid  --threads $CPU >$OUT_PREFIX.pilon.log 2>$OUT_PREFIX.pilon.err || exit 1
+        --diploid  --threads $CPU >$OUT_PREFIX.$i.pilon.log 2>$OUT_PREFIX.pilon.err || exit 1
 done
 if [[ $CHUNK_NUM != "1" ]] ; then 
     for ((i=0; i<CHUNK_NUM; i++))
     do
         cat $OUT_PREFIX.ont.$i.pilon.fasta >> $OUT_PREFIX.ont.pilon.fasta
+        cat $OUT_PREFIX.$i.pilon.log >> $OUT_PREFIX.pilon.log
+        rm -rf $OUT_PREFIX.ont.$i.pilon.fasta
+        rm -rf $OUT_PREFIX.$i.pilon.log
     done
 else
-    ln -s $OUT_PREFIX.ont.0.pilon.fasta  $OUT_PREFIX.ont.pilon.fasta
+    mv $OUT_PREFIX.ont.0.pilon.fasta  $OUT_PREFIX.ont.pilon.fasta
+    mv $OUT_PREFIX.0.pilon.log  $OUT_PREFIX.pilon.log
 fi
 ###########################################################
 # Step 4 :
