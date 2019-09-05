@@ -100,6 +100,14 @@ struct ContigAlign
         {
             ref_S = 0 ;
             ref_E = 0 ;
+            type = "no" ;
+            return ;
+        }
+        if( aligns.size() ！= 1 )
+        {
+            ref_S = 0 ;
+            ref_E = 0 ;
+            type = "no" ;
             return ;
         }
         int biggest = -1 ; int biggest_index = -1 ;

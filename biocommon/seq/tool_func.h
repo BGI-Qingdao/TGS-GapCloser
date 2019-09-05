@@ -33,14 +33,16 @@ namespace BGIQD{
             int index = 0;
             for( auto i = line.rbegin() ; i!= line.rend() ; i++)
             {
-                if( *i == 'A')
+                if( *i == 'A' || *i == 'a' )
                     ret[index++] = 'T';
-                if( *i == 'G')
+                else if( *i == 'G' || *i == 'g' )
                     ret[index++] = 'C';
-                if( *i == 'C')
+                else if( *i == 'C' || *i == 'c' )
                     ret[index++] = 'G';
-                if( *i == 'T')
+                else if( *i == 'T'|| *i == 't' )
                     ret[index++] = 'A';
+                else 
+                    ret[index++] = *i ;
             }
             return ret;
         }
