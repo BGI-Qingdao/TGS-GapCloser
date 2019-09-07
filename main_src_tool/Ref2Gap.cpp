@@ -246,10 +246,16 @@ void ProcessEachGap()
                         continue ;
                     }
                     if( gap_size < max_gap_size )
-                    {
-                        c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "FILL";
+                    {   
+                        std::string fill = ref_seqs[c1_a.ref].substr(c1_a.ref_E ,c1.gap_size);
                         c1.gap_size = gap_size ;
-                        c1.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = ref_seqs[c1_a.ref].substr(c1_a.ref_E ,c1.gap_size);
+                        if( BGIQD::SEQ::onlyN(fill) )
+                        {
+                            c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "REF_N";
+                            continue;
+                        }
+                        c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "FILL";
+                        c1.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = fill ;
                         continue ;
                     }
                     else
@@ -286,12 +292,16 @@ void ProcessEachGap()
                     }
                     if( gap_size < max_gap_size)
                     {
+                        std::string fill = ref_seqs[c1_a.ref].substr(c2_a.ref_E,c1.gap_size);
+                        if( BGIQD::SEQ::onlyN(fill) )
+                        {
+                            c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "REF_N";
+                            continue;
+                        }
                         c1.extra[BGIQD::stLFR::ContigDetail::GAP_TYPE] = "FILL";
                         c1.gap_size = gap_size  ;
                         c1.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = 
-                            BGIQD::SEQ::seqCompleteReverse( 
-                            ref_seqs[c1_a.ref].substr(c2_a.ref_E,c1.gap_size)
-                            ) ;
+                            BGIQD::SEQ::seqCompleteReverse(fill) ;
                         continue ;
                     }
                     else

@@ -65,6 +65,51 @@ namespace BGIQD{
             }
             return true;
         }
+        static bool isValid( const std::string & line )
+        {
+            for(const auto & c : line )
+            {
+                if( c == 'a'||c=='A')
+                    continue ;
+
+                if( c == 'g'||c=='G')
+                    continue ;
+
+                if( c == 't'||c=='T')
+                    continue ;
+
+                if( c == 'c'||c=='C')
+                    continue ;
+
+                if( c == 'n'||c=='N')
+                    continue ;
+
+                return false ;
+            }
+            return true ;
+        }
+
+        static bool onlyN( const std::string & line )
+        {
+
+            for(const auto & c : line )
+            {
+                if( c != 'n'||c!='N')
+                    return false ;
+            }
+            return true ;
+        }
+
+        static bool hasN( const std::string & line )
+        {
+
+            for(const auto & c : line )
+            {
+                if( c == 'n'||c=='N')
+                    return true ;
+            }
+            return false ;
+        }
     }
 }
 #endif// __BIOCOMMON_SEQ_TOOL_FUNC_H__
