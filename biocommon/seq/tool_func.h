@@ -94,7 +94,7 @@ namespace BGIQD{
 
             for(const auto & c : line )
             {
-                if( c != 'n'||c!='N')
+                if( c != 'n' && c!='N')
                     return false ;
             }
             return true ;
