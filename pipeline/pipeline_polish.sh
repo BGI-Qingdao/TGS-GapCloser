@@ -12,6 +12,7 @@
 INPUT_SCAFF_FA="xxx"
 # the Third generation long reads ( raw data here )
 TGS_FA="/home/xumengyang/ONT/chr19_eva/Extract_Chr19_rel3.fa"
+TGS_TYPE="ont" # ont or pb
 # NGS reads to polish above long reads. please concatenate read1 and read2 into 1 file. 
 READ12="/home/guolidong/chr19/chr19_reads12.clean.fastq"
 
@@ -33,6 +34,11 @@ MINIMAP2_PARAM=" -x ava-ont "
 MinIDY="0.3"
 MinMatch=300
 
+if [[ $TGS_TYPE == "pb" ]] ; then 
+    MINIMAP2_PARAM=" -x ava-pb "
+    MinIDY="0.2"
+    MinMatch=200
+fi
 #######################################
 # basic tools settings.
 #######################################

@@ -12,7 +12,7 @@
 INPUT_SCAFF_FA="xxx"
 # the Third generation long reads ( raw data here )
 TGS_FA="/home/xumengyang/ONT/chr19_eva/Extract_Chr19_rel3.fa"
-
+TGS_TYPE="ont" # ont or pb
 #######################################
 # basic project settings.
 #######################################
@@ -26,6 +26,11 @@ MINIMAP2_PARAM=" -x ava-ont "
 #filter for TGSGapFiiler
 MinIDY="0.3"
 MinMatch=300
+if [[ $TGS_TYPE == "pb" ]] ; then 
+    MINIMAP2_PARAM=" -x ava-pb "
+    MinIDY="0.2"
+    MinMatch=200
+fi
 #######################################
 # basic tools settings.
 #######################################
