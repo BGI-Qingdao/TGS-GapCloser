@@ -24,9 +24,9 @@ OUT_PREFIX="gapfill_test"
 # java memory alloced for pilon running time.
 PILON_MEM="300G"
 # pilon chunk num.
-CHUNK_NUM=1
+CHUNK_NUM=3
 # cpu for minimap2 & samtools & pilon
-CPU=30
+CPU=16
 #minimp2 parameters
 MINIMAP2_PARAM=" -x ava-ont "
 #filter for TGSGapFiiler
@@ -69,7 +69,7 @@ if [[ ! -e $JAVA ]] ; then
     exit 1;
 fi
 if [[ ! -f $PILON ]] ; then 
-    echo "ERROR : $PILON is not exist  !!! exit ..."
+    echo "ERROR : $PILON does not exist  !!! exit ..."
     exit 1;
 fi
 
@@ -117,7 +117,7 @@ do
     $MINIMAP2 -t $CPU -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$i.fasta \
         1>$OUT_PREFIX.minimap2.02.log 2>&1 || exit 1
     $MINIMAP2 -t $CPU -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  \
-        --split-prefix=rel3_prefix \
+        --split-prefix=$OUT_PREFIX.$i \
         -a $OUT_PREFIX.mmi  $READ12  \
         1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.log || exit 1
 
