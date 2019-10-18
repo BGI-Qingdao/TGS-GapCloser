@@ -42,18 +42,96 @@ make
 
 ## Usage 
 
+### basic usage 
+
+```
+Usage:
+      TGSGapFiller --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]
+      required :
+          --scaff     <scaffold_file>      the input scaffold file.
+          --reads     <tgs_reads_file>     the input TGS reads file.
+          --output    <output_prefix>      the output prefix.
+      part required :
+          --ne                             do not error correct. error correct by default.
+          or
+          --racon     <racon>              the installed racon.
+          or
+          --ngs       <ngs_reads>          the ngs reads used for pilon
+          --pilon     <pilon>              the installed pilon.
+          --samtool   <samtool>            the installed samtool.
+          --java      <java>               the installed java.
+      optional:
+          --tgstype   <pb/ont>             TGS type . ont by default.
+          --min_idy   <min_idy>            min_idy for filter reads .
+                                           0.3 for ont by default.
+                                           0.2 for pb by default.
+          --min_match <min_idy>            min match length for filter reads .
+                                           300bp for ont by default.
+                                           200bp for pb by default.
+          --thread    <t_num>              thread uesd . 16 by default.
+          --pilon_mem <t_num>              memory used for pilon , 300G for default.
+          --chunk     <chunk_num>          split candidate into chunks to error-correct separately.
+```
 
 ### version without error correction 
 
-- cp YOUR-INSTALL-DIR/pipeline/pipeline.sh into your-working-directory
-- edit pipeline.sh for your project
-- run pipeline.sh
+* example
 
-### version with error correction
+```
+YOUR-INSTALL-DIR/TGSGapFiller.sh  \
+        --scaff  scaffold-path/scaffold.fasta \
+        --reads  tgs-reads-path/tgs.reads.fasta \
+        --output test_ne  \
+        --ne \
+        >pipe.log 2>pipe.err
+```
 
-- cp YOUR-INSTALL-DIR/pipeline/pipeline_polish.sh into your-working-directory
-- edit pipeline_polish.sh for your project
-- run pipeline.sh
+### version with error correction by racon
+
+```
+YOUR-INSTALL-DIR/TGSGapFiller.sh  \
+        --scaff  scaffold-path/scaffold.fasta \
+        --reads  tgs-reads-path/tgs.reads.fasta \
+        --output test_racon \
+        --racon  raconn-path/bin/racon \
+        >pipe.log 2>pipe.err
+```
+
+### version with error correction by pilon
+
+```
+YOUR-INSTALL-DIR/TGSGapFiller.sh  \
+        --scaff  scaffold-path/scaffold.fasta \
+        --reads  tgs-reads-path/tgs.reads.fasta \
+        --output test_pilon \
+        --pilon  pilon-path/pilon-1.23.jar  \
+        --ngs    ngs-reads-path/ngs.reads.fastq  \
+        --samtool samtools-path/bin/samtools  \
+        --java    java-path/bin/java \
+        >pipe.log 2>pipe.err
+```
+
+### deal with pacbio input reads
+
+* default thild-generation-reads type is ont , use ```--tgstype```  to change it .
+
+```
+    --tgstype ont
+    or 
+    --tgstype pb
+```
+
+* An example of use pacbio input reads and use racon to do error-correction
+
+```
+YOUR-INSTALL-DIR/TGSGapFiller.sh  \
+        --scaff  scaffold-path/scaffold.fasta \
+        --reads  tgs-reads-path/tgs.reads.fasta \
+        --output test_racon \
+        --racon  raconn-path/bin/racon \
+        --tgstype pb \
+        >pipe.log 2>pipe.err
+```
 
 ## Output
 
