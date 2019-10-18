@@ -24,6 +24,10 @@ echo ""
 #   function
 #
 ############################################################3########
+function print_info_line()
+{
+    echo "              -   $1"
+}
 function print_info()
 {
     echo "";
@@ -125,7 +129,6 @@ CHUNK_NUM=3
 USE_RACON="yes"
 
 print_info "Parsing args starting ..."
-echo ""
 
 ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtool:,java:,tgstype:,thread:,min_idy:,min_match:,pilon_mem:,ne  -- "$@"`
 eval set -- "$ARGS"
@@ -267,15 +270,15 @@ if [[ $NE == "no" ]] ; then
         check_arg_exe "pilon" $PILON
         check_arg_exe "samtool" $SAMTOOL
         check_arg_exe "java" $JAVA
-        print_info "    -   Will do error-correcting by pilon with ngs-reads. "
+        print_info_line "Will do error-correcting by pilon with ngs-reads. "
         USE_RACON="no"
     else
         check_arg_exe "racon" $RACON
-        print_info "    -   Will do error-correcting by racon."
+        print_info_line "Will do error-correcting by racon."
         USE_RACON="yes"
     fi
 else 
-    print_info "    -   Will not do error-correcting by --ne option"
+    print_info_line "Will not do error-correcting by --ne option"
 fi
 # pacbio special default values.
 if [[ $TGS_TYPE == "pb" ]] ; then 
@@ -287,7 +290,7 @@ if [[ $TGS_TYPE == "pb" ]] ; then
         MIN_IDY="200"
     fi
 fi
-print_info "    -   TGS reads type is $TGS_TYPE . MIN_IDY is $MIN_IDY . MIN_MATCH is $MIN_MATCH ."
+print_info_line "TGS reads type is $TGS_TYPE . MIN_IDY is $MIN_IDY . MIN_MATCH is $MIN_MATCH ."
 
 print_info "Checking basic args & env end."
 #####################################################################
@@ -295,31 +298,31 @@ print_info "Checking basic args & env end."
 #   step 1 , split input scaffold
 #
 ############################################################3########
-print_info "step 1 , run TGSSeqSplit to split scaffolds into contigs. "
+print_info "Step 1 , run TGSSeqSplit to split scaffolds into contigs. "
 $SeqSplit --input_scaff $INPUT_SCAFF \
     --prefix $OUT_PREFIX 2>$OUT_PREFIX.seq_split.log || exit 1 
 
-print_info "step 1 , done ."
+print_info "Step 1 , done ."
 
 #####################################################################
 #
 #   step 2 , choose candidate filling sequences .
 #
 ############################################################3########
-
+TMP_INPUT_SCAFTIG=""
 if [[ $NE == "yes" ]] ; then 
-    print_info "step 2 , skip TGSCandidate by --ne option."
+    print_info "Step 2 , skip TGSCandidate by --ne option."
 else
-    print_info "step 2 , run TGSCandidate ... "
+    print_info "Step 2 , run TGSCandidate ... "
     # run minimap2
-    print_info "     -   2.1 , run minmap2 to map contig into tgs-reads."
+    print_info_line "2.1 , run minmap2 to map contig into tgs-reads."
     TMP_INPUT_SCAFTIG=$OUT_PREFIX".contig"
     check_file $TMP_INPUT_SCAFTIG
     $MiniMap2  $MINIMAP2_PARAM  -t $THREAD  \
         $TGS_READS  $TMP_INPUT_SCAFTIG \
         1>$OUT_PREFIX.sub.paf 2>$OUT_PREFIX.minimap2.01.log || exit 1
     # run candidate
-    print_info "     -   2.2 , run TGSGapCandidate to choose candidate region seqs."
+    print_info_line "2.2 , run TGSGapCandidate to choose candidate region seqs."
 
     TMP_INPUT_SCAFF_INFO=$OUT_PREFIX".orignial_scaff_infos"
     check_file $TMP_INPUT_SCAFF_INFO
@@ -328,7 +331,7 @@ else
         --candidate_max 10 --candidate_shake_filter --candidate_merge \
         <$TMP_INPUT_SCAFF_INFO >$OUT_PREFIX.ont.fasta 2>$OUT_PREFIX.cand.log || exit 1
     # split candidate into chunk
-    print_info "     -   2.3 , break candidate into $CHUNK_NUM chunk(s)."
+    print_info_line "2.3 , break candidate into $CHUNK_NUM chunk(s)."
     if [[ $CHUNK_NUM != "1" ]] ; then
         for ((i=0; i<CHUNK_NUM; i++))
         do
@@ -338,7 +341,7 @@ else
     else
         ln -s $OUT_PREFIX.ont.fasta $OUT_PREFIX.ont.0.fasta
     fi
-    print_info "step 2 , done ."
+    print_info "Step 2 , done ."
 fi
 
 #####################################################################
@@ -347,28 +350,48 @@ fi
 #
 ############################################################3########
 if [[ $NE == "yes" ]] ; then 
-    print_info "step 3 , skip error-correction by --ne option."
+    print_info "Step 3 , skip error-correction by --ne option."
 else
     if [[ $USE_RACON == "yes"]]  ; then
-        print_info "step 3 , error-correction by racon ...  "
-        print_info "       -    racon each chunk ...  "
-        $MiniMap2 -t $THREAD $MINIMAP2_PARAM $OUT_PREFIX.ont.$i.fasta $TGS_FA 1>$OUT_PREFIX.$i.paf 2>$OUT_PREFIX.minimap2.03.log
-        $RACON -t $CPU $TGS_FA $OUT_PREFIX.$i.paf $OUT_PREFIX.ont.$i.fasta 1>$OUT_PREFIX.ont.$i.raconr1.fasta 2>$OUT_PREFIX.$i.racon.log
-    else
-        print_info "step 3 , error-correction by pilon ...  "
-        print_info "       -    pilon each chunk ...  "
+        print_info "Step 3.A , error-correction by racon ...  "
+        print_info_line "3.A.1 , racon each chunk ...  "
         for ((i=0; i<CHUNK_NUM; i++))
         do
-            print_info "            -   -   chunk $i -  minimap2 indexing ... "
+            print_info_line "   -   chunk $i -  minimap2 ... "
+            $MiniMap2 -t $THREAD $MINIMAP2_PARAM $OUT_PREFIX.ont.$i.fasta $TGS_READS \
+                1>$OUT_PREFIX.$i.paf 2>$OUT_PREFIX.minimap2.03.log
+            print_info_line "   -   chunk $i -  racon ... "
+            $RACON -t $THREAD $TGS_READS $OUT_PREFIX.$i.paf $OUT_PREFIX.ont.$i.fasta \
+                1>$OUT_PREFIX.ont.$i.racon.fasta 2>$OUT_PREFIX.$i.racon.log
+        done
+        print_info_line "3.A.2 , merge each chunk ...  "
+        if [[ $CHUNK_NUM != "1" ]] ; then 
+            for ((i=0; i<CHUNK_NUM; i++))
+            do
+                cat $OUT_PREFIX.ont.$i.racon.fasta >> $OUT_PREFIX.ont.racon.fasta
+                cat $OUT_PREFIX.$i.racon.log >> $OUT_PREFIX.racon.log
+                rm -rf $OUT_PREFIX.ont.$i.racon.fasta
+                rm -rf $OUT_PREFIX.$i.racon.log
+            done
+        else
+            mv $OUT_PREFIX.ont.0.racon.fasta  $OUT_PREFIX.ont.racon.fasta
+            mv $OUT_PREFIX.0.racon.log  $OUT_PREFIX.racon.log
+        fi
+    else
+        print_info "Step 3.B , error-correction by pilon ...  "
+        print_info_line "3.B.1 ,  pilon each chunk ...  "
+        for ((i=0; i<CHUNK_NUM; i++))
+        do
+            print_info_line "   -   chunk $i -  minimap2 indexing ... "
             $MiniMap2 -t $THREAD -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$i.fasta \
                 1>$OUT_PREFIX.minimap2.02.log 2>&1 || exit 1
-            print_info "            -   -   chunk $i -  minimap2 mapping ngs into tgs ... "
+            print_info_line "   -   chunk $i -  minimap2 mapping ngs into tgs ... "
             $MiniMap2-t $THREAD -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  \
                 --split-prefix=$OUT_PREFIX.$i \
                 -a $OUT_PREFIX.mmi  $READ12  \
                 1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.log || exit 1
 
-            print_info "            -   -   chunk $i -  process required bam ... "
+            print_info_line "   -   chunk $i -  process required bam ... "
             awk 'BEGIN{t["none"]=1;}{if( $1 == "@SQ" ){if( $2 in t ){;}else{t[$2]=1;print $0;}}else{print $0;}}'\
                 < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
             $SAMTOOL view -bo $OUT_PREFIX.bam  $OUT_PREFIX.fiter.sam -@ $THREAD \
@@ -377,13 +400,13 @@ else
                     >$OUT_PREFIX.samtool_02.log 2>&1 || exit 1
             $SAMTOOL index $OUT_PREFIX.sort.bam -@ $THREAD \
                     >$OUT_PREFIX.samtool_03.log 2>&1 || exit 1
-            print_info  "           -   -   chunk $i -  run pilon ... "
+            print_info_line  "   -   chunk $i -  run pilon ... "
             $JAVA -Xmx$PILON_MEM -jar  $PILON --fix all \
                 --genome $OUT_PREFIX.ont.$i.fasta --bam $OUT_PREFIX.sort.bam \
                 --output $OUT_PREFIX.ont.$i.pilon --outdir ./ \
                 --diploid  --threads $THREAD >$OUT_PREFIX.$i.pilon.log 2>$OUT_PREFIX.pilon.err || exit 1
         done
-        print_info "       -    merge chunk results... "
+        print_info_line "3.B.2 , merge chunk results ... "
         if [[ $CHUNK_NUM != "1" ]] ; then 
             for ((i=0; i<CHUNK_NUM; i++))
             do
@@ -397,5 +420,45 @@ else
             mv $OUT_PREFIX.0.pilon.log  $OUT_PREFIX.pilon.log
         fi
     fi
-    print_info "step 3 , done ."
+    print_info "Step 3 , done ."
 fi
+
+#####################################################################
+#
+# Step 4 :  gap-filling
+#
+#####################################################################
+
+print_info "Step 4 , gap filling ... "
+FINAL_READS=""
+if [[ $NE == "yes" ]] ; then 
+    print_info_line "Use $TGS_READS as final TGS READS input."
+    FINAL_READS=$TGS_READS
+else
+    if [[ USE_RACON == "yes" ]]  ; then  
+        print_info_line "Use $OUT_PREFIX.ont.racon.fasta as final TGS READS input"
+        FINAL_READS=$OUT_PREFIX.ont.racon.fasta
+    else
+        print_info_line "Use $OUT_PREFIX.ont.pilon.fasta as final TGS READS input"
+        FINAL_READS=$OUT_PREFIX.ont.pilon.fasta
+    fi
+fi
+check_file $FINAL_READS 
+check_file $TMP_INPUT_SCAFTIG
+print_info_line "4,1 , mapping contig into reads ... "
+$MiniMap2  $MINIMAP2_PARAM  -t $THREAD  $FINAL_READS $TMP_INPUT_SCAFTIG  \
+        1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
+print_info_line "4,2 , extra filling seq ... "
+$GapFiller --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
+            --min_match=$MinMatch --min_idy=$MinIDY \
+            --prefix $OUT_PREFIX 1>$OUT_PREFIX.fill.log  2>&1|| exit 1
+print_info_line "4,2 , gen final seq ... "
+$SeqGen --prefix  $OUT_PREFIX 1>$OUT_PREFIX.i2s.log 2>&1  || exit 1
+print_info "Step 4 , done ."
+
+#####################################################################
+#
+# ALL DONE
+#
+#####################################################################
+print_info "ALL DONE !!! "
