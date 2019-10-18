@@ -123,7 +123,7 @@ THREAD=16
 MIN_IDY="0.3"
 MIN_IDY_USER="no"
 MIN_MATCH="300"
-MIN_MATCH_USER="false"
+MIN_MATCH_USER="no"
 PILON_MEM="300G"
 MINIMAP2_PARAM=" -x ava-ont "
 CHUNK_NUM=3
@@ -271,7 +271,7 @@ check_arg_null "output" $OUT_PREFIX
 if [[ $NE == "no" ]] ; then
     if [[ $NGS_READS != "" ]] ; then 
         check_arg_exist "ngs" $NGS_READS
-        check_arg_exe "pilon" $PILON
+        check_arg_exist "pilon" $PILON
         check_arg_exe "samtool" $SAMTOOL
         check_arg_exe "java" $JAVA
         print_info_line "Will do error-correcting by pilon with ngs-reads. "
@@ -291,10 +291,10 @@ if [[ $TGS_TYPE == "pb" ]] ; then
         MIN_IDY="0.2"
     fi
     if [[ $MIN_MATCH_USER == "no" ]] ; then
-        MIN_IDY="200"
+        MIN_MATCH="200"
     fi
 fi
-print_info_line "TGS reads type is $TGS_TYPE . MIN_IDY is $MIN_IDY . MIN_MATCH is $MIN_MATCH ."
+print_info_line "TGS reads type is $TGS_TYPE . MINIMAP2_PARAM is $MINIMAP2_PARAM  MIN_IDY is $MIN_IDY . MIN_MATCH is $MIN_MATCH ."
 
 print_info "Checking basic args & env end."
 #####################################################################
@@ -302,9 +302,12 @@ print_info "Checking basic args & env end."
 #   step 1 , split input scaffold
 #
 ############################################################3########
+TMP_INPUT_SCAFTIG=$OUT_PREFIX".contig"
 print_info "Step 1 , run TGSSeqSplit to split scaffolds into contigs. "
 $SeqSplit --input_scaff $INPUT_SCAFF \
     --prefix $OUT_PREFIX 2>$OUT_PREFIX.seq_split.log || exit 1 
+
+check_file $TMP_INPUT_SCAFTIG
 
 print_info "Step 1 , done ."
 
@@ -313,14 +316,12 @@ print_info "Step 1 , done ."
 #   step 2 , choose candidate filling sequences .
 #
 ############################################################3########
-TMP_INPUT_SCAFTIG=""
 if [[ $NE == "yes" ]] ; then 
     print_info "Step 2 , skip TGSCandidate by --ne option."
 else
     print_info "Step 2 , run TGSCandidate ... "
     # run minimap2
     print_info_line "2.1 , run minmap2 to map contig into tgs-reads."
-    TMP_INPUT_SCAFTIG=$OUT_PREFIX".contig"
     check_file $TMP_INPUT_SCAFTIG
     $MiniMap2  $MINIMAP2_PARAM  -t $THREAD  \
         $TGS_READS  $TMP_INPUT_SCAFTIG \
@@ -356,7 +357,7 @@ fi
 if [[ $NE == "yes" ]] ; then 
     print_info "Step 3 , skip error-correction by --ne option."
 else
-    if [[ $USE_RACON == "yes"]]  ; then
+    if [[ $USE_RACON == "yes" ]]  ; then
         print_info "Step 3.A , error-correction by racon ...  "
         print_info_line "3.A.1 , racon each chunk ...  "
         for ((i=0; i<CHUNK_NUM; i++))
@@ -390,7 +391,7 @@ else
             $MiniMap2 -t $THREAD -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$i.fasta \
                 1>$OUT_PREFIX.minimap2.02.log 2>&1 || exit 1
             print_info_line "   -   chunk $i -  minimap2 mapping ngs into tgs ... "
-            $MiniMap2-t $THREAD -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  \
+            $MiniMap2 -t $THREAD -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  \
                 --split-prefix=$OUT_PREFIX.$i \
                 -a $OUT_PREFIX.mmi  $READ12  \
                 1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.log || exit 1
@@ -439,7 +440,7 @@ if [[ $NE == "yes" ]] ; then
     print_info_line "Use $TGS_READS as final TGS READS input."
     FINAL_READS=$TGS_READS
 else
-    if [[ USE_RACON == "yes" ]]  ; then  
+    if [[ $USE_RACON == "yes" ]]  ; then  
         print_info_line "Use $OUT_PREFIX.ont.racon.fasta as final TGS READS input"
         FINAL_READS=$OUT_PREFIX.ont.racon.fasta
     else
@@ -454,7 +455,7 @@ $MiniMap2  $MINIMAP2_PARAM  -t $THREAD  $FINAL_READS $TMP_INPUT_SCAFTIG  \
         1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
 print_info_line "4,2 , extra filling seq ... "
 $GapFiller --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
-            --min_match=$MinMatch --min_idy=$MinIDY \
+            --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
             --prefix $OUT_PREFIX 1>$OUT_PREFIX.fill.log  2>&1|| exit 1
 print_info_line "4,2 , gen final seq ... "
 $SeqGen --prefix  $OUT_PREFIX 1>$OUT_PREFIX.i2s.log 2>&1  || exit 1
