@@ -36,7 +36,8 @@ function print_info()
 function print_fatal()
 {
     echo "";
-    echo "FATAL :   $1 ! exit ..."
+    echo "FATAL :   $1 ! exit ...";
+    echo " try -h/--help for usage."
     exit 1 ;
 }
 function print_help()
@@ -129,7 +130,10 @@ CHUNK_NUM=3
 USE_RACON="yes"
 
 print_info "Parsing args starting ..."
-
+if [[ $# -lt 1 ]] ; then 
+    print_help
+    exit 1 ;
+fi
 ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtool:,java:,tgstype:,thread:,min_idy:,min_match:,pilon_mem:,ne  -- "$@"`
 eval set -- "$ARGS"
 while true; do
@@ -137,7 +141,7 @@ while true; do
         -h|--help)
             shift;
             print_help;
-            exit;
+            exit 1;
         ;;
         --scaff)
             shift;
