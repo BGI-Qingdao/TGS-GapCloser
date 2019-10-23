@@ -50,33 +50,33 @@ make
 Usage:
       TGSGapFiller --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]
       required:
-          --scaff     <scaffold_file>      input draft scaffolds.
-          --reads     <tgs_reads_file>     input TGS reads.
-          --output    <output_prefix>      output prefix.
+          --scaff     <draft scaffolds>      input draft scaffolds.
+          --reads     <TGS reads>     input TGS reads.
+          --output    <output prefix>      output prefix.
      ## error correction module
           --ne                             do not execute error correction.
           or
-          --racon     <racon>              installed racon. Can be install following https://github.com/isovic/racon
+          --racon     <racon>              installed racon. Can be installed following https://github.com/isovic/racon
           or
-          --pilon     <pilon>              installed pilon jar package. Can download from https://github.com/broadinstitute/pilon/releases/download/v1.23/pilon-1.23.jar
+          --pilon     <pilon>              installed pilon jar package. Can be downloaded from https://github.com/broadinstitute/pilon/releases/download/v1.23/pilon-1.23.jar
           --java      <java>               installed java.
-          --ngs       <ngs_reads>          input NGS reads used for pilon
+          --ngs       <ngs_reads>          input NGS reads used for pilon.
           --samtool   <samtool>            installed samtool.
           
           
       optional:
-          --tgstype   <pb/ont>             TGS type . ont by default.
-          --min_idy   <min_idy>            min_idy for filter reads .
+          --tgstype   <pb/ont>             TGS type. ont by default.
+          --min_idy   <float>              minimum identity for filtering candidate sequences.
                                            0.3 for ont by default.
                                            0.2 for pb by default.
-          --min_match <min_idy>            min match length for filter reads .
-                                           300bp for ont by default.
-                                           200bp for pb by default.
-          --thread    <t_num>              thread uesd . 16 by default.
-          --pilon_mem <t_num>              memory used for pilon , 300G for default.
-          --chunk     <chunk_num>          split candidate into chunks to error-correct separately.
-          --p_round   <pilon_round>        pilon error-correction round num . 3 by default.
-          --r_round   <racon_round>        racon error-correction round num . 1 by default.
+          --min_match <int>                minimum matched length for filtering candidate sequences.
+                                           300 for ont by default.
+                                           200 for pb by default.
+          --thread    <int>                number of threads uesd. 16 by default.
+          --pilon_mem <int>                memory used for pilon, passing to -Xmx.  can use “m” or “M” for MB, or “g” or “G” for GB. 300G by default.
+          --chunk     <int>                split candidates into # of chunks to separately correct errors. 3 by default.
+          --p_round   <int>                iteration number for pilon error-correction. 3 by default.
+          --r_round   <int>                iteration number for racon error-correction. 1 by default.
 ```
 
 ### version without error correction 
