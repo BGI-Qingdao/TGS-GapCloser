@@ -54,14 +54,15 @@ Usage:
           --reads     <tgs_reads_file>     input TGS reads.
           --output    <output_prefix>      output prefix.
      ## error correction module
-          --ne                             do not execute error correct.
+          --ne                             do not execute error correction.
           or
-          --racon     <racon>              the installed racon.
+          --racon     <racon>              installed racon. Can be install following https://github.com/isovic/racon
           or
-          --ngs       <ngs_reads>          the ngs reads used for pilon
-          --pilon     <pilon>              the installed pilon.
-          --samtool   <samtool>            the installed samtool.
-          --java      <java>               the installed java.
+          --pilon     <pilon>              installed pilon jar package. Can download from https://github.com/broadinstitute/pilon/releases/download/v1.23/pilon-1.23.jar
+          --java      <java>               installed java.
+          --ngs       <ngs_reads>          input NGS reads used for pilon
+          --samtool   <samtool>            installed samtool.
+          
           
       optional:
           --tgstype   <pb/ont>             TGS type . ont by default.
