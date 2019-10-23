@@ -142,13 +142,13 @@ YOUR-INSTALL-DIR/TGSGapFiller.sh  \
 ## Output
 
 - your-prefix.scaff_seq 
-    - this is the final sequence after gap filling
+    - this is the final assembly after gap filling
 - your-prefix.gap_fill_details
-    - details about how the final sequence was assemblied 
+    - details about how the final assembly was assemblied 
 
 ### format of your-prefix.gap_fill_details
 
-#### a example :
+#### an example:
 
 ```
 >scaffold_1
@@ -164,13 +164,12 @@ YOUR-INSTALL-DIR/TGSGapFiller.sh  \
 #### detailed information
 
 1. each scaffold name is followed by its data lines.
-2. data line contains 3 or 5 columns and describes the source of a segments of the final sequence:
-    - column 1 is the segment's first bp position at the final sequence.
-    - column 2 is the segment's last bp position at the final sequence.
+2. a data line consists of 3 or 5 columns and describes the source of each segment in the final sequence:
+    - column 1 is the segment's first bp position in the final sequence.
+    - column 2 is the segment's last bp position in the final sequence.
     - column 3 is the segment's type , 'S' , 'N' or 'F'.
-        - 'S' means this segment is a segment of the input sequence and this line includes other 2 more columns :
-            - column 4 is the segment's first bp position at the input sequence.
-            - column 5 is the segment's last bp position at the input sequence.
-        - 'N' means this segment is N area.
-        - 'F' means this segment is a filled sequence from TGS reads .
-
+        - 'S' means this segment is a segment of the input sequence and this line includes other two more columns:
+            - column 4 is the segment's first bp position in the input sequence.
+            - column 5 is the segment's last bp position in the input sequence.
+        - 'N' means this segment is a N area.
+        - 'F' means this segment is a filled sequence from TGS reads.
