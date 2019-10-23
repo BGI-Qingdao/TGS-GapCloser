@@ -66,8 +66,10 @@ function print_help()
     echo "                                           300bp for ont by default."
     echo "                                           200bp for pb by default."
     echo "          --thread    <t_num>              thread uesd . 16 by default."
-    echo "          --pilon_mem <t_num>              memory used for pilon , 300G for default."
     echo "          --chunk     <chunk_num>          split candidate into chunks to error-correct separately."
+    echo "          --pilon_mem <t_num>              memory used for pilon , 300G for default."
+    echo "          --p_round   <pilon_round>        pilon error-correction round num . 3 by default."
+    echo "          --r_round   <racon_round>        racon error-correction round num . 1 by default."
 }
 
 function check_arg_null() {
@@ -128,13 +130,15 @@ PILON_MEM="300G"
 MINIMAP2_PARAM=" -x ava-ont "
 CHUNK_NUM=3
 USE_RACON="yes"
+PILON_ROUND=3
+RACON_ROUND=1
 
 print_info "Parsing args starting ..."
 if [[ $# -lt 1 ]] ; then 
     print_help
     exit 1 ;
 fi
-ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtool:,java:,tgstype:,thread:,min_idy:,min_match:,pilon_mem:,ne  -- "$@"`
+ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtool:,java:,tgstype:,thread:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne  -- "$@"`
 eval set -- "$ARGS"
 while true; do
     case "$1" in
@@ -222,6 +226,18 @@ while true; do
             PILON_MEM=$1
             shift;
             echo  "             --pilon_mem $PILON_MEM"
+        ;;
+        --p_round)
+            shift;
+            PILON_ROUND=$1
+            shift;
+            echo  "             --p_round $PILON_ROUND"
+        ;;
+        --r_round)
+            shift;
+            RACON_ROUND=$1
+            shift;
+            echo  "             --r_round $RACON_ROUND"
         ;;
         --chunk)
             shift;
@@ -341,10 +357,10 @@ else
         for ((i=0; i<CHUNK_NUM; i++))
         do
             awk 'BEGIN{id=0}{if($1 ~ />/ ){id=id+1;} if(id % cov == the_i) {print $0;} }' cov=$CHUNK_NUM the_i=$i \
-                <$OUT_PREFIX.ont.fasta >$OUT_PREFIX.ont.$i.fasta || exit 1 ;
+                <$OUT_PREFIX.ont.fasta >$OUT_PREFIX.ont.0.$i.fasta || exit 1 ;
         done
     else
-        ln -s $OUT_PREFIX.ont.fasta $OUT_PREFIX.ont.0.fasta
+        ln -s $OUT_PREFIX.ont.fasta $OUT_PREFIX.ont.0.0.fasta
     fi
     print_info "Step 2 , done ."
 fi
@@ -385,44 +401,62 @@ else
     else
         print_info "Step 3.B , error-correction by pilon ...  "
         print_info_line "3.B.1 ,  pilon each chunk ...  "
-        for ((i=0; i<CHUNK_NUM; i++))
+        prev_round=0;
+        last_round=0;
+        for ((round=0; i<PILON_ROUND ; round++))
         do
-            print_info_line "   -   chunk $i -  minimap2 indexing ... "
-            $MiniMap2 -t $THREAD -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$i.fasta \
-                1>$OUT_PREFIX.minimap2.02.log 2>&1 || exit 1
-            print_info_line "   -   chunk $i -  minimap2 mapping ngs into tgs ... "
-            $MiniMap2 -t $THREAD -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  \
-                --split-prefix=$OUT_PREFIX.$i \
-                -a $OUT_PREFIX.mmi  $READ12  \
-                1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.log || exit 1
+            print_info_line "   -   round $round start ... "
+            if [[ $round != $last_round ]] ; then 
+                prev_round=$last_round
+                last_round=$round
+            fi
+            for ((i=0; i<CHUNK_NUM; i++))
+            do
+                curr_tag="$round"".""$i"
+                print_info_line "   -   round $round chunk $i -  minimap2 indexing ... "
+                if [[ $round -gt 0 ]] ; then 
+                    prev_tag="$prev_round"".""$i"
+                    ln -s  $OUT_PREFIX.ont.$prev_tag.pilon.fasta $OUT_PREFIX.ont.$curr_tag.fasta
+                fi
+                $MiniMap2 -t $THREAD -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$curr_tag.fasta \
+                    1>$UT_PREFIX.minimap2.02.$curr_tag.log 2>&1 || exit 1
+                print_info_line "   -   round $round chunk $i -  minimap2 mapping ngs into tgs ... "
+                $MiniMap2 -t $THREAD -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  \
+                    --split-prefix=$OUT_PREFIX.$curr_tag \
+                    -a $OUT_PREFIX.mmi  $READ12  \
+                    1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.$curr_tag.log || exit 1
 
-            print_info_line "   -   chunk $i -  process required bam ... "
-            awk 'BEGIN{t["none"]=1;}{if( $1 == "@SQ" ){if( $2 in t ){;}else{t[$2]=1;print $0;}}else{print $0;}}'\
-                < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
-            $SAMTOOL view -bo $OUT_PREFIX.bam  $OUT_PREFIX.fiter.sam -@ $THREAD \
-                    >$OUT_PREFIX.samtool_01.log 2>&1 || exit 1
-            $SAMTOOL sort -m 8G $OUT_PREFIX.bam -o $OUT_PREFIX.sort.bam -@ $THREAD \
-                    >$OUT_PREFIX.samtool_02.log 2>&1 || exit 1
-            $SAMTOOL index $OUT_PREFIX.sort.bam -@ $THREAD \
-                    >$OUT_PREFIX.samtool_03.log 2>&1 || exit 1
-            print_info_line  "   -   chunk $i -  run pilon ... "
-            $JAVA -Xmx$PILON_MEM -jar  $PILON --fix all \
-                --genome $OUT_PREFIX.ont.$i.fasta --bam $OUT_PREFIX.sort.bam \
-                --output $OUT_PREFIX.ont.$i.pilon --outdir ./ \
-                --diploid  --threads $THREAD >$OUT_PREFIX.$i.pilon.log 2>$OUT_PREFIX.pilon.err || exit 1
+                print_info_line "   -   round $round chunk $i -  process required bam ... "
+                awk 'BEGIN{t["none"]=1;}{if( $1 == "@SQ" ){if( $2 in t ){;}else{t[$2]=1;print $0;}}else{print $0;}}'\
+                    < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
+                $SAMTOOL view -bo $OUT_PREFIX.bam  $OUT_PREFIX.fiter.sam -@ $THREAD \
+                        >$OUT_PREFIX.samtool_01.$curr_tag.log 2>&1 || exit 1
+                $SAMTOOL sort -m 8G $OUT_PREFIX.bam -o $OUT_PREFIX.sort.bam -@ $THREAD \
+                        >$OUT_PREFIX.samtool_02.$curr_tag.log 2>&1 || exit 1
+                $SAMTOOL index $OUT_PREFIX.sort.bam -@ $THREAD \
+                        >$OUT_PREFIX.samtool_03.$curr_tag.log 2>&1 || exit 1
+                print_info_line  "   -   round $round chunk $i -  run pilon ... "
+                $JAVA -Xmx$PILON_MEM -jar  $PILON --fix all \
+                    --genome $OUT_PREFIX.ont.$curr_tag.fasta --bam $OUT_PREFIX.sort.bam \
+                    --output $OUT_PREFIX.ont.$curr_tag.pilon --outdir ./ \
+                    --diploid  --threads $THREAD >$OUT_PREFIX.$curr_tag.pilon.log 2>$OUT_PREFIX.pilon.$curr_tag.err || exit 1
+            done
+            print_info_line "   -   round $round end. "
         done
         print_info_line "3.B.2 , merge chunk results ... "
         if [[ $CHUNK_NUM != "1" ]] ; then 
             for ((i=0; i<CHUNK_NUM; i++))
             do
-                cat $OUT_PREFIX.ont.$i.pilon.fasta >> $OUT_PREFIX.ont.pilon.fasta
-                cat $OUT_PREFIX.$i.pilon.log >> $OUT_PREFIX.pilon.log
-                rm -rf $OUT_PREFIX.ont.$i.pilon.fasta
-                rm -rf $OUT_PREFIX.$i.pilon.log
+                curr_tag="$last_round"".""$i"
+                cat $OUT_PREFIX.ont.$curr_tag.pilon.fasta >> $OUT_PREFIX.ont.pilon.fasta
+                cat $OUT_PREFIX.$curr_tag.pilon.log >> $OUT_PREFIX.pilon.log
+                rm -rf $OUT_PREFIX.ont.$curr_tag.pilon.fasta
+                rm -rf $OUT_PREFIX.$curr_tag.pilon.log
             done
         else
-            mv $OUT_PREFIX.ont.0.pilon.fasta  $OUT_PREFIX.ont.pilon.fasta
-            mv $OUT_PREFIX.0.pilon.log  $OUT_PREFIX.pilon.log
+            curr_tag="$last_round"".0"
+            mv $OUT_PREFIX.ont.$curr_tag.pilon.fasta  $OUT_PREFIX.ont.pilon.fasta
+            mv $OUT_PREFIX.$curr_tag.pilon.log  $OUT_PREFIX.pilon.log
         fi
     fi
     print_info "Step 3 , done ."
