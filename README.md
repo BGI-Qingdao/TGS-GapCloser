@@ -35,7 +35,7 @@ git submodule init
 git submodule update
 ```
 
-#### compile main
+#### compile main src
 
 ```
 cd YOUR-INSTALL-DIR/main_src_ont
@@ -49,12 +49,12 @@ make
 ```
 Usage:
       TGSGapFiller --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]
-      required :
-          --scaff     <scaffold_file>      the input scaffold file.
-          --reads     <tgs_reads_file>     the input TGS reads file.
-          --output    <output_prefix>      the output prefix.
-      part required :
-          --ne                             do not error correct. error correct by default.
+      required:
+          --scaff     <scaffold_file>      input draft scaffolds.
+          --reads     <tgs_reads_file>     input TGS reads.
+          --output    <output_prefix>      output prefix.
+     ## error correction module
+          --ne                             do not execute error correct.
           or
           --racon     <racon>              the installed racon.
           or
@@ -62,6 +62,7 @@ Usage:
           --pilon     <pilon>              the installed pilon.
           --samtool   <samtool>            the installed samtool.
           --java      <java>               the installed java.
+          
       optional:
           --tgstype   <pb/ont>             TGS type . ont by default.
           --min_idy   <min_idy>            min_idy for filter reads .
