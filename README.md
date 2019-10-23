@@ -71,6 +71,8 @@ Usage:
           --thread    <t_num>              thread uesd . 16 by default.
           --pilon_mem <t_num>              memory used for pilon , 300G for default.
           --chunk     <chunk_num>          split candidate into chunks to error-correct separately.
+          --p_round   <pilon_round>        pilon error-correction round num . 3 by default.
+          --r_round   <racon_round>        racon error-correction round num . 1 by default.
 ```
 
 ### version without error correction 
