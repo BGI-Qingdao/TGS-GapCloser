@@ -69,6 +69,7 @@ function print_help()
     echo "          --chunk     <chunk_num>          split candidate into chunks to error-correct separately."
     echo "          --pilon_mem <t_num>              memory used for pilon , 300G for default."
     echo "          --p_round   <pilon_round>        pilon error-correction round num . 3 by default."
+    echo "          --r_round   <racon_round>        racon error-correction round num . 1 by default."
 }
 
 function check_arg_null() {
@@ -130,13 +131,14 @@ MINIMAP2_PARAM=" -x ava-ont "
 CHUNK_NUM=3
 USE_RACON="yes"
 PILON_ROUND=3
+RACON_ROUND=1
 
 print_info "Parsing args starting ..."
 if [[ $# -lt 1 ]] ; then 
     print_help
     exit 1 ;
 fi
-ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtool:,java:,tgstype:,thread:,min_idy:,min_match:,pilon_mem:,p_round:,ne  -- "$@"`
+ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtool:,java:,tgstype:,thread:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne  -- "$@"`
 eval set -- "$ARGS"
 while true; do
     case "$1" in
@@ -230,6 +232,12 @@ while true; do
             PILON_ROUND=$1
             shift;
             echo  "             --p_round $PILON_ROUND"
+        ;;
+        --r_round)
+            shift;
+            RACON_ROUND=$1
+            shift;
+            echo  "             --r_round $RACON_ROUND"
         ;;
         --chunk)
             shift;
@@ -368,27 +376,45 @@ else
     if [[ $USE_RACON == "yes" ]]  ; then
         print_info "Step 3.A , error-correction by racon ...  "
         print_info_line "3.A.1 , racon each chunk ...  "
-        for ((i=0; i<CHUNK_NUM; i++))
+        prev_round=0;
+        last_round=0;
+        for ((round=0; round<RACON_ROUND ; round++))
         do
-            print_info_line "   -   chunk $i -  minimap2 ... "
-            $MiniMap2 -t $THREAD $MINIMAP2_PARAM $OUT_PREFIX.ont.$i.fasta $TGS_READS \
-                1>$OUT_PREFIX.$i.paf 2>$OUT_PREFIX.minimap2.03.log
-            print_info_line "   -   chunk $i -  racon ... "
-            $RACON -t $THREAD $TGS_READS $OUT_PREFIX.$i.paf $OUT_PREFIX.ont.$i.fasta \
-                1>$OUT_PREFIX.ont.$i.racon.fasta 2>$OUT_PREFIX.$i.racon.log
+            if [[ $round != $last_round ]] ; then 
+                prev_round=$last_round
+                last_round=$round
+            fi
+            print_info_line "   -   round $round start ... "
+            for ((i=0; i<CHUNK_NUM; i++))
+            do
+                if [[ $round -gt 0 ]] ; then 
+                    prev_tag="$prev_round"".""$i"
+                    ln -s  $OUT_PREFIX.ont.$prev_tag.racon.fasta $OUT_PREFIX.ont.$curr_tag.fasta
+                fi
+                curr_tag="$round"".""$i"
+                print_info_line "   -   round $round chunk $i -  minimap2 ... "
+                $MiniMap2 -t $THREAD $MINIMAP2_PARAM $OUT_PREFIX.ont.$curr_tag.fasta $TGS_READS \
+                    1>$OUT_PREFIX.$curr_tag.paf 2>$OUT_PREFIX.minimap2.03.$curr_tag.log
+                print_info_line "   -   round $round chunk $i -  racon ... "
+                $RACON -t $THREAD $TGS_READS $OUT_PREFIX.$curr_tag.paf $OUT_PREFIX.ont.$curr_tag.fasta \
+                    1>$OUT_PREFIX.ont.$curr_tag.racon.fasta 2>$OUT_PREFIX.$curr_tag.racon.log
+            done
+            print_info_line "   -   round $round end. "
         done
         print_info_line "3.A.2 , merge each chunk ...  "
         if [[ $CHUNK_NUM != "1" ]] ; then 
             for ((i=0; i<CHUNK_NUM; i++))
             do
-                cat $OUT_PREFIX.ont.$i.racon.fasta >> $OUT_PREFIX.ont.racon.fasta
-                cat $OUT_PREFIX.$i.racon.log >> $OUT_PREFIX.racon.log
-                rm -rf $OUT_PREFIX.ont.$i.racon.fasta
-                rm -rf $OUT_PREFIX.$i.racon.log
+                curr_tag="$last_round"".""$i"
+                cat $OUT_PREFIX.ont.$curr_tag.racon.fasta >> $OUT_PREFIX.ont.racon.fasta
+                cat $OUT_PREFIX.$curr_tag.racon.log >> $OUT_PREFIX.racon.log
+                rm -rf $OUT_PREFIX.ont.$curr_tag.racon.fasta
+                rm -rf $OUT_PREFIX.$curr_tag.racon.log
             done
         else
-            mv $OUT_PREFIX.ont.0.racon.fasta  $OUT_PREFIX.ont.racon.fasta
-            mv $OUT_PREFIX.0.racon.log  $OUT_PREFIX.racon.log
+            curr_tag="$last_round"".0"
+            mv $OUT_PREFIX.ont.$curr_tag.racon.fasta  $OUT_PREFIX.ont.racon.fasta
+            mv $OUT_PREFIX.$curr_tag.racon.log  $OUT_PREFIX.racon.log
         fi
     else
         print_info "Step 3.B , error-correction by pilon ...  "
