@@ -79,9 +79,9 @@ Usage:
           --r_round   <int>                iteration number for racon error-correction. 1 by default.
 ```
 
-### version without error correction 
+## Examples
 
-* example
+### an example of pre-corrected TGS reads without error correction 
 
 ```
 YOUR-INSTALL-DIR/TGSGapFiller.sh  \
@@ -92,7 +92,7 @@ YOUR-INSTALL-DIR/TGSGapFiller.sh  \
         >pipe.log 2>pipe.err
 ```
 
-### version with error correction by racon
+### an example of raw ONT reads with error correction using long reads only
 
 ```
 YOUR-INSTALL-DIR/TGSGapFiller.sh  \
@@ -103,7 +103,7 @@ YOUR-INSTALL-DIR/TGSGapFiller.sh  \
         >pipe.log 2>pipe.err
 ```
 
-### version with error correction by pilon
+### an example of raw ONT reads with error correction using NGS reads
 
 ```
 YOUR-INSTALL-DIR/TGSGapFiller.sh  \
@@ -117,17 +117,17 @@ YOUR-INSTALL-DIR/TGSGapFiller.sh  \
         >pipe.log 2>pipe.err
 ```
 
-### deal with pacbio input reads
+### Using Pacbio reads
 
-* default thild-generation-reads type is ont , use ```--tgstype```  to change it .
+* default TGS type is ONT, use ```--tgstype```  to change it .
 
 ```
     --tgstype ont
-    or 
+    to 
     --tgstype pb
 ```
 
-* An example of use pacbio input reads and use racon to do error-correction
+* an example of raw Pacbio reads with error correction using long reads only
 
 ```
 YOUR-INSTALL-DIR/TGSGapFiller.sh  \
