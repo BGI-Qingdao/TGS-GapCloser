@@ -44,8 +44,6 @@ make
 
 ## Usage 
 
-### basic usage 
-
 ```
 Usage:
       TGSGapFiller --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]
