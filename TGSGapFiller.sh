@@ -69,7 +69,6 @@ function print_help()
     echo "          --chunk     <chunk_num>          split candidate into chunks to error-correct separately."
     echo "          --pilon_mem <t_num>              memory used for pilon , 300G for default."
     echo "          --p_round   <pilon_round>        pilon error-correction round num . 3 by default."
-    echo "          --r_round   <racon_round>        racon error-correction round num . 1 by default."
 }
 
 function check_arg_null() {
@@ -131,14 +130,13 @@ MINIMAP2_PARAM=" -x ava-ont "
 CHUNK_NUM=3
 USE_RACON="yes"
 PILON_ROUND=3
-RACON_ROUND=1
 
 print_info "Parsing args starting ..."
 if [[ $# -lt 1 ]] ; then 
     print_help
     exit 1 ;
 fi
-ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtool:,java:,tgstype:,thread:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne  -- "$@"`
+ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtool:,java:,tgstype:,thread:,min_idy:,min_match:,pilon_mem:,p_round:,ne  -- "$@"`
 eval set -- "$ARGS"
 while true; do
     case "$1" in
@@ -232,12 +230,6 @@ while true; do
             PILON_ROUND=$1
             shift;
             echo  "             --p_round $PILON_ROUND"
-        ;;
-        --r_round)
-            shift;
-            RACON_ROUND=$1
-            shift;
-            echo  "             --r_round $RACON_ROUND"
         ;;
         --chunk)
             shift;
@@ -403,7 +395,7 @@ else
         print_info_line "3.B.1 ,  pilon each chunk ...  "
         prev_round=0;
         last_round=0;
-        for ((round=0; i<PILON_ROUND ; round++))
+        for ((round=0; round<PILON_ROUND ; round++))
         do
             print_info_line "   -   round $round start ... "
             if [[ $round != $last_round ]] ; then 
@@ -423,7 +415,7 @@ else
                 print_info_line "   -   round $round chunk $i -  minimap2 mapping ngs into tgs ... "
                 $MiniMap2 -t $THREAD -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  \
                     --split-prefix=$OUT_PREFIX.$curr_tag \
-                    -a $OUT_PREFIX.mmi  $READ12  \
+                    -a $OUT_PREFIX.mmi  $NGS_READS \
                     1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.$curr_tag.log || exit 1
 
                 print_info_line "   -   round $round chunk $i -  process required bam ... "
