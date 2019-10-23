@@ -1,4 +1,4 @@
-# TGS Gap filler
+# TGS Gap Filler
 
 [![DOI](https://zenodo.org/badge/183120917.svg)](https://zenodo.org/badge/latestdoi/183120917)
 
