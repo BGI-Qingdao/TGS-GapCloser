@@ -437,7 +437,7 @@ else
                     ln -s  $OUT_PREFIX.ont.$prev_tag.pilon.fasta $OUT_PREFIX.ont.$curr_tag.fasta
                 fi
                 $MiniMap2 -t $THREAD -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$curr_tag.fasta \
-                    1>$UT_PREFIX.minimap2.02.$curr_tag.log 2>&1 || exit 1
+                    1>$OUT_PREFIX.minimap2.02.$curr_tag.log 2>&1 || exit 1
                 print_info_line "   -   round $round chunk $i -  minimap2 mapping ngs into tgs ... "
                 $MiniMap2 -t $THREAD -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  \
                     --split-prefix=$OUT_PREFIX.$curr_tag \
