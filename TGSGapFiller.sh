@@ -138,7 +138,7 @@ if [[ $# -lt 1 ]] ; then
     print_help
     exit 1 ;
 fi
-ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtool:,java:,tgstype:,thread:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne  -- "$@"`
+ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtool:,java:,tgstype:,chunk:,thread:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne  -- "$@"`
 eval set -- "$ARGS"
 while true; do
     case "$1" in
