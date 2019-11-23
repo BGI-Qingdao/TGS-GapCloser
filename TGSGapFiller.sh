@@ -55,7 +55,7 @@ function print_help()
     echo "          or"
     echo "          --ngs       <ngs_reads>          the ngs reads used for pilon"
     echo "          --pilon     <pilon>              the installed pilon."
-    echo "          --samtool   <samtool>            the installed samtool."
+    echo "          --samtools  <samtools>           the installed samtools."
     echo "          --java      <java>               the installed java."
     echo "      optional:"
     echo "          --tgstype   <pb/ont>             TGS type . ont by default."
@@ -138,7 +138,7 @@ if [[ $# -lt 1 ]] ; then
     print_help
     exit 1 ;
 fi
-ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtool:,java:,tgstype:,chunk:,thread:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne  -- "$@"`
+ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtools:,java:,tgstype:,chunk:,thread:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne  -- "$@"`
 eval set -- "$ARGS"
 while true; do
     case "$1" in
@@ -177,11 +177,11 @@ while true; do
             shift;
             echo  "             --pilon  $PILON"
         ;;
-        --samtool)
+        --samtools)
             shift;
             SAMTOOL=$1
             shift;
-            echo  "             --samtool  $SAMTOOL"
+            echo  "             --samtools  $SAMTOOL"
         ;;
         --java)
             shift;
@@ -288,7 +288,7 @@ if [[ $NE == "no" ]] ; then
     if [[ $NGS_READS != "" ]] ; then 
         check_arg_exist "ngs" $NGS_READS
         check_arg_exist "pilon" $PILON
-        check_arg_exe "samtool" $SAMTOOL
+        check_arg_exe "samtools" $SAMTOOL
         check_arg_exe "java" $JAVA
         print_info_line "Will do error-correcting by pilon with ngs-reads. "
         USE_RACON="no"
