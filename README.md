@@ -61,7 +61,7 @@ Usage:
           --pilon     <pilon>              installed pilon jar package. Can be downloaded from https://github.com/broadinstitute/pilon/releases/download/v1.23/pilon-1.23.jar
           --java      <java>               installed java.
           --ngs       <ngs_reads>          input NGS reads used for pilon.
-          --samtool   <samtool>            installed samtool.
+          --samtools  <samtools>           installed samtools.
           
           
       optional:
@@ -112,7 +112,7 @@ YOUR-INSTALL-DIR/TGSGapFiller.sh  \
         --output test_pilon \
         --pilon  pilon-path/pilon-1.23.jar  \
         --ngs    ngs-reads-path/ngs.reads.fastq  \
-        --samtool samtools-path/bin/samtools  \
+        --samtools samtools-path/bin/samtools  \
         --java    java-path/bin/java \
         >pipe.log 2>pipe.err
 ```
