@@ -48,7 +48,7 @@ make
 
 ```
 Usage:
-      TGSGapFiller --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]
+      FABuLOUS.sh --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]
       required:
           --scaff     <draft scaffolds>      input draft scaffolds.
           --reads     <TGS reads>     input TGS reads.
@@ -84,7 +84,7 @@ Usage:
 ### an example of pre-corrected TGS reads without error correction 
 
 ```
-YOUR-INSTALL-DIR/TGSGapFiller.sh  \
+YOUR-INSTALL-DIR/FABuLOUS.sh  \
         --scaff  scaffold-path/scaffold.fasta \
         --reads  tgs-reads-path/tgs.reads.fasta \
         --output test_ne  \
@@ -95,23 +95,23 @@ YOUR-INSTALL-DIR/TGSGapFiller.sh  \
 ### an example of raw ONT reads with error correction using long reads only
 
 ```
-YOUR-INSTALL-DIR/TGSGapFiller.sh  \
+YOUR-INSTALL-DIR/FABuLOUS.sh  \
         --scaff  scaffold-path/scaffold.fasta \
         --reads  tgs-reads-path/tgs.reads.fasta \
         --output test_racon \
-        --racon  raconn-path/bin/racon \
+        --racon  racon-path/bin/racon \
         >pipe.log 2>pipe.err
 ```
 
 ### an example of raw ONT reads with error correction using NGS reads
 
 ```
-YOUR-INSTALL-DIR/TGSGapFiller.sh  \
+YOUR-INSTALL-DIR/FABuLOUS.sh  \
         --scaff  scaffold-path/scaffold.fasta \
         --reads  tgs-reads-path/tgs.reads.fasta \
         --output test_pilon \
         --pilon  pilon-path/pilon-1.23.jar  \
-        --ngs    ngs-reads-path/ngs.reads.fastq  \
+        --ngs    ngs-reads-path/ngs.reads.fastq.gz  \
         --samtools samtools-path/bin/samtools  \
         --java    java-path/bin/java \
         >pipe.log 2>pipe.err
@@ -130,7 +130,7 @@ YOUR-INSTALL-DIR/TGSGapFiller.sh  \
 * an example of raw Pacbio reads with error correction using long reads only
 
 ```
-YOUR-INSTALL-DIR/TGSGapFiller.sh  \
+YOUR-INSTALL-DIR/FABuLOUS.sh  \
         --scaff  scaffold-path/scaffold.fasta \
         --reads  tgs-reads-path/tgs.reads.fasta \
         --output test_racon \
