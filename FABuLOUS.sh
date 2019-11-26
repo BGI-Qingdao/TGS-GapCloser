@@ -15,7 +15,7 @@
 VERSION="1.1.1"
 RELEASE_TIME="2019-12-31"
 HOOM_DIR=`dirname $0`
-echo "INFO  :   Run TGSGapFiller from $HOOM_DIR ;"
+echo "INFO  :   Run FABuLOUS.sh from $HOOM_DIR ;"
 echo "          Version : $VERSION ;"
 echo "          Release time : $RELEASE_TIME ."
 echo ""
@@ -43,7 +43,7 @@ function print_fatal()
 function print_help()
 {
     echo "Usage:"
-    echo "      TGSGapFiller --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]"
+    echo "      FABuLOUS.sh  --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]"
     echo "      required :"
     echo "          --scaff     <scaffold_file>      the input scaffold file."
     echo "          --reads     <tgs_reads_file>     the input TGS reads file."
