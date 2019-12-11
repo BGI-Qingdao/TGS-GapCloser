@@ -190,16 +190,16 @@ struct AppConfig
             std::string str ;
             int start_pos = 1 ;
             DiffDetail seq;
-            bool first = true ;
+            //bool first = true ;
             for( const auto & i : pair.second.a_scaff )
             {
-                if( first && i.contig_len == 0 && i.gap_size > 0) { // bug patch for N zone
-                    str += std::string(i.gap_size,'N');
-                    start_pos += i.gap_size ;
-                    first = false ;
-                    continue ;
-                }
-                first = false ;
+                //if( first && i.contig_len == 0 && i.gap_size > 0) { // bug patch for N zone
+                //    str += std::string(i.gap_size,'N');
+                //    start_pos += i.gap_size ;
+                //    first = false ;
+                //    continue ;
+                //}
+                //first = false ;
                 used.insert(i.contig_id);
                 auto ret =  get_atcg(i);
                 if( ret.seq_size  == 0 )
