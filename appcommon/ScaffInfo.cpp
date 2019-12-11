@@ -8,6 +8,7 @@ namespace BGIQD {
 
         const std::string ContigDetail::ONT_FILL = "ONT_FILL" ;
         const std::string ContigDetail::GAP_TYPE = "GAP_TYPE" ;
+        const std::string ContigDetail::PREV_N   = "PREV_N" ;
 
         void ContigDetail::InitFromString(const std::string &line)
         {
@@ -54,6 +55,10 @@ namespace BGIQD {
             int start_pos= 1 ;
             for( auto & contigd : a_scaff )
             {
+                if( contigd.extra.find( ContigDetail::PREV_N) != contigd.extra.end() ) {
+                    int prev_n = std::stoi( contigd.extra[ ContigDetail::PREV_N] ) ;
+                    start_pos += prev_n ;
+                }
                 contigd.start_pos = start_pos;
                 start_pos += contigd.contig_len ;
                 start_pos += contigd.gap_size ;

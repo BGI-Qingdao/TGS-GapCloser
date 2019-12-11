@@ -56,7 +56,8 @@ int main(int argc , char **argv)
             int gap_size ,
             int scaff_id ,
             int scaff_index ,
-            int start_pos 
+            int start_pos ,
+            int start_n 
             ) ->BGIQD::stLFR::ContigDetail 
     {
 
@@ -68,6 +69,8 @@ int main(int argc , char **argv)
         tmp.scaff_id = scaff_id ;
         tmp.scaff_index = scaff_index ;
         tmp.start_pos = start_pos ;
+        if( start_n > 0 )
+            tmp.extra[BGIQD::stLFR::ContigDetail::PREV_N] = std::to_string(start_n) ;
         return tmp ;
     };
 
@@ -86,7 +89,7 @@ int main(int argc , char **argv)
         int contig_len = 0 ;
         int scaff_index = 0 ;
         int start_pos = 0 ;
-
+        int start_n_size = 0 ;
         for( int i = 0 ; i < (int)seq.size() ; i ++ )
         {
             start_pos ++ ;
@@ -114,16 +117,21 @@ int main(int argc , char **argv)
             {
                 if( n_prev )
                 {
-                    scaff_index ++ ;
-                    auto tmp = get_contig_detail( index , contig_len ,gap_size
-                            ,scaff_id , scaff_index , start_pos ) ;
-                    helper.all_scaff[scaff_id].scaff_id = scaff_id ;
-                    helper.all_scaff[scaff_id].a_scaff.push_back(tmp);
+                    if( ! a_scaftig_agcts.empty() ) {
+                        scaff_index ++ ;
+                        auto tmp = get_contig_detail( index , contig_len ,gap_size
+                                ,scaff_id , scaff_index , start_pos , start_n_size) ;
+                        helper.all_scaff[scaff_id].scaff_id = scaff_id ;
+                        helper.all_scaff[scaff_id].a_scaff.push_back(tmp);
 
-                    contig_len = 0 ;
+                        a_scaftig_agcts.clear() ;
+                        start_n_size = 0 ;
+                        contig_len = 0 ;
+                    } else { // means this scaffold start with N zone.
+                        start_n_size = gap_size;
+                    }
                     gap_size = 0 ;
                     gen_contig_detail = true ;
-                    a_scaftig_agcts.clear() ;
                 }
                 a_scaftig_agcts.push_back(x);
                 n_prev = false ;
@@ -147,13 +155,14 @@ int main(int argc , char **argv)
                 {
                     scaff_index++ ;
                     auto tmp = get_contig_detail( index , contig_len ,gap_size
-                            ,scaff_id , scaff_index , start_pos ) ;
+                            ,scaff_id , scaff_index , start_pos ,start_n_size ) ;
                     helper.all_scaff[scaff_id].scaff_id = scaff_id ;
                     helper.all_scaff[scaff_id].a_scaff.push_back(tmp);
 
                     contig_len = 0 ;
                     gap_size = 0 ;
                     gen_contig_detail = true ;
+                    start_n_size = 0 ;
                 }
             }
         }

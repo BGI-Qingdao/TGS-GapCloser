@@ -81,6 +81,7 @@ struct AppConfig
         int fill_size ;
         int cut_size ;
         int seq_size ;
+        int start_n ;
         void SetN(int i )
         {
             assert( i >= 0);
@@ -88,7 +89,11 @@ struct AppConfig
             fill_size = -1;
             nsize = i ;
         }
-
+        void SetStartN( int i )
+        {
+            assert( i >= 0);
+            start_n = i ;
+        }
         void SetCut( int i )
         {
             assert( i >= 0);
@@ -112,6 +117,14 @@ struct AppConfig
         std::string str = contigs.at(detail.contig_id).seq.atcgs ;
         if( ! detail.orientation )
             str = BGIQD::SEQ::seqCompleteReverse(str);
+        ret.SetStartN(0);
+        if( detail.extra.find(BGIQD::stLFR::ContigDetail::PREV_N) != detail.extra.end() ) {
+            int prev_n = std::stoi(detail.extra.at(BGIQD::stLFR::ContigDetail::PREV_N));
+            if( prev_n > 0 ) {
+                ret.SetStartN(prev_n);
+                str = std::string(prev_n,'N') + str ;
+            }
+        }
         if( detail.gap_size > 0 )
         {
             ret.seq_size = str.size();
@@ -136,7 +149,7 @@ struct AppConfig
             if(  (int)str.length() + detail.gap_size > 0 )
             {
                 str = str.substr(0,str.length() + detail.gap_size);
-                ret.seq_size = str.length() + detail.gap_size ;
+                ret.seq_size = str.length() ;//+ detail.gap_size ;
             }
             else
             {
@@ -177,7 +190,7 @@ struct AppConfig
             std::string str ;
             int start_pos = 1 ;
             DiffDetail seq;
-            for( const auto & i : pair.second.a_scaff) 
+            for( const auto & i : pair.second.a_scaff )
             {
                 used.insert(i.contig_id);
                 auto ret =  get_atcg(i);
@@ -189,6 +202,10 @@ struct AppConfig
                 seq.now_s = start_pos ;
                 seq.now_e = start_pos + ret.seq_size -1 ;
                 seq.old_s = i.start_pos ;
+                if( ret.start_n > 0 ) {
+                    seq.old_s -= ret.start_n ;
+                    assert( seq.old_s > 0 ) ;
+                }
                 seq.old_e = seq.old_s + ret.seq_size -1 ;
                 details.push_back(seq);
                 start_pos = seq.now_e +1 ;

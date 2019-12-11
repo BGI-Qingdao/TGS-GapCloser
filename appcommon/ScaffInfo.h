@@ -25,6 +25,7 @@ namespace BGIQD {
 
             static const std::string ONT_FILL  ;
             static const std::string GAP_TYPE ;
+            static const std::string PREV_N ;
         };
 
         struct ScaffInfo
