@@ -393,10 +393,10 @@ else
                 fi
                 curr_tag="$round"".""$i"
                 print_info_line "   -   round $round chunk $i -  minimap2 ... "
-                $MiniMap2 -t $THREAD $MINIMAP2_PARAM $OUT_PREFIX.ont.$curr_tag.fasta $TGS_READS \
+                $MiniMap2 -t $THREAD --dual=yes $MINIMAP2_PARAM $OUT_PREFIX.ont.$curr_tag.fasta $TGS_READS \
                     1>$OUT_PREFIX.$curr_tag.paf 2>$OUT_PREFIX.minimap2.03.$curr_tag.log
                 print_info_line "   -   round $round chunk $i -  racon ... "
-                $RACON -t $THREAD $TGS_READS $OUT_PREFIX.$curr_tag.paf $OUT_PREFIX.ont.$curr_tag.fasta \
+                $RACON -t $THREAD -f $TGS_READS $OUT_PREFIX.$curr_tag.paf $OUT_PREFIX.ont.$curr_tag.fasta \
                     1>$OUT_PREFIX.ont.$curr_tag.racon.fasta 2>$OUT_PREFIX.$curr_tag.racon.log
             done
             print_info_line "   -   round $round end. "
