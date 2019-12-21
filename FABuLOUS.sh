@@ -387,6 +387,8 @@ else
             print_info_line "   -   round $round start ... "
             for ((i=0; i<CHUNK_NUM; i++))
             do
+                curr_tag="$round"".""$i"
+                print_info_line "   -   round $round chunk $i -  minimap2 indexing ... "
                 if [[ $round -gt 0 ]] ; then 
                     prev_tag="$prev_round"".""$i"
                     ln -s  $OUT_PREFIX.ont.$prev_tag.racon.fasta $OUT_PREFIX.ont.$curr_tag.fasta
