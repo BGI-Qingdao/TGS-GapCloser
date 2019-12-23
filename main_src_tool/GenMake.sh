@@ -6,6 +6,7 @@ scripts="\
 apps="\
       FakeRef2Scaff \
       ExtractFakeFill \
+      Contig100K \
       Ref2Gap \
 "
 
