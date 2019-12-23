@@ -85,32 +85,41 @@ int main(int argc , char ** argv )
     //
     ///////////////////////////////////////////////////
     auto out = BGIQD::FILES::FileWriterFactory
-        ::GenerateWriterFromFileName(prefix.to_string() + "out.fa");
+        ::GenerateWriterFromFileName(prefix.to_string() + ".out.fa");
     if( !out ) 
         FATAL(" failed to open xxx.out.fa to write.");
+    int chunk_num = 0;
+    int chunk_from = 0;
     for( const auto & pair : out_reads ) {
+        chunk_from ++;
         const auto & name = pair.first ;
         const auto & seqs = pair.second ;
         for( const auto & pair1 : seqs ) { 
             (*out)<<">"<<name<<"_"<<pair1.first<<'\n';
             (*out)<<pair1.second.Seq(60);
+            chunk_num ++ ;
         }
     }
     delete out ;
-
+    loger<<BGIQD::LOG::lstart()<<" Generate "<<chunk_num <<" chunk from "<< chunk_from <<" contigs."<<BGIQD::LOG::lend();
+    loger<<BGIQD::LOG::lstart()<<" Total trunk size "<<chunk_num *chunk <<" bp."<<BGIQD::LOG::lend();
 
     auto out1 = BGIQD::FILES::FileWriterFactory
-        ::GenerateWriterFromFileName(prefix.to_string() + "discard.fa");
+        ::GenerateWriterFromFileName(prefix.to_string() + ".discard.fa");
     if( !out1 ) 
         FATAL(" failed to open xxx.discard.fa to write.");
+    long discard = 0 ;
     for( const auto & pair : discard_reads ) {
         const auto & name = pair.first ;
         const auto & seqs = pair.second ;
-        for( const auto & pair1 : seqs ) { 
+        for( const auto & pair1 : seqs ) {
+            discard += pair1.second.Len() ;
             (*out1)<<">"<<name<<"_"<<pair1.first<<'\n';
             (*out1)<<pair1.second.Seq(60);
         }
     }
     delete out1 ;
+
+    loger<<BGIQD::LOG::lstart()<<" Total discard size "<<discard <<" bp."<<BGIQD::LOG::lend();
     return 0 ;
 }
