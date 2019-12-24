@@ -67,12 +67,12 @@ int main(int argc , char ** argv )
         const auto & name = pair.first ;
         const auto & seq = pair.second ;
         int i = 0 ; 
-        for( i = 0 ; seq.Len() - i > chunk ; i+=chunk ) {
+        for( i = 0 ; seq.Len() - i >= chunk ; i+=chunk ) {
             Seq tmp ;
             tmp.AddPartSeq(seq.atcgs.substr(i,chunk));
             out_reads[name][i] = tmp ;
         }
-        if ( i < seq.Len() -1 ) {
+        if ( i < seq.Len()  ) {
             assert( seq.Len() - i < chunk );
             Seq tmp ;
             tmp.AddPartSeq(seq.atcgs.substr(i,seq.Len() - i));
