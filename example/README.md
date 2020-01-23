@@ -14,13 +14,13 @@ cd ../ && make
 ### run with racon 
 
 ```
-../FABuLOUS.sh --scaff input.scaff.fasta --reads ont.reads.fasta --output test_racon --racon YOUR-RACON-FILE
+../TGS-GapCloser.sh --scaff input.scaff.fasta --reads ont.reads.fasta --output test_racon --racon YOUR-RACON-FILE
 ```
 
 ### run with pilon
 
 ```
-../FABuLOUS.sh --scaff input.scaff.fasta --reads ont.reads.fasta --output test_pilon --ngs ngs.reads.fastq  \
+../TGS-GapCloser.sh --scaff input.scaff.fasta --reads ont.reads.fasta --output test_pilon --ngs ngs.reads.fastq  \
 	--pilon  pilon-path/pilon-1.23.jar  \
         --samtools samtools-path/bin/samtools  \
         --java    java-path/bin/java \
@@ -29,5 +29,5 @@ cd ../ && make
 ### run without error-correction
 
 ```
-../FABuLOUS.sh --scaff input.scaff.fasta --reads ont.reads.fasta --output test_ne --ne
+../TGS-GapCloser.sh --scaff input.scaff.fasta --reads ont.reads.fasta --output test_ne --ne
 ```
