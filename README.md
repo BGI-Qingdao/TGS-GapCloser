@@ -1,4 +1,4 @@
-# TGS-GapCloser (Fast and Accurately passing through the Bermuda in Large genOme Using error-prone third-generation-Sequencing long reads)
+# TGS-GapCloser
 
 [![DOI](https://zenodo.org/badge/183120917.svg)](https://zenodo.org/badge/latestdoi/183120917)
 
