@@ -185,4 +185,5 @@ TGS-GapCloser: fast and accurately passing through the Bermuda in large genome u
 Mengyang Xu, Lidong Guo, Shengqiang Gu, Ou Wang, Rui Zhang, Guangyi Fan, Xun Xu, Li Deng, Xin Liu
 bioRxiv 831248; doi: https://doi.org/10.1101/831248
 
-## Any questions, please feel free to ask xumengyang@genomics.cn or guolidong@genomics.cn
+## Contact
+Any questions, please feel free to ask xumengyang@genomics.cn or guolidong@genomics.cn
