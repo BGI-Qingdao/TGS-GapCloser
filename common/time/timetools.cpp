@@ -33,7 +33,7 @@ namespace TIME{
         tm * localt = localtime(&wall.tv_sec);
         //UTC   2017/12/19  15:33:33
         return std::string(tzname[0]) + "\t"
-                + std::to_string(localt->tm_year+1990)+"/"
+                + std::to_string(localt->tm_year+1900)+"/"
                 + std::to_string(localt->tm_mon +1)+"/"
                 + std::to_string(localt->tm_mday)+"\t"
                 + std::to_string(localt->tm_hour)+":"
