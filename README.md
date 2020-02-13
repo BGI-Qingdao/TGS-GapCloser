@@ -83,6 +83,8 @@ Usage:
           --r_round   <int>                iteration number for racon error-correction. 1 by default.
 ```
 
+> Notice : only fasta format TGS reads is supperted and fastq format will lead to program carshing !
+
 ## Examples
 
 ### an example of pre-corrected TGS reads without error correction 
