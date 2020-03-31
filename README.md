@@ -81,6 +81,7 @@ Usage:
           --chunk     <int>                split candidates into # of chunks to separately correct errors. 3 by default.
           --p_round   <int>                iteration number for pilon error-correction. 3 by default.
           --r_round   <int>                iteration number for racon error-correction. 1 by default.
+          --g_check                        gapsize diff check , none by default.
 ```
 
 > Notice : only fasta format TGS reads is supperted and fastq format will lead to program carshing !
