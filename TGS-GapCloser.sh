@@ -70,6 +70,7 @@ function print_help()
     echo "          --pilon_mem <t_num>              memory used for pilon , 300G for default."
     echo "          --p_round   <pilon_round>        pilon error-correction round num . 3 by default."
     echo "          --r_round   <racon_round>        racon error-correction round num . 1 by default."
+    echo "          --g_check                        gapsize diff check , none by default."
 }
 
 function check_arg_null() {
@@ -132,13 +133,14 @@ CHUNK_NUM=3
 USE_RACON="yes"
 PILON_ROUND=3
 RACON_ROUND=1
+G_CHECK=0
 
 print_info "Parsing args starting ..."
 if [[ $# -lt 1 ]] ; then 
     print_help
     exit 1 ;
 fi
-ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtools:,java:,tgstype:,chunk:,thread:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne  -- "$@"`
+ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtools:,java:,tgstype:,chunk:,thread:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne,g_check  -- "$@"`
 eval set -- "$ARGS"
 while true; do
     case "$1" in
@@ -194,6 +196,11 @@ while true; do
             NGS_READS=$1
             shift;
             echo  "             --ngs    $NGS_READS"
+        ;;
+        --g_check)
+            shift;
+            G_CHECK=1
+            echo  "             --g_check"
         ;;
         --tgstype)
             shift;
@@ -508,9 +515,15 @@ print_info_line "4,1 , mapping contig into reads ... "
 $MiniMap2  $MINIMAP2_PARAM  -t $THREAD  $FINAL_READS $TMP_INPUT_SCAFTIG  \
         1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
 print_info_line "4,2 , extra filling seq ... "
-$GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
-            --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
-            --prefix $OUT_PREFIX 1>$OUT_PREFIX.fill.log  2>&1|| exit 1
+if [[ $G_CHECK == 0 ]] ; then
+    $GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
+        --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
+        --prefix $OUT_PREFIX 1>$OUT_PREFIX.fill.log  2>&1|| exit 1
+else
+    $GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
+        --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
+        --prefix $OUT_PREFIX --use_gapsize_check  1>$OUT_PREFIX.fill.log  2>&1|| exit 1
+fi
 print_info_line "4,2 , gen final seq ... "
 $SeqGen --prefix  $OUT_PREFIX 1>$OUT_PREFIX.i2s.log 2>&1  || exit 1
 print_info "Step 4 , done ."

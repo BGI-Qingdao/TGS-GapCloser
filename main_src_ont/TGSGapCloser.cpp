@@ -240,7 +240,7 @@ struct AppConfig
         int scaff_negotive_gap_size = 0 ;
         int ont_negotive_gap_size = 0 ;
         int overlap_failed = 0 ;
-
+        int gap_size_failed = 0 ;
         BGIQD::FREQ::Freq<int> gap_both_read_freq ;
         BGIQD::FREQ::Freq<int> gap_oo_read_freq ;
         BGIQD::FREQ::Freq<int> filler_choose_freq ;
@@ -327,6 +327,7 @@ struct AppConfig
                 bool ont_overlap = false ;
                 bool checked  = false ;
                 // Random choose the 1th 1 choose .
+                int pass_gap_size = 0 ;
                 for ( const auto & pair : chooses )
                 {
                     //auto & pair = chooses.front() ;
@@ -346,6 +347,28 @@ struct AppConfig
                         checked = true ;
                         break;
                     }
+                    bool pass_gap_size_check = true ;
+                    if( use_gapsize_check ) {
+                        pass_gap_size_check = false ;
+                        if ( std::abs(tmp.gap_size)<= min_gapsize_ignore
+                                && std::abs(scaff_pn.gap_size) <= min_gapsize_ignore ) {
+                            pass_gap_size_check = true ;
+                        }
+                        else {
+                            int diff = (tmp.gap_size - scaff_pn.gap_size) *100/std::abs(scaff_pn.gap_size);
+                            if ( diff < min_gap_diff || diff > max_gap_diff )
+                            {
+                                std::cerr<<"an ignored candidate: orignal gapsize = "<<scaff_pn.gap_size<<" but segement says gapsize="<<tmp.gap_size<<std::endl;
+                                pass_gap_size_check = false ;
+                            }
+                            else{
+                                pass_gap_size_check = true ;
+                            }
+                        }
+                    }
+                    if( ! pass_gap_size_check )
+                        continue ;
+                    pass_gap_size ++ ;
                     if( tmp.gap_size < 0 )
                     {
                         std::cerr
@@ -430,6 +453,11 @@ struct AppConfig
                         continue ;
                     }
                 }
+                if( pass_gap_size == 0 )
+                {
+                    gap_size_failed ++ ;
+                    std::cerr<<" failed pass gap size tag !"<<'\n';
+                }
                 if( ont_overlap &&  !checked )
                 {
                     overlap_failed ++ ;
@@ -441,6 +469,8 @@ struct AppConfig
         loger<<BGIQD::LOG::lstart()<<">the overlap cheked caused failed is "
             <<overlap_failed<<BGIQD::LOG::lend();
 
+        loger<<BGIQD::LOG::lstart()<<">the gapsize cheked caused failed is "
+            <<gap_size_failed<<BGIQD::LOG::lend();
         loger<<BGIQD::LOG::lstart()<<">the gap_total is "
             <<gap_tatal<<BGIQD::LOG::lend();
 
@@ -498,7 +528,10 @@ struct AppConfig
     float min_idy ;
     float fa;
     float fb;
-
+    bool use_gapsize_check;
+    int min_gapsize_ignore;
+    int min_gap_diff;
+    int max_gap_diff;
 } config ;
 
 int main(int argc , char ** argv)
@@ -524,6 +557,10 @@ int main(int argc , char ** argv)
         DEFINE_ARG_OPTIONAL(int , min_contigtail_cut , "min sequence length for contig aligned check","500");
         DEFINE_ARG_OPTIONAL(float ,min_idy_oc , "min idy for overlap check","0.75");
         DEFINE_ARG_OPTIONAL(float ,min_af_oc , "min aligned factor for overlap check","0.2");
+        DEFINE_ARG_OPTIONAL(bool  ,use_gapsize_check, "use original gap size to filter candidate fragments","0");
+        DEFINE_ARG_OPTIONAL(int   ,min_gapsize_ignore, "min gap size that can ignore gap size check","100");
+        DEFINE_ARG_OPTIONAL(int   ,min_gap_diff , "reject fragment if (new_gapsize-old_gapsize)*100/old_gapsize < min_gap_diff ","-50");
+        DEFINE_ARG_OPTIONAL(int   ,max_gap_diff , "reject fragment if (new_gapsize-old_gapsize)*100/old_gapsize > max_gap_diff ","100");
     END_PARSE_ARGS;
 
     config.min_idy_oc = min_idy_oc.to_float();
@@ -537,6 +574,11 @@ int main(int argc , char ** argv)
     config.min_idy = min_idy.to_float() ;
     config.fa = factor_a.to_float();
     config.fb = factor_b.to_float();
+    config.use_gapsize_check = use_gapsize_check.to_bool();
+    config.min_gapsize_ignore = min_gapsize_ignore.to_int();
+    config.min_gap_diff = min_gap_diff.to_int();
+    config.max_gap_diff = max_gap_diff.to_int();
+
     if( ont_reads_a.setted )
     {
         config.ont_read_a  = ont_reads_a.to_string();
