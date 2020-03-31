@@ -1,7 +1,7 @@
 #!/bin/bash
 #####################################################################
 #
-#   brief :  main pipeline script of TGSGapFiller.
+#   brief :  main pipeline script of TGSGapCloser.
 #   usage :  use -h/--help for details.
 #   autor :  xumengyang@genomics.cn && guolidong@genomics.cn
 #
@@ -266,7 +266,7 @@ print_info "Parsing args end ."
 
 # check binary
 Candidate=$HOOM_DIR"/bin/TGSGapCandidate"
-GapFiller=$HOOM_DIR"/bin/TGSGapFiller"
+GapCloser=$HOOM_DIR"/bin/TGSGapCloser"
 SeqGen=$HOOM_DIR"/bin/TGSSeqGen"
 SeqSplit=$HOOM_DIR"/bin/TGSSeqSplit"
 MiniMap2=$HOOM_DIR"/minimap2/minimap2"
@@ -274,7 +274,7 @@ MiniMap2=$HOOM_DIR"/minimap2/minimap2"
 print_info "Checking basic args & env ..."
 
 check_file_exe $Candidate
-check_file_exe $GapFiller
+check_file_exe $GapCloser
 check_file_exe $SeqGen
 check_file_exe $SeqSplit
 check_file_exe $MiniMap2
@@ -508,7 +508,7 @@ print_info_line "4,1 , mapping contig into reads ... "
 $MiniMap2  $MINIMAP2_PARAM  -t $THREAD  $FINAL_READS $TMP_INPUT_SCAFTIG  \
         1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
 print_info_line "4,2 , extra filling seq ... "
-$GapFiller --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
+$GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
             --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
             --prefix $OUT_PREFIX 1>$OUT_PREFIX.fill.log  2>&1|| exit 1
 print_info_line "4,2 , gen final seq ... "

@@ -4,7 +4,7 @@ scripts="\
 "
 
 apps="\
- TGSGapFiller\
+ TGSGapCloser\
  TGSGapCandidate\
  TGSSeqSplit\
  TGSSeqGen\

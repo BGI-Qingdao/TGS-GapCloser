@@ -41,7 +41,7 @@ source_o		= ${source_cpp:%.cpp=%.o}
 .cpp.o:
 	${CXX} ${DEUBG_CXX} -c $< -o $@
 
-jobs = TGSGapFiller TGSGapCandidate TGSSeqSplit TGSSeqGen
+jobs = TGSGapCloser TGSGapCandidate TGSSeqSplit TGSSeqGen
 
 scripts=
 
@@ -52,10 +52,10 @@ all :  ${jobs} ${scripts}
 
 
 
-TGSGapFiller_cpp = TGSGapFiller.cpp
-TGSGapFiller_o = TGSGapFiller.o
-TGSGapFiller : clean ${TGSGapFiller_o} ${source_o} ../bin
-	${CXX} ${TGSGapFiller_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o TGSGapFiller
+TGSGapCloser_cpp = TGSGapCloser.cpp
+TGSGapCloser_o = TGSGapCloser.o
+TGSGapCloser : clean ${TGSGapCloser_o} ${source_o} ../bin
+	${CXX} ${TGSGapCloser_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o TGSGapCloser
 	mv $@ ../bin/
 
 
@@ -86,7 +86,7 @@ TGSSeqGen : clean ${TGSSeqGen_o} ${source_o} ../bin
 	mv $@ ../bin/
 
 
-jobs_o=  ${TGSGapFiller_o} ${TGSGapCandidate_o} ${TGSSeqSplit_o} ${TGSSeqGen_o}
+jobs_o=  ${TGSGapCloser_o} ${TGSGapCandidate_o} ${TGSSeqSplit_o} ${TGSSeqGen_o}
 
 dirty	   =${jobs_o} ${jobs} ${source_o}
 

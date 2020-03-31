@@ -69,7 +69,7 @@ struct AppConfig
     {
         fNames.Init(prefix);
         BGIQD::LOG::logfilter::singleton().
-            get("TGSGapFiller",BGIQD::LOG::loglevel::INFO, loger);
+            get("TGSGapCloser",BGIQD::LOG::loglevel::INFO, loger);
     }
 
 
@@ -552,7 +552,7 @@ int main(int argc , char ** argv)
 
     srand (time(NULL));
     config.Init(prefix.to_string());
-    BGIQD::LOG::timer t(config.loger,"TGSGapFiller");
+    BGIQD::LOG::timer t(config.loger,"TGSGapCloser");
 
     config.LoadContig();
 
