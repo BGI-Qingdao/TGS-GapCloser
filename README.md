@@ -44,7 +44,7 @@ git submodule update
 #### compile main src
 
 ```
-cd YOUR-INSTALL-DIR/main_src_ont
+cd YOUR-INSTALL-DIR
 make
 ```
 
