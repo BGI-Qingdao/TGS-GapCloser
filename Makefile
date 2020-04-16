@@ -15,9 +15,8 @@ minimap2/libminimap2.a:
 install: all
 	echo  "Installed into ${PREFIX}"
 	mkdir -p  ${PREFIX}
+	chmod u+x TGS-GapCloser.sh
 	cp TGS-GapCloser.sh ${PREFIX}/
-	cp LICENSE ${PREFIX}/
-	cp README.md ${PREFIX}/
 	cp -r bin ${PREFIX}/
 
 clean:

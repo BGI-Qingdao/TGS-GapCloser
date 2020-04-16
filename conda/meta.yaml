@@ -1,0 +1,7 @@
+package:
+    name : tgs-gapcloser
+    version : 1.0.0
+
+source:
+    fn : SourceCode-release_v1.0.1.tar.gz
+    url : https://github.com/BGI-Qingdao/TGS-GapCloser/releases/download/release_v1.0.1/SourceCode-release_v1.0.1.tar.gz
