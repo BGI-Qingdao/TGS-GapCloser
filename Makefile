@@ -1,5 +1,7 @@
 .PHONY: all 
 
+PREFIX ?='/usr/local/TGS-GapCloser'
+
 all: minimap2 minimap2/libminimap2.a
 	cd main_src_ont && make 
 
@@ -9,6 +11,14 @@ minimap2:
 
 minimap2/libminimap2.a:
 	cd minimap2 && make
+
+install: all
+	echo  "Installed into ${PREFIX}"
+	mkdir -p  ${PREFIX}
+	cp TGS-GapCloser.sh ${PREFIX}/
+	cp LICENSE ${PREFIX}/
+	cp README.md ${PREFIX}/
+	cp -r bin ${PREFIX}/
 
 clean:
 	cd main_src_ont && make clean
