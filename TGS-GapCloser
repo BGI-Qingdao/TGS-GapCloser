@@ -43,7 +43,7 @@ function print_fatal()
 function print_help()
 {
     echo "Usage:"
-    echo "      TGS-GapCloser.sh  --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]"
+    echo "      TGS-GapCloser     --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]"
     echo "      required :"
     echo "          --scaff     <scaffold_file>      the input scaffold file."
     echo "          --reads     <tgs_reads_file>     the input TGS reads file."
@@ -272,11 +272,11 @@ print_info "Parsing args end ."
 ############################################################3########
 
 # check binary
-Candidate=$HOOM_DIR"/bin/TGSGapCandidate"
-GapCloser=$HOOM_DIR"/bin/TGSGapCloser"
-SeqGen=$HOOM_DIR"/bin/TGSSeqGen"
-SeqSplit=$HOOM_DIR"/bin/TGSSeqSplit"
-MiniMap2=$HOOM_DIR"/minimap2/minimap2"
+Candidate=$HOOM_DIR"/tgsgapcloserbin/TGSGapCandidate"
+GapCloser=$HOOM_DIR"/tgsgapcloserbin/TGSGapCloser"
+SeqGen=$HOOM_DIR"/tgsgapcloserbin/TGSSeqGen"
+SeqSplit=$HOOM_DIR"/tgsgapcloserbin/TGSSeqSplit"
+MiniMap2=$HOOM_DIR"/tgsgapcloserbin/minimap2"
 
 print_info "Checking basic args & env ..."
 

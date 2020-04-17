@@ -1,2 +1,2 @@
 
-make install PREFIX=$PREFIX/bin
+make condainstall PREFIX=$PREFIX/bin
