@@ -1,5 +1,7 @@
 *.o
 bin
+tgsgapcloserbin
+lib
 tool
 tags
 .ycm_extra_conf.py

@@ -4,7 +4,10 @@ PREFIX ?='/usr/local/TGS-GapCloser'
 
 all: minimap2 minimap2/libminimap2.a minimap2/minimap2
 	cd main_src_ont && make
-	cp minimap2/minimap2 bin/
+	mkdir -p tgsgapcloserbin
+	cp minimap2/minimap2 tgsgapcloserbin/
+	mkdir -p lib
+	cp minimap2/libminimap2.a lib/
 
 minimap2:
 	echo "error: please download/link minimap2 into this folder "
@@ -19,12 +22,14 @@ minimap2/libminimap2.a:
 condainstall: all
 	echo  "Installed into ${PREFIX}"
 	mkdir -p  ${PREFIX}
-	chmod a+x TGS-GapCloser
-	cp TGS-GapCloser ${PREFIX}/
-	chmod a+x ${PREFIX}/TGS-GapCloser
-	cp -r bin ${PREFIX}/tgsgapcloserbin
-	chmod a+x ${PREFIX}/tgsgapcloserbin/*
+	mkdir -p  ${PREFIX}/bin
+	mkdir -p  ${PREFIX}/lib
+	cp tgsgapcloser ${PREFIX}/bin
+	chmod a+x ${PREFIX}/bin/tgsgapcloser
+	cp -r tgsgapcloserbin ${PREFIX}/bin
+	chmod a+x ${PREFIX}/bin/tgsgapcloserbin/*
+	cp -r lib/* ${PREFIX}/lib
 
 clean:
 	cd main_src_ont && make clean
-	rm -rf bin
+	rm -rf tgsgapcloserbin

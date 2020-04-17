@@ -1,4 +1,4 @@
-.PHONY: all clean bin 
+.PHONY: all clean tgsgapcloserbin 
 
 CC 		   =	gcc
 CXX 	   =	g++
@@ -41,7 +41,7 @@ source_o		= ${source_cpp:%.cpp=%.o}
 .cpp.o:
 	${CXX} ${DEUBG_CXX} -c $< -o $@
 
-jobs = TGSGapCloser TGSGapCandidate TGSSeqSplit TGSSeqGen
+jobs = tgsgapcloser tgsgapcandidate tgsseqsplit tgsseqgen
 
 scripts=
 
@@ -52,46 +52,46 @@ all :  ${jobs} ${scripts}
 
 
 
-TGSGapCloser_cpp = TGSGapCloser.cpp
-TGSGapCloser_o = TGSGapCloser.o
-TGSGapCloser : clean ${TGSGapCloser_o} ${source_o} ../bin
-	${CXX} ${TGSGapCloser_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o TGSGapCloser
-	mv $@ ../bin/
+tgsgapcloser_cpp = tgsgapcloser.cpp
+tgsgapcloser_o = tgsgapcloser.o
+tgsgapcloser : clean ${tgsgapcloser_o} ${source_o} ../tgsgapcloserbin
+	${CXX} ${tgsgapcloser_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o tgsgapcloser
+	mv $@ ../tgsgapcloserbin/
 
 
 
 
-TGSGapCandidate_cpp = TGSGapCandidate.cpp
-TGSGapCandidate_o = TGSGapCandidate.o
-TGSGapCandidate : clean ${TGSGapCandidate_o} ${source_o} ../bin
-	${CXX} ${TGSGapCandidate_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o TGSGapCandidate
-	mv $@ ../bin/
+tgsgapcandidate_cpp = tgsgapcandidate.cpp
+tgsgapcandidate_o = tgsgapcandidate.o
+tgsgapcandidate : clean ${tgsgapcandidate_o} ${source_o} ../tgsgapcloserbin
+	${CXX} ${tgsgapcandidate_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o tgsgapcandidate
+	mv $@ ../tgsgapcloserbin/
 
 
 
 
-TGSSeqSplit_cpp = TGSSeqSplit.cpp
-TGSSeqSplit_o = TGSSeqSplit.o
-TGSSeqSplit : clean ${TGSSeqSplit_o} ${source_o} ../bin
-	${CXX} ${TGSSeqSplit_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o TGSSeqSplit
-	mv $@ ../bin/
+tgsseqsplit_cpp = tgsseqsplit.cpp
+tgsseqsplit_o = tgsseqsplit.o
+tgsseqsplit : clean ${tgsseqsplit_o} ${source_o} ../tgsgapcloserbin
+	${CXX} ${tgsseqsplit_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o tgsseqsplit
+	mv $@ ../tgsgapcloserbin/
 
 
 
 
-TGSSeqGen_cpp = TGSSeqGen.cpp
-TGSSeqGen_o = TGSSeqGen.o
-TGSSeqGen : clean ${TGSSeqGen_o} ${source_o} ../bin
-	${CXX} ${TGSSeqGen_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o TGSSeqGen
-	mv $@ ../bin/
+tgsseqgen_cpp = tgsseqgen.cpp
+tgsseqgen_o = tgsseqgen.o
+tgsseqgen : clean ${tgsseqgen_o} ${source_o} ../tgsgapcloserbin
+	${CXX} ${tgsseqgen_o} ${source_o} ${LD_FLAGS} ${DEUBG_CXX} -o tgsseqgen
+	mv $@ ../tgsgapcloserbin/
 
 
-jobs_o=  ${TGSGapCloser_o} ${TGSGapCandidate_o} ${TGSSeqSplit_o} ${TGSSeqGen_o}
+jobs_o=  ${tgsgapcloser_o} ${tgsgapcandidate_o} ${tgsseqsplit_o} ${tgsseqgen_o}
 
 dirty	   =${jobs_o} ${jobs} ${source_o}
 
-../bin:
-	mkdir -p ../bin
+../tgsgapcloserbin:
+	mkdir -p ../tgsgapcloserbin
 
 clean:
 	rm -rf ${dirty}

@@ -272,10 +272,10 @@ print_info "Parsing args end ."
 ############################################################3########
 
 # check binary
-Candidate=$HOOM_DIR"/tgsgapcloserbin/TGSGapCandidate"
-GapCloser=$HOOM_DIR"/tgsgapcloserbin/TGSGapCloser"
-SeqGen=$HOOM_DIR"/tgsgapcloserbin/TGSSeqGen"
-SeqSplit=$HOOM_DIR"/tgsgapcloserbin/TGSSeqSplit"
+Candidate=$HOOM_DIR"/tgsgapcloserbin/tgsgapcandidate"
+GapCloser=$HOOM_DIR"/tgsgapcloserbin/tgsgapcloser"
+SeqGen=$HOOM_DIR"/tgsgapcloserbin/tgsseqgen"
+SeqSplit=$HOOM_DIR"/tgsgapcloserbin/tgsseqsplit"
 MiniMap2=$HOOM_DIR"/tgsgapcloserbin/minimap2"
 
 print_info "Checking basic args & env ..."
