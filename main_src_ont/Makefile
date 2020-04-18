@@ -1,7 +1,7 @@
 .PHONY: all clean tgsgapcloserbin 
 
-CC 		   =	gcc
-CXX 	   =	g++
+CC ?=	gcc
+CXX ?=	g++
 
 CXXFLAGS   =	-std=c++11\
 				-I../\

@@ -5,13 +5,11 @@ package:
     version : 1.0.1
 
 source:
-    url : https://github.com/BGI-Qingdao/TGS-GapCloser/releases/download/release_v1.0.1/SourceCode-release_v{{ version }}.tar.gz
-    sha256: {{ sha256 }}
+    url : https://github.com/BGI-Qingdao/TGS-GapCloser/releases/download/v0.5/TGS-GapCloser-conda.zip
 
 requirements:
   build:
-    - {{ compiler('cxx') }}
-    - {{ compiler('c') }}
+    - gcc >=4.3.2
   host:
     - zlib
   run:
