@@ -24,11 +24,14 @@ condainstall: all
 	mkdir -p  ${PREFIX}
 	mkdir -p  ${PREFIX}/bin
 	mkdir -p  ${PREFIX}/lib
+	mkdir -p  ${PREFIX}/info
 	cp tgsgapcloser ${PREFIX}/bin
 	chmod a+x ${PREFIX}/bin/tgsgapcloser
 	cp -r tgsgapcloserbin ${PREFIX}/bin
 	chmod a+x ${PREFIX}/bin/tgsgapcloserbin/*
 	cp -r lib/* ${PREFIX}/lib
+	cp LICENSE ${PREFIX}/info/
+	cp README.md ${PREFIX}/info/
 
 clean:
 	cd main_src_ont && make clean

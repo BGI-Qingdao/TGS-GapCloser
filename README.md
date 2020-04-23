@@ -52,7 +52,7 @@ make
 
 ```
 Usage:
-      TGS-GapCloser.sh --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]
+      tgsgapcloser --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]
       required:
           --scaff     <draft scaffolds>      input draft scaffolds.
           --reads     <TGS reads>     input TGS reads.
@@ -91,7 +91,7 @@ Usage:
 ### an example of pre-corrected TGS reads without error correction 
 
 ```
-YOUR-INSTALL-DIR/TGS-GapCloser.sh  \
+YOUR-INSTALL-DIR/tgsgapcloser  \
         --scaff  scaffold-path/scaffold.fasta \
         --reads  tgs-reads-path/tgs.reads.fasta \
         --output test_ne  \
@@ -102,7 +102,7 @@ YOUR-INSTALL-DIR/TGS-GapCloser.sh  \
 ### an example of raw ONT reads with error correction using long reads only
 
 ```
-YOUR-INSTALL-DIR/TGS-GapCloser.sh  \
+YOUR-INSTALL-DIR/tgsgapcloser  \
         --scaff  scaffold-path/scaffold.fasta \
         --reads  tgs-reads-path/tgs.reads.fasta \
         --output test_racon \
@@ -113,7 +113,7 @@ YOUR-INSTALL-DIR/TGS-GapCloser.sh  \
 ### an example of raw ONT reads with error correction using NGS reads
 
 ```
-YOUR-INSTALL-DIR/TGS-GapCloser.sh  \
+YOUR-INSTALL-DIR/tgsgapcloser  \
         --scaff  scaffold-path/scaffold.fasta \
         --reads  tgs-reads-path/tgs.reads.fasta \
         --output test_pilon \
@@ -137,7 +137,7 @@ YOUR-INSTALL-DIR/TGS-GapCloser.sh  \
 * an example of raw Pacbio reads with error correction using long reads only
 
 ```
-YOUR-INSTALL-DIR/TGS-GapCloser.sh  \
+YOUR-INSTALL-DIR/tgsgapcloser  \
         --scaff  scaffold-path/scaffold.fasta \
         --reads  tgs-reads-path/tgs.reads.fasta \
         --output test_racon \
