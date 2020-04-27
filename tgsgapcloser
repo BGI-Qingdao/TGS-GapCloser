@@ -38,7 +38,7 @@ function print_fatal()
     echo "";
     echo "FATAL :   $1 ! exit ...";
     echo " try -h/--help for usage."
-    exit 1 ;
+    exit 0 ;
 }
 function print_help()
 {
@@ -138,7 +138,7 @@ G_CHECK=0
 print_info "Parsing args starting ..."
 if [[ $# -lt 1 ]] ; then 
     print_help
-    exit 1 ;
+    exit 0 ;
 fi
 ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtools:,java:,tgstype:,chunk:,thread:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne,g_check  -- "$@"`
 eval set -- "$ARGS"
@@ -147,7 +147,7 @@ while true; do
         -h|--help)
             shift;
             print_help;
-            exit 1;
+            exit 0;
         ;;
         --scaff)
             shift;
