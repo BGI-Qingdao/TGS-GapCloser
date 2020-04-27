@@ -1,9 +1,11 @@
 .PHONY: all
 
+CC ?='gcc'
+CXX ?='g++'
 PREFIX ?='/usr/local/TGS-GapCloser'
 
 all: minimap2 minimap2/libminimap2.a minimap2/minimap2
-	cd main_src_ont && make
+	cd main_src_ont && make  CC=${CC} CXX=${CXX}
 	mkdir -p tgsgapcloserbin
 	cp minimap2/minimap2 tgsgapcloserbin/
 	mkdir -p lib

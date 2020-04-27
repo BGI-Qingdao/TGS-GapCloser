@@ -1,13 +1,12 @@
 .PHONY: all clean tgsgapcloserbin 
 
-CC ?=	gcc
-CXX ?=	g++
+CC ?='gcc'
+CXX ?='g++'
 
-CXXFLAGS   =	-std=c++11\
+CXXFLAGS   +=	-std=c++11\
 				-I../\
 
-
-LD_FLAGS   =    -L../minimap2\
+LD_FLAGS   +=   -L../minimap2\
 				-lz\
 				-lminimap2\
 				-lpthread\
