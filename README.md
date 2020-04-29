@@ -84,7 +84,8 @@ Usage:
           --g_check                        gapsize diff check , none by default.
 ```
 
-> Notice : only fasta format TGS reads is supperted and fastq format will lead to program carshing !
+
+**WARNING : only fasta format TGS reads is supperted and fastq format will lead to program carshing !**
 
 ## Examples
 
