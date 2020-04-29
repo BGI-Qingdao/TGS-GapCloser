@@ -276,7 +276,8 @@ Candidate=$HOOM_DIR"/tgsgapcloserbin/tgsgapcandidate"
 GapCloser=$HOOM_DIR"/tgsgapcloserbin/tgsgapcloser"
 SeqGen=$HOOM_DIR"/tgsgapcloserbin/tgsseqgen"
 SeqSplit=$HOOM_DIR"/tgsgapcloserbin/tgsseqsplit"
-MiniMap2=$HOOM_DIR"/tgsgapcloserbin/minimap2"
+#MiniMap2=$HOOM_DIR"/tgsgapcloserbin/minimap2"
+MiniMap2=minimap2
 
 print_info "Checking basic args & env ..."
 
@@ -284,7 +285,7 @@ check_file_exe $Candidate
 check_file_exe $GapCloser
 check_file_exe $SeqGen
 check_file_exe $SeqSplit
-check_file_exe $MiniMap2
+#check_file_exe $MiniMap2
 # check input args.
 check_arg_exist "input_scaff" $INPUT_SCAFF
 check_arg_exist "reads"  $TGS_READS
