@@ -358,6 +358,8 @@ else
         --contig2ont_paf $OUT_PREFIX.sub.paf \
         --candidate_max 10 --candidate_shake_filter --candidate_merge \
         <$TMP_INPUT_SCAFF_INFO >$OUT_PREFIX.ont.fasta 2>$OUT_PREFIX.cand.log || exit 1
+    # remove used paf here
+    rm $OUT_PREFIX.sub.paf
     # split candidate into chunk
     print_info_line "2.3 , break candidate into $CHUNK_NUM chunk(s)."
     if [[ $CHUNK_NUM != "1" ]] ; then
@@ -403,10 +405,13 @@ else
                 curr_tag="$round"".""$i"
                 print_info_line "   -   round $round chunk $i -  minimap2 ... "
                 $MiniMap2 -t $THREAD $MINIMAP2_PARAM $OUT_PREFIX.ont.$curr_tag.fasta $TGS_READS \
-                    1>$OUT_PREFIX.$curr_tag.paf 2>$OUT_PREFIX.minimap2.03.$curr_tag.log
+                    1>$OUT_PREFIX.$curr_tag.paf 2>$OUT_PREFIX.minimap2.03.$curr_tag.log || exit 1
                 print_info_line "   -   round $round chunk $i -  racon ... "
                 $RACON -t $THREAD $TGS_READS $OUT_PREFIX.$curr_tag.paf $OUT_PREFIX.ont.$curr_tag.fasta \
-                    1>$OUT_PREFIX.ont.$curr_tag.racon.fasta 2>$OUT_PREFIX.$curr_tag.racon.log
+                    1>$OUT_PREFIX.ont.$curr_tag.racon.fasta 2>$OUT_PREFIX.$curr_tag.racon.log || exit 1
+
+                # remove used paf here
+                rm $OUT_PREFIX.$curr_tag.paf
             done
             print_info_line "   -   round $round end. "
         done
@@ -456,10 +461,16 @@ else
                 print_info_line "   -   round $round chunk $i -  process required bam ... "
                 awk 'BEGIN{t["none"]=1;}{if( $1 == "@SQ" ){if( $2 in t ){;}else{t[$2]=1;print $0;}}else{print $0;}}'\
                     < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
+                # remove used sam 
+                rm $OUT_PREFIX.sam
                 $SAMTOOL view -bo $OUT_PREFIX.bam  $OUT_PREFIX.fiter.sam -@ $THREAD \
                         >$OUT_PREFIX.samtool_01.$curr_tag.log 2>&1 || exit 1
+                # remove used sam
+                rm $OUT_PREFIX.fiter.sam
                 $SAMTOOL sort -m 8G $OUT_PREFIX.bam -o $OUT_PREFIX.sort.bam -@ $THREAD \
                         >$OUT_PREFIX.samtool_02.$curr_tag.log 2>&1 || exit 1
+                # remove used bam
+                rm  $OUT_PREFIX.bam
                 $SAMTOOL index $OUT_PREFIX.sort.bam -@ $THREAD \
                         >$OUT_PREFIX.samtool_03.$curr_tag.log 2>&1 || exit 1
                 print_info_line  "   -   round $round chunk $i -  run pilon ... "
@@ -467,6 +478,9 @@ else
                     --genome $OUT_PREFIX.ont.$curr_tag.fasta --bam $OUT_PREFIX.sort.bam \
                     --output $OUT_PREFIX.ont.$curr_tag.pilon --outdir ./ \
                     --diploid  --threads $THREAD >$OUT_PREFIX.$curr_tag.pilon.log 2>$OUT_PREFIX.pilon.$curr_tag.err || exit 1
+                # remove used bam
+                rm $OUT_PREFIX.sort.bam
+
             done
             print_info_line "   -   round $round end. "
         done
@@ -519,10 +533,13 @@ if [[ $G_CHECK == 0 ]] ; then
     $GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
         --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
         --prefix $OUT_PREFIX 1>$OUT_PREFIX.fill.log  2>&1|| exit 1
+    # remove used paf 
+    rm $OUT_PREFIX.fill.paf
 else
     $GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
         --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
         --prefix $OUT_PREFIX --use_gapsize_check  1>$OUT_PREFIX.fill.log  2>&1|| exit 1
+    rm $OUT_PREFIX.fill.paf
 fi
 print_info_line "4,2 , gen final seq ... "
 $SeqGen --prefix  $OUT_PREFIX 1>$OUT_PREFIX.i2s.log 2>&1  || exit 1
