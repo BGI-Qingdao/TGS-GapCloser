@@ -327,11 +327,15 @@ print_info "Checking basic args & env end."
 ############################################################3########
 TMP_INPUT_SCAFTIG=$OUT_PREFIX".contig"
 print_info "Step 1 , run TGSSeqSplit to split scaffolds into contigs. "
-$SeqSplit --input_scaff $INPUT_SCAFF \
-    --prefix $OUT_PREFIX 2>$OUT_PREFIX.seq_split.log || exit 1 
+if [[ ! -e 'done_step1_tag' ]] ; then
+    $SeqSplit --input_scaff $INPUT_SCAFF \
+        --prefix $OUT_PREFIX 2>$OUT_PREFIX.seq_split.log || exit 1 
 
-check_file $TMP_INPUT_SCAFTIG
-
+    check_file $TMP_INPUT_SCAFTIG
+    date >>'done_step1_tag'
+else 
+    echo 'skip step1 due to done_step1_tag exist'
+fi
 print_info "Step 1 , done ."
 
 #####################################################################
@@ -343,33 +347,50 @@ if [[ $NE == "yes" ]] ; then
     print_info "Step 2 , skip TGSCandidate by --ne option."
 else
     print_info "Step 2 , run TGSCandidate ... "
-    # run minimap2
-    print_info_line "2.1 , run minmap2 to map contig into tgs-reads."
-    check_file $TMP_INPUT_SCAFTIG
-    $MiniMap2  $MINIMAP2_PARAM  -t $THREAD  \
-        $TGS_READS  $TMP_INPUT_SCAFTIG \
-        1>$OUT_PREFIX.sub.paf 2>$OUT_PREFIX.minimap2.01.log || exit 1
-    # run candidate
-    print_info_line "2.2 , run TGSGapCandidate to choose candidate region seqs."
+    if [[ ! -e 'done_step2.1_tag' ]] ; then
+        # run minimap2
+        print_info_line "2.1 , run minmap2 to map contig into tgs-reads."
+        check_file $TMP_INPUT_SCAFTIG
+        $MiniMap2  $MINIMAP2_PARAM  -t $THREAD  \
+            $TGS_READS  $TMP_INPUT_SCAFTIG \
+            1>$OUT_PREFIX.sub.paf 2>$OUT_PREFIX.minimap2.01.log || exit 1
+        date >>'done_step2.1_tag'
+    else
+        echo 'skip step2.1 due to done_step2.1_tag exist'
+    fi
 
-    TMP_INPUT_SCAFF_INFO=$OUT_PREFIX".orignial_scaff_infos"
-    check_file $TMP_INPUT_SCAFF_INFO
-    $Candidate --ont_reads_a $TGS_READS \
+    if [[ ! -e 'done_step2.2_tag' ]] ; then
+    # run candidate
+        print_info_line "2.2 , run TGSGapCandidate to choose candidate region seqs."
+
+        TMP_INPUT_SCAFF_INFO=$OUT_PREFIX".orignial_scaff_infos"
+        check_file $TMP_INPUT_SCAFF_INFO
+        $Candidate --ont_reads_a $TGS_READS \
         --contig2ont_paf $OUT_PREFIX.sub.paf \
         --candidate_max 10 --candidate_shake_filter --candidate_merge \
         <$TMP_INPUT_SCAFF_INFO >$OUT_PREFIX.ont.fasta 2>$OUT_PREFIX.cand.log || exit 1
-    # remove used paf here
-    rm $OUT_PREFIX.sub.paf
-    # split candidate into chunk
-    print_info_line "2.3 , break candidate into $CHUNK_NUM chunk(s)."
-    if [[ $CHUNK_NUM != "1" ]] ; then
-        for ((i=0; i<CHUNK_NUM; i++))
-        do
-            awk 'BEGIN{id=0}{if($1 ~ />/ ){id=id+1;} if(id % cov == the_i) {print $0;} }' cov=$CHUNK_NUM the_i=$i \
-                <$OUT_PREFIX.ont.fasta >$OUT_PREFIX.ont.0.$i.fasta || exit 1 ;
-        done
+        # remove used paf here
+        rm $OUT_PREFIX.sub.paf
+        date >>'done_step2.2_tag'
     else
-        ln -s $OUT_PREFIX.ont.fasta $OUT_PREFIX.ont.0.0.fasta
+        echo 'skip step2.2 due to done_step2.2_tag exist'
+    fi
+
+    if [[ ! -e 'done_step2.3_tag' ]] ; then
+        # split candidate into chunk
+        print_info_line "2.3 , break candidate into $CHUNK_NUM chunk(s)."
+        if [[ $CHUNK_NUM != "1" ]] ; then
+            for ((i=0; i<CHUNK_NUM; i++))
+            do
+                awk 'BEGIN{id=0}{if($1 ~ />/ ){id=id+1;} if(id % cov == the_i) {print $0;} }' cov=$CHUNK_NUM the_i=$i \
+                    <$OUT_PREFIX.ont.fasta >$OUT_PREFIX.ont.0.$i.fasta || exit 1 ;
+            done
+        else
+            ln -s $OUT_PREFIX.ont.fasta $OUT_PREFIX.ont.0.0.fasta
+        fi
+        date >>'done_step2.2_tag'
+    else
+        echo 'skip step2.3 due to done_step2.3_tag exist'
     fi
     print_info "Step 2 , done ."
 fi
@@ -384,120 +405,143 @@ if [[ $NE == "yes" ]] ; then
 else
     if [[ $USE_RACON == "yes" ]]  ; then
         print_info "Step 3.A , error-correction by racon ...  "
-        print_info_line "3.A.1 , racon each chunk ...  "
-        prev_round=0;
-        last_round=0;
-        for ((round=0; round<RACON_ROUND ; round++))
-        do
-            if [[ $round != $last_round ]] ; then 
-                prev_round=$last_round
-                last_round=$round
-            fi
-            print_info_line "   -   round $round start ... "
-            for ((i=0; i<CHUNK_NUM; i++))
-            do
-                curr_tag="$round"".""$i"
-                print_info_line "   -   round $round chunk $i -  minimap2 indexing ... "
-                if [[ $round -gt 0 ]] ; then 
-                    prev_tag="$prev_round"".""$i"
-                    ln -s  $OUT_PREFIX.ont.$prev_tag.racon.fasta $OUT_PREFIX.ont.$curr_tag.fasta
-                fi
-                curr_tag="$round"".""$i"
-                print_info_line "   -   round $round chunk $i -  minimap2 ... "
-                $MiniMap2 -t $THREAD $MINIMAP2_PARAM $OUT_PREFIX.ont.$curr_tag.fasta $TGS_READS \
-                    1>$OUT_PREFIX.$curr_tag.paf 2>$OUT_PREFIX.minimap2.03.$curr_tag.log || exit 1
-                print_info_line "   -   round $round chunk $i -  racon ... "
-                $RACON -t $THREAD $TGS_READS $OUT_PREFIX.$curr_tag.paf $OUT_PREFIX.ont.$curr_tag.fasta \
-                    1>$OUT_PREFIX.ont.$curr_tag.racon.fasta 2>$OUT_PREFIX.$curr_tag.racon.log || exit 1
 
-                # remove used paf here
-                rm $OUT_PREFIX.$curr_tag.paf
-            done
-            print_info_line "   -   round $round end. "
-        done
-        print_info_line "3.A.2 , merge each chunk ...  "
-        if [[ $CHUNK_NUM != "1" ]] ; then 
-            for ((i=0; i<CHUNK_NUM; i++))
+        if [[ ! -e 'done_step_3.A.1_tag' ]] ; then 
+            print_info_line "3.A.1 , racon each chunk ...  "
+            prev_round=0;
+            last_round=0;
+            for ((round=0; round<RACON_ROUND ; round++))
             do
-                curr_tag="$last_round"".""$i"
-                cat $OUT_PREFIX.ont.$curr_tag.racon.fasta >> $OUT_PREFIX.ont.racon.fasta
-                cat $OUT_PREFIX.$curr_tag.racon.log >> $OUT_PREFIX.racon.log
-                rm -rf $OUT_PREFIX.ont.$curr_tag.racon.fasta
-                rm -rf $OUT_PREFIX.$curr_tag.racon.log
+                if [[ $round != $last_round ]] ; then 
+                    prev_round=$last_round
+                    last_round=$round
+                fi
+                print_info_line "   -   round $round start ... "
+                for ((i=0; i<CHUNK_NUM; i++))
+                do
+                    curr_tag="$round"".""$i"
+                    print_info_line "   -   round $round chunk $i -  minimap2 indexing ... "
+                    if [[ $round -gt 0 ]] ; then 
+                        prev_tag="$prev_round"".""$i"
+                        ln -s  $OUT_PREFIX.ont.$prev_tag.racon.fasta $OUT_PREFIX.ont.$curr_tag.fasta
+                    fi
+                    curr_tag="$round"".""$i"
+                    print_info_line "   -   round $round chunk $i -  minimap2 ... "
+                    $MiniMap2 -t $THREAD $MINIMAP2_PARAM $OUT_PREFIX.ont.$curr_tag.fasta $TGS_READS \
+                        1>$OUT_PREFIX.$curr_tag.paf 2>$OUT_PREFIX.minimap2.03.$curr_tag.log || exit 1
+                    print_info_line "   -   round $round chunk $i -  racon ... "
+                    $RACON -t $THREAD $TGS_READS $OUT_PREFIX.$curr_tag.paf $OUT_PREFIX.ont.$curr_tag.fasta \
+                        1>$OUT_PREFIX.ont.$curr_tag.racon.fasta 2>$OUT_PREFIX.$curr_tag.racon.log || exit 1
+
+                    # remove used paf here
+                    rm $OUT_PREFIX.$curr_tag.paf
+                done
+                print_info_line "   -   round $round end. "
             done
+            date >>'done_step_3.A.1_tag'
+        else 
+            echo 'skip step3.A.1 due to done_step3.A.1_tag exist'
+        fi
+
+        if [[ ! -e 'done_step_3.A.2_tag' ]] ; then
+            print_info_line "3.A.2 , merge each chunk ...  "
+            if [[ $CHUNK_NUM != "1" ]] ; then 
+                for ((i=0; i<CHUNK_NUM; i++))
+                do
+                    curr_tag="$last_round"".""$i"
+                    cat $OUT_PREFIX.ont.$curr_tag.racon.fasta >> $OUT_PREFIX.ont.racon.fasta
+                    cat $OUT_PREFIX.$curr_tag.racon.log >> $OUT_PREFIX.racon.log
+                    rm -rf $OUT_PREFIX.ont.$curr_tag.racon.fasta
+                    rm -rf $OUT_PREFIX.$curr_tag.racon.log
+                done
+            else
+                curr_tag="$last_round"".0"
+                mv $OUT_PREFIX.ont.$curr_tag.racon.fasta  $OUT_PREFIX.ont.racon.fasta
+                mv $OUT_PREFIX.$curr_tag.racon.log  $OUT_PREFIX.racon.log
+            fi
+            date >>'done_step_3.A.2_tag'
         else
-            curr_tag="$last_round"".0"
-            mv $OUT_PREFIX.ont.$curr_tag.racon.fasta  $OUT_PREFIX.ont.racon.fasta
-            mv $OUT_PREFIX.$curr_tag.racon.log  $OUT_PREFIX.racon.log
+            echo 'skip step3.A.2 due to done_step3.A.2_tag exist'
         fi
     else
         print_info "Step 3.B , error-correction by pilon ...  "
-        print_info_line "3.B.1 ,  pilon each chunk ...  "
-        prev_round=0;
-        last_round=0;
-        for ((round=0; round<PILON_ROUND ; round++))
-        do
-            print_info_line "   -   round $round start ... "
-            if [[ $round != $last_round ]] ; then 
-                prev_round=$last_round
-                last_round=$round
-            fi
-            for ((i=0; i<CHUNK_NUM; i++))
+        if [[ ! -e 'done_step_3.B.1_tag' ]] ; then
+            print_info_line "3.B.1 ,  pilon each chunk ...  "
+            prev_round=0;
+            last_round=0;
+            for ((round=0; round<PILON_ROUND ; round++))
             do
-                curr_tag="$round"".""$i"
-                print_info_line "   -   round $round chunk $i -  minimap2 indexing ... "
-                if [[ $round -gt 0 ]] ; then 
-                    prev_tag="$prev_round"".""$i"
-                    ln -s  $OUT_PREFIX.ont.$prev_tag.pilon.fasta $OUT_PREFIX.ont.$curr_tag.fasta
+                print_info_line "   -   round $round start ... "
+                if [[ $round != $last_round ]] ; then 
+                    prev_round=$last_round
+                    last_round=$round
                 fi
-                $MiniMap2 -t $THREAD -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$curr_tag.fasta \
-                    1>$OUT_PREFIX.minimap2.02.$curr_tag.log 2>&1 || exit 1
-                print_info_line "   -   round $round chunk $i -  minimap2 mapping ngs into tgs ... "
-                $MiniMap2 -t $THREAD -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  \
-                    --split-prefix=$OUT_PREFIX.$curr_tag \
-                    -a $OUT_PREFIX.mmi  $NGS_READS \
-                    1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.$curr_tag.log || exit 1
+                for ((i=0; i<CHUNK_NUM; i++))
+                do
+                    curr_tag="$round"".""$i"
+                    print_info_line "   -   round $round chunk $i -  minimap2 indexing ... "
+                    if [[ $round -gt 0 ]] ; then 
+                        prev_tag="$prev_round"".""$i"
+                        ln -s  $OUT_PREFIX.ont.$prev_tag.pilon.fasta $OUT_PREFIX.ont.$curr_tag.fasta
+                    fi
+                    $MiniMap2 -t $THREAD -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$curr_tag.fasta \
+                        1>$OUT_PREFIX.minimap2.02.$curr_tag.log 2>&1 || exit 1
+                    print_info_line "   -   round $round chunk $i -  minimap2 mapping ngs into tgs ... "
+                    $MiniMap2 -t $THREAD -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  \
+                        --split-prefix=$OUT_PREFIX.$curr_tag \
+                        -a $OUT_PREFIX.mmi  $NGS_READS \
+                        1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.$curr_tag.log || exit 1
 
-                print_info_line "   -   round $round chunk $i -  process required bam ... "
-                awk 'BEGIN{t["none"]=1;}{if( $1 == "@SQ" ){if( $2 in t ){;}else{t[$2]=1;print $0;}}else{print $0;}}'\
-                    < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
-                # remove used sam 
-                rm $OUT_PREFIX.sam
-                $SAMTOOL view -bo $OUT_PREFIX.bam  $OUT_PREFIX.fiter.sam -@ $THREAD \
-                        >$OUT_PREFIX.samtool_01.$curr_tag.log 2>&1 || exit 1
-                # remove used sam
-                rm $OUT_PREFIX.fiter.sam
-                $SAMTOOL sort -m 8G $OUT_PREFIX.bam -o $OUT_PREFIX.sort.bam -@ $THREAD \
-                        >$OUT_PREFIX.samtool_02.$curr_tag.log 2>&1 || exit 1
-                # remove used bam
-                rm  $OUT_PREFIX.bam
-                $SAMTOOL index $OUT_PREFIX.sort.bam -@ $THREAD \
-                        >$OUT_PREFIX.samtool_03.$curr_tag.log 2>&1 || exit 1
-                print_info_line  "   -   round $round chunk $i -  run pilon ... "
-                $JAVA -Xmx$PILON_MEM -jar  $PILON --fix all \
-                    --genome $OUT_PREFIX.ont.$curr_tag.fasta --bam $OUT_PREFIX.sort.bam \
-                    --output $OUT_PREFIX.ont.$curr_tag.pilon --outdir ./ \
-                    --diploid  --threads $THREAD >$OUT_PREFIX.$curr_tag.pilon.log 2>$OUT_PREFIX.pilon.$curr_tag.err || exit 1
-                # remove used bam
-                rm $OUT_PREFIX.sort.bam
+                    print_info_line "   -   round $round chunk $i -  process required bam ... "
+                    awk 'BEGIN{t["none"]=1;}{if( $1 == "@SQ" ){if( $2 in t ){;}else{t[$2]=1;print $0;}}else{print $0;}}'\
+                        < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
+                    # remove used sam 
+                    rm $OUT_PREFIX.sam
+                    $SAMTOOL view -bo $OUT_PREFIX.bam  $OUT_PREFIX.fiter.sam -@ $THREAD \
+                            >$OUT_PREFIX.samtool_01.$curr_tag.log 2>&1 || exit 1
+                    # remove used sam
+                    rm $OUT_PREFIX.fiter.sam
+                    $SAMTOOL sort -m 8G $OUT_PREFIX.bam -o $OUT_PREFIX.sort.bam -@ $THREAD \
+                            >$OUT_PREFIX.samtool_02.$curr_tag.log 2>&1 || exit 1
+                    # remove used bam
+                    rm  $OUT_PREFIX.bam
+                    $SAMTOOL index $OUT_PREFIX.sort.bam -@ $THREAD \
+                            >$OUT_PREFIX.samtool_03.$curr_tag.log 2>&1 || exit 1
+                    print_info_line  "   -   round $round chunk $i -  run pilon ... "
+                    $JAVA -Xmx$PILON_MEM -jar  $PILON --fix all \
+                        --genome $OUT_PREFIX.ont.$curr_tag.fasta --bam $OUT_PREFIX.sort.bam \
+                        --output $OUT_PREFIX.ont.$curr_tag.pilon --outdir ./ \
+                        --diploid  --threads $THREAD >$OUT_PREFIX.$curr_tag.pilon.log 2>$OUT_PREFIX.pilon.$curr_tag.err || exit 1
+                    # remove used bam
+                    rm $OUT_PREFIX.sort.bam
 
+                done
+                print_info_line "   -   round $round end. "
             done
-            print_info_line "   -   round $round end. "
-        done
-        print_info_line "3.B.2 , merge chunk results ... "
-        if [[ $CHUNK_NUM != "1" ]] ; then 
-            for ((i=0; i<CHUNK_NUM; i++))
-            do
-                curr_tag="$last_round"".""$i"
-                cat $OUT_PREFIX.ont.$curr_tag.pilon.fasta >> $OUT_PREFIX.ont.pilon.fasta
-                cat $OUT_PREFIX.$curr_tag.pilon.log >> $OUT_PREFIX.pilon.log
-                rm -rf $OUT_PREFIX.ont.$curr_tag.pilon.fasta
-                rm -rf $OUT_PREFIX.$curr_tag.pilon.log
-            done
+            date >>'done_step_3.B.1_tag'
         else
-            curr_tag="$last_round"".0"
-            mv $OUT_PREFIX.ont.$curr_tag.pilon.fasta  $OUT_PREFIX.ont.pilon.fasta
-            mv $OUT_PREFIX.$curr_tag.pilon.log  $OUT_PREFIX.pilon.log
+            echo 'skip step3.B.1 due to done_step3.B.1_tag exist'
+        fi
+
+        if [[ ! -e 'done_step_3.B.2_tag' ]] ; then
+            print_info_line "3.B.2 , merge chunk results ... "
+            if [[ $CHUNK_NUM != "1" ]] ; then 
+                for ((i=0; i<CHUNK_NUM; i++))
+                do
+                    curr_tag="$last_round"".""$i"
+                    cat $OUT_PREFIX.ont.$curr_tag.pilon.fasta >> $OUT_PREFIX.ont.pilon.fasta
+                    cat $OUT_PREFIX.$curr_tag.pilon.log >> $OUT_PREFIX.pilon.log
+                    rm -rf $OUT_PREFIX.ont.$curr_tag.pilon.fasta
+                    rm -rf $OUT_PREFIX.$curr_tag.pilon.log
+                done
+            else
+                curr_tag="$last_round"".0"
+                mv $OUT_PREFIX.ont.$curr_tag.pilon.fasta  $OUT_PREFIX.ont.pilon.fasta
+                mv $OUT_PREFIX.$curr_tag.pilon.log  $OUT_PREFIX.pilon.log
+            fi
+            date >>'done_step_3.B.2_tag'
+        else
+            echo 'skip step3.B.2 due to done_step3.B.2_tag exist'
         fi
     fi
     print_info "Step 3 , done ."
@@ -525,23 +569,33 @@ else
 fi
 check_file $FINAL_READS 
 check_file $TMP_INPUT_SCAFTIG
-print_info_line "4,1 , mapping contig into reads ... "
-$MiniMap2  $MINIMAP2_PARAM  -t $THREAD  $FINAL_READS $TMP_INPUT_SCAFTIG  \
-        1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
-print_info_line "4,2 , extra filling seq ... "
-if [[ $G_CHECK == 0 ]] ; then
-    $GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
-        --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
-        --prefix $OUT_PREFIX 1>$OUT_PREFIX.fill.log  2>&1|| exit 1
-    # remove used paf 
-    rm $OUT_PREFIX.fill.paf
+if [[ ! -e 'done_step_4.1_tag' ]] ; then
+    print_info_line "4,1 , mapping contig into reads ... "
+    $MiniMap2  $MINIMAP2_PARAM  -t $THREAD  $FINAL_READS $TMP_INPUT_SCAFTIG  \
+            1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
+    date >>'done_step_4.1_tag'
 else
-    $GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
-        --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
-        --prefix $OUT_PREFIX --use_gapsize_check  1>$OUT_PREFIX.fill.log  2>&1|| exit 1
-    rm $OUT_PREFIX.fill.paf
+    echo 'skip step4.1 due to done_step4.1_tag exist'
 fi
-print_info_line "4,2 , gen final seq ... "
+if [[ ! -e 'done_step_4.2_tag' ]] ; then
+    print_info_line "4,2 , extra filling seq ... "
+    if [[ $G_CHECK == 0 ]] ; then
+        $GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
+            --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
+            --prefix $OUT_PREFIX 1>$OUT_PREFIX.fill.log  2>&1|| exit 1
+        # remove used paf 
+        rm $OUT_PREFIX.fill.paf
+    else
+        $GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
+            --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
+            --prefix $OUT_PREFIX --use_gapsize_check  1>$OUT_PREFIX.fill.log  2>&1|| exit 1
+        rm $OUT_PREFIX.fill.paf
+    fi
+    print_info_line "4,2 , gen final seq ... "
+    date >>'done_step_4.2_tag'
+else
+    echo 'skip step4.2 due to done_step4.2_tag exist'
+fi
 $SeqGen --prefix  $OUT_PREFIX 1>$OUT_PREFIX.i2s.log 2>&1  || exit 1
 print_info "Step 4 , done ."
 
