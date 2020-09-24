@@ -189,11 +189,6 @@ YOUR-INSTALL-DIR/TGS-GapCloser.sh  \
         - 'F' means this segment is a filled sequence from TGS reads.
         
         
-## Citing TGS-GapCloser
-If you use TGS-GapCloser in your work, please cite:
-TGS-GapCloser: fast and accurately passing through the Bermuda in large genome using error-prone third-generation long reads
-Mengyang Xu, Lidong Guo, Shengqiang Gu, Ou Wang, Rui Zhang, Guangyi Fan, Xun Xu, Li Deng, Xin Liu
-bioRxiv 831248; doi: https://doi.org/10.1101/831248
 
 ## Contact
 Any questions, please feel free to ask xumengyang@genomics.cn or guolidong@genomics.cn
