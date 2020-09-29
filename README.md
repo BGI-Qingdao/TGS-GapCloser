@@ -157,10 +157,11 @@ YOUR-INSTALL-DIR/TGS-GapCloser.sh  \
 ```
 ## When you need to appoint costom minimap2 paramters 
 
-*This is useful when your want to avoid a huge paf file.*
+Use  `--minmap_arg ' your-own minimap2 args'`
 
-for example , if your use HiFi Reads , you may try
+**This is useful when your want to avoid a huge paf file.**
 
+for example , if your use HiFi Reads , you may try `--minmap_arg '-x asm20'`
 
 ```
 YOUR-INSTALL-DIR/TGS-GapCloser.sh  \
