@@ -58,6 +58,8 @@ function print_help()
     echo "          --samtools  <samtools>           the installed samtools."
     echo "          --java      <java>               the installed java."
     echo "      optional:"
+    echo "          --minmap_arg <minmap2 args>      like --minmap_arg ' -x ava-ont'"
+    echo "                                           the arg must be wraped by ' '"
     echo "          --tgstype   <pb/ont>             TGS type . ont by default."
     echo "          --min_idy   <min_idy>            min_idy for filter reads ."
     echo "                                           0.3 for ont by default."
@@ -129,6 +131,7 @@ MIN_MATCH="300"
 MIN_MATCH_USER="no"
 PILON_MEM="300G"
 MINIMAP2_PARAM=" -x ava-ont "
+USE_NEW_MINMAP2_ARG="no"
 CHUNK_NUM=3
 USE_RACON="yes"
 PILON_ROUND=3
@@ -140,7 +143,7 @@ if [[ $# -lt 1 ]] ; then
     print_help
     exit 1 ;
 fi
-ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtools:,java:,tgstype:,chunk:,thread:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne,g_check  -- "$@"`
+ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtools:,java:,tgstype:,chunk:,thread:,minmap_arg:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne,g_check  -- "$@"`
 eval set -- "$ARGS"
 while true; do
     case "$1" in
@@ -148,6 +151,13 @@ while true; do
             shift;
             print_help;
             exit 1;
+        ;;
+        --minmap_arg)
+            shift
+            MINIMAP2_PARAM="$1"
+            USE_NEW_MINMAP2_ARG='yes'
+            shift;
+            echo "          --minmap_arg $MINIMAP2_PARAM"
         ;;
         --scaff)
             shift;
@@ -309,7 +319,9 @@ else
 fi
 # pacbio special default values.
 if [[ $TGS_TYPE == "pb" ]] ; then 
-    MINIMAP2_PARAM=" -x ava-pb "
+    if [[ $USE_NEW_MINMAP2_ARG != "yes" ]] ; then 
+        MINIMAP2_PARAM=" -x ava-pb "
+    fi
     if [[ $MIN_IDY_USER == "no" ]] ; then
         MIN_IDY="0.2"
     fi

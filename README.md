@@ -75,6 +75,9 @@ Usage:
           
           
       optional:
+          --minmap_arg <minmap2 args>      like --minmap_arg \' -x ava-ont\'
+                                           the arg must be wraped by \' \'
+
           --tgstype   <pb/ont>             TGS type. ont by default.
           --min_idy   <float>              minimum identity for filtering candidate sequences.
                                            0.3 for ont by default.
@@ -148,6 +151,23 @@ YOUR-INSTALL-DIR/TGS-GapCloser.sh  \
         --scaff  scaffold-path/scaffold.fasta \
         --reads  tgs-reads-path/tgs.reads.fasta \
         --output test_racon \
+        --racon  raconn-path/bin/racon \
+        --tgstype pb \
+        >pipe.log 2>pipe.err
+```
+## When you need to appoint costom minimap2 paramters 
+
+*This is useful when your want to avoid a huge paf file.*
+
+for example , if your use HiFi Reads , you may try
+
+
+```
+YOUR-INSTALL-DIR/TGS-GapCloser.sh  \
+        --scaff  scaffold-path/scaffold.fasta \
+        --reads  tgs-reads-path/tgs.reads.fasta \
+        --output test_racon \
+        --minmap_arg '-x asm20' \
         --racon  raconn-path/bin/racon \
         --tgstype pb \
         >pipe.log 2>pipe.err
