@@ -155,7 +155,7 @@ YOUR-INSTALL-DIR/TGS-GapCloser.sh  \
         --tgstype pb \
         >pipe.log 2>pipe.err
 ```
-## When you need to appoint costom minimap2 paramters 
+## When you need to appoint custom minimap2 paramters 
 
 Use  `--minmap_arg ' your-own minimap2 args'`
 
