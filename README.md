@@ -54,6 +54,9 @@ cd YOUR-INSTALL-DIR
 make
 ```
 
+### Conda install
+conda install -c bioconda tgsgapcloser
+
 ## Usage 
 
 ```
