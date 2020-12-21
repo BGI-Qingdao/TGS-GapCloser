@@ -71,7 +71,7 @@ Usage:
           or
           --racon     <racon>              installed racon. Can be installed following https://github.com/isovic/racon
           or
-          --pilon     <pilon>              installed pilon jar package. Can be downloaded from https://github.com/broadinstitute/pilon/releases/download/v1.23/pilon-1.23.jar
+          --pilon     <pilon>              pilon jar package. Can be downloaded from https://github.com/broadinstitute/pilon/releases/download/v1.23/pilon-1.23.jar
           --java      <java>               installed java.
           --ngs       <ngs_reads>          input NGS reads used for pilon.
           --samtools  <samtools>           installed samtools.
