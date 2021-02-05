@@ -57,6 +57,8 @@ make
 ### Conda install
 conda install -c bioconda tgsgapcloser
 
+**if your install by conda, please install minimap2 first and make sure that minimap2 is available in your environment.**
+
 ## Usage 
 
 ```
