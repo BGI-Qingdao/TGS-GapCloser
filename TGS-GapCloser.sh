@@ -45,34 +45,34 @@ function print_help()
     echo "Usage:"
     echo "      TGS-GapCloser.sh  --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]"
     echo "      required :"
-    echo "          --scaff     <scaffold_file>      the input scaffold file."
-    echo "          --reads     <tgs_reads_file>     the input TGS reads file."
-    echo "          --output    <output_prefix>      the output prefix."
+    echo "          --scaff     <scaffold_file>      input scaffold file."
+    echo "          --reads     <tgs_reads_file>     input TGS read file."
+    echo "          --output    <output_prefix>      output prefix."
     echo "      part required :  "
-    echo "          --ne                             do not error correct. error correct by default."
+    echo "          --ne                             do not correct errors. off by default."
     echo "          or"
-    echo "          --racon     <racon>              the installed racon."
+    echo "          --racon     <racon>              installed racon path."
     echo "          or"
-    echo "          --ngs       <ngs_reads>          the ngs reads used for pilon"
-    echo "          --pilon     <pilon>              the installed pilon."
-    echo "          --samtools  <samtools>           the installed samtools."
-    echo "          --java      <java>               the installed java."
+    echo "          --ngs       <ngs_reads>          ngs reads used for pilon"
+    echo "          --pilon     <pilon>              installed pilon path."
+    echo "          --samtools  <samtools>           installed samtools path."
+    echo "          --java      <java>               installed java path."
     echo "      optional:"
-    echo "          --minmap_arg <minmap2 args>      like --minmap_arg ' -x ava-ont'"
-    echo "                                           the arg must be wraped by ' '"
-    echo "          --tgstype   <pb/ont>             TGS type . ont by default."
-    echo "          --min_idy   <min_idy>            min_idy for filter reads ."
+    echo "          --minmap_arg <minmap2 args>      for example, --minmap_arg ' -x ava-ont'"
+    echo "                                           arg must be wraped by ' '"
+    echo "          --tgstype   <pb/ont>             TGS type. ont by default."
+    echo "          --min_idy   <min_idy>            min_idy for filtering TGS reads ."
     echo "                                           0.3 for ont by default."
     echo "                                           0.2 for pb by default."
-    echo "          --min_match <min_idy>            min match length for filter reads ."
+    echo "          --min_match <min_idy>            min match length for filtering TGS reads ."
     echo "                                           300bp for ont by default."
     echo "                                           200bp for pb by default."
-    echo "          --thread    <t_num>              thread uesd . 16 by default."
-    echo "          --chunk     <chunk_num>          split candidate into chunks to error-correct separately."
-    echo "          --pilon_mem <t_num>              memory used for pilon , 300G for default."
-    echo "          --p_round   <pilon_round>        pilon error-correction round num . 3 by default."
-    echo "          --r_round   <racon_round>        racon error-correction round num . 1 by default."
-    echo "          --g_check                        gapsize diff check , none by default."
+    echo "          --thread    <t_num>              threads uesd. 16 by default."
+    echo "          --chunk     <chunk_num>          split candidates into chunks to separately do error correction."
+    echo "          --pilon_mem <t_num>              memory used for pilon. 300G for default."
+    echo "          --p_round   <pilon_round>        iteration # of error corretion by pilon. 3 by default."
+    echo "          --r_round   <racon_round>        iteration # of error corretion by racon. 1 by default."
+    echo "          --g_check                        gapsize diff check. off by default."
 }
 
 function check_arg_null() {
@@ -84,7 +84,7 @@ function check_arg_null() {
 function check_file()
 {
     if [[ ! -e $1 ]] ; then
-        print_fatal "File $1 is not exist !!!"
+        print_fatal "File $1 does not exist !!!"
     fi
 }
 
@@ -307,15 +307,15 @@ if [[ $NE == "no" ]] ; then
         check_arg_exist "pilon" $PILON
         check_arg_exe "samtools" $SAMTOOL
         check_arg_exe "java" $JAVA
-        print_info_line "Will do error-correcting by pilon with ngs-reads. "
+        print_info_line "Doing error correction by pilon with ngs reads. "
         USE_RACON="no"
     else
         check_arg_exe "racon" $RACON
-        print_info_line "Will do error-correcting by racon."
+        print_info_line "Doing error correction by racon with tgs reads."
         USE_RACON="yes"
     fi
 else 
-    print_info_line "Will not do error-correcting by --ne option"
+    print_info_line "no error correction by --ne option"
 fi
 # pacbio special default values.
 if [[ $TGS_TYPE == "pb" ]] ; then 
