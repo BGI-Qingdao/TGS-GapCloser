@@ -315,7 +315,7 @@ if [[ $NE == "no" ]] ; then
         USE_RACON="yes"
     fi
 else 
-    print_info_line "no error correction by --ne option"
+    print_info_line "No error correction by --ne option"
 fi
 # pacbio special default values.
 if [[ $TGS_TYPE == "pb" ]] ; then 
@@ -338,7 +338,7 @@ print_info "Checking basic args & env end."
 #
 ############################################################3########
 TMP_INPUT_SCAFTIG=$OUT_PREFIX".contig"
-print_info "Step 1 , run TGSSeqSplit to split scaffolds into contigs. "
+print_info "Step 1 , run TGSSeqSplit to split scaffolds into scaftigs(contigs). "
 if [[ ! -e 'done_step1_tag' ]] ; then
     $SeqSplit --input_scaff $INPUT_SCAFF \
         --prefix $OUT_PREFIX 2>$OUT_PREFIX.seq_split.log || exit 1 
@@ -346,7 +346,7 @@ if [[ ! -e 'done_step1_tag' ]] ; then
     check_file $TMP_INPUT_SCAFTIG
     date >>'done_step1_tag'
 else 
-    echo 'skip step1 due to done_step1_tag exist'
+    echo 'skip step1 since done_step1_tag exists'
 fi
 print_info "Step 1 , done ."
 
@@ -361,19 +361,19 @@ else
     print_info "Step 2 , run TGSCandidate ... "
     if [[ ! -e 'done_step2.1_tag' ]] ; then
         # run minimap2
-        print_info_line "2.1 , run minmap2 to map contig into tgs-reads."
+        print_info_line "2.1 , run minmap2 to map contigs against tgs reads."
         check_file $TMP_INPUT_SCAFTIG
         $MiniMap2  $MINIMAP2_PARAM  -t $THREAD  \
             $TGS_READS  $TMP_INPUT_SCAFTIG \
             1>$OUT_PREFIX.sub.paf 2>$OUT_PREFIX.minimap2.01.log || exit 1
         date >>'done_step2.1_tag'
     else
-        echo 'skip step2.1 due to done_step2.1_tag exist'
+        echo 'skip step2.1 since done_step2.1_tag exists'
     fi
 
     if [[ ! -e 'done_step2.2_tag' ]] ; then
     # run candidate
-        print_info_line "2.2 , run TGSGapCandidate to choose candidate region seqs."
+        print_info_line "2.2 , run TGSGapCandidate to choose candidate seqs."
 
         TMP_INPUT_SCAFF_INFO=$OUT_PREFIX".orignial_scaff_infos"
         check_file $TMP_INPUT_SCAFF_INFO
@@ -385,12 +385,12 @@ else
         rm $OUT_PREFIX.sub.paf
         date >>'done_step2.2_tag'
     else
-        echo 'skip step2.2 due to done_step2.2_tag exist'
+        echo 'skip step2.2 since done_step2.2_tag exists'
     fi
 
     if [[ ! -e 'done_step2.3_tag' ]] ; then
         # split candidate into chunk
-        print_info_line "2.3 , break candidate into $CHUNK_NUM chunk(s)."
+        print_info_line "2.3 , break candidates into $CHUNK_NUM chunk(s)."
         if [[ $CHUNK_NUM != "1" ]] ; then
             for ((i=0; i<CHUNK_NUM; i++))
             do
@@ -402,7 +402,7 @@ else
         fi
         date >>'done_step2.2_tag'
     else
-        echo 'skip step2.3 due to done_step2.3_tag exist'
+        echo 'skip step2.3 since done_step2.3_tag exists'
     fi
     print_info "Step 2 , done ."
 fi
@@ -413,10 +413,10 @@ fi
 #
 ############################################################3########
 if [[ $NE == "yes" ]] ; then 
-    print_info "Step 3 , skip error-correction by --ne option."
+    print_info "Step 3 , skip error correction by --ne option."
 else
     if [[ $USE_RACON == "yes" ]]  ; then
-        print_info "Step 3.A , error-correction by racon ...  "
+        print_info "Step 3.A , error correction by racon ...  "
 
         if [[ ! -e 'done_step_3.A.1_tag' ]] ; then 
             print_info_line "3.A.1 , racon each chunk ...  "
@@ -428,35 +428,35 @@ else
                     prev_round=$last_round
                     last_round=$round
                 fi
-                print_info_line "   -   round $round start ... "
+                print_info_line "   -   iteration $round start ... "
                 for ((i=0; i<CHUNK_NUM; i++))
                 do
                     curr_tag="$round"".""$i"
-                    print_info_line "   -   round $round chunk $i -  minimap2 indexing ... "
+                    print_info_line "   -   iteration $round chunk $i -  minimap2 indexing ... "
                     if [[ $round -gt 0 ]] ; then 
                         prev_tag="$prev_round"".""$i"
                         ln -s  $OUT_PREFIX.ont.$prev_tag.racon.fasta $OUT_PREFIX.ont.$curr_tag.fasta
                     fi
                     curr_tag="$round"".""$i"
-                    print_info_line "   -   round $round chunk $i -  minimap2 ... "
+                    print_info_line "   -   iteration $round chunk $i -  minimap2 ... "
                     $MiniMap2 -t $THREAD $MINIMAP2_PARAM $OUT_PREFIX.ont.$curr_tag.fasta $TGS_READS \
                         1>$OUT_PREFIX.$curr_tag.paf 2>$OUT_PREFIX.minimap2.03.$curr_tag.log || exit 1
-                    print_info_line "   -   round $round chunk $i -  racon ... "
+                    print_info_line "   -   iteration $round chunk $i -  racon ... "
                     $RACON -t $THREAD $TGS_READS $OUT_PREFIX.$curr_tag.paf $OUT_PREFIX.ont.$curr_tag.fasta \
                         1>$OUT_PREFIX.ont.$curr_tag.racon.fasta 2>$OUT_PREFIX.$curr_tag.racon.log || exit 1
 
                     # remove used paf here
                     rm $OUT_PREFIX.$curr_tag.paf
                 done
-                print_info_line "   -   round $round end. "
+                print_info_line "   -   iteration $round end. "
             done
             date >>'done_step_3.A.1_tag'
         else 
-            echo 'skip step3.A.1 due to done_step3.A.1_tag exist'
+            echo 'skip step3.A.1 since done_step3.A.1_tag exists'
         fi
 
         if [[ ! -e 'done_step_3.A.2_tag' ]] ; then
-            print_info_line "3.A.2 , merge each chunk ...  "
+            print_info_line "3.A.2 , merge chunks ...  "
             if [[ $CHUNK_NUM != "1" ]] ; then 
                 for ((i=0; i<CHUNK_NUM; i++))
                 do
@@ -473,17 +473,17 @@ else
             fi
             date >>'done_step_3.A.2_tag'
         else
-            echo 'skip step3.A.2 due to done_step3.A.2_tag exist'
+            echo 'skip step3.A.2 since done_step3.A.2_tag exists'
         fi
     else
-        print_info "Step 3.B , error-correction by pilon ...  "
+        print_info "Step 3.B , error correction by pilon ...  "
         if [[ ! -e 'done_step_3.B.1_tag' ]] ; then
             print_info_line "3.B.1 ,  pilon each chunk ...  "
             prev_round=0;
             last_round=0;
             for ((round=0; round<PILON_ROUND ; round++))
             do
-                print_info_line "   -   round $round start ... "
+                print_info_line "   -   iteration $round start ... "
                 if [[ $round != $last_round ]] ; then 
                     prev_round=$last_round
                     last_round=$round
@@ -491,20 +491,20 @@ else
                 for ((i=0; i<CHUNK_NUM; i++))
                 do
                     curr_tag="$round"".""$i"
-                    print_info_line "   -   round $round chunk $i -  minimap2 indexing ... "
+                    print_info_line "   -   iteration $round chunk $i -  minimap2 indexing ... "
                     if [[ $round -gt 0 ]] ; then 
                         prev_tag="$prev_round"".""$i"
                         ln -s  $OUT_PREFIX.ont.$prev_tag.pilon.fasta $OUT_PREFIX.ont.$curr_tag.fasta
                     fi
                     $MiniMap2 -t $THREAD -d $OUT_PREFIX.mmi $OUT_PREFIX.ont.$curr_tag.fasta \
                         1>$OUT_PREFIX.minimap2.02.$curr_tag.log 2>&1 || exit 1
-                    print_info_line "   -   round $round chunk $i -  minimap2 mapping ngs into tgs ... "
+                    print_info_line "   -   iteration $round chunk $i -  minimap2 mapping ngs into tgs ... "
                     $MiniMap2 -t $THREAD -k14 -w5 -n2 -m20 -s 40 --sr --frag yes  \
                         --split-prefix=$OUT_PREFIX.$curr_tag \
                         -a $OUT_PREFIX.mmi  $NGS_READS \
                         1>$OUT_PREFIX.sam 2>$OUT_PREFIX.minimap2.03.$curr_tag.log || exit 1
 
-                    print_info_line "   -   round $round chunk $i -  process required bam ... "
+                    print_info_line "   -   iteration $round chunk $i -  process required bam ... "
                     awk 'BEGIN{t["none"]=1;}{if( $1 == "@SQ" ){if( $2 in t ){;}else{t[$2]=1;print $0;}}else{print $0;}}'\
                         < $OUT_PREFIX.sam  >$OUT_PREFIX.fiter.sam || exit 1
                     # remove used sam 
@@ -519,7 +519,7 @@ else
                     rm  $OUT_PREFIX.bam
                     $SAMTOOL index $OUT_PREFIX.sort.bam -@ $THREAD \
                             >$OUT_PREFIX.samtool_03.$curr_tag.log 2>&1 || exit 1
-                    print_info_line  "   -   round $round chunk $i -  run pilon ... "
+                    print_info_line  "   -   iteration $round chunk $i -  run pilon ... "
                     $JAVA -Xmx$PILON_MEM -jar  $PILON --fix all \
                         --genome $OUT_PREFIX.ont.$curr_tag.fasta --bam $OUT_PREFIX.sort.bam \
                         --output $OUT_PREFIX.ont.$curr_tag.pilon --outdir ./ \
@@ -528,11 +528,11 @@ else
                     rm $OUT_PREFIX.sort.bam
 
                 done
-                print_info_line "   -   round $round end. "
+                print_info_line "   -   iteration $round end. "
             done
             date >>'done_step_3.B.1_tag'
         else
-            echo 'skip step3.B.1 due to done_step3.B.1_tag exist'
+            echo 'skip step3.B.1 since done_step3.B.1_tag exists'
         fi
 
         if [[ ! -e 'done_step_3.B.2_tag' ]] ; then
@@ -553,7 +553,7 @@ else
             fi
             date >>'done_step_3.B.2_tag'
         else
-            echo 'skip step3.B.2 due to done_step3.B.2_tag exist'
+            echo 'skip step3.B.2 since done_step3.B.2_tag exists'
         fi
     fi
     print_info "Step 3 , done ."
@@ -582,15 +582,15 @@ fi
 check_file $FINAL_READS 
 check_file $TMP_INPUT_SCAFTIG
 if [[ ! -e 'done_step_4.1_tag' ]] ; then
-    print_info_line "4,1 , mapping contig into reads ... "
+    print_info_line "4,1 , mapping contigs against reads ... "
     $MiniMap2  $MINIMAP2_PARAM  -t $THREAD  $FINAL_READS $TMP_INPUT_SCAFTIG  \
             1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
     date >>'done_step_4.1_tag'
 else
-    echo 'skip step4.1 due to done_step4.1_tag exist'
+    echo 'skip step4.1 since done_step4.1_tag exists'
 fi
 if [[ ! -e 'done_step_4.2_tag' ]] ; then
-    print_info_line "4,2 , extra filling seq ... "
+    print_info_line "4,2 , filling gaps ... "
     if [[ $G_CHECK == 0 ]] ; then
         $GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
             --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
@@ -603,10 +603,10 @@ if [[ ! -e 'done_step_4.2_tag' ]] ; then
             --prefix $OUT_PREFIX --use_gapsize_check  1>$OUT_PREFIX.fill.log  2>&1|| exit 1
         rm $OUT_PREFIX.fill.paf
     fi
-    print_info_line "4,2 , gen final seq ... "
+    print_info_line "4,2 , gen final seqs ... "
     date >>'done_step_4.2_tag'
 else
-    echo 'skip step4.2 due to done_step4.2_tag exist'
+    echo 'skip step4.2 since done_step4.2_tag exists'
 fi
 $SeqGen --prefix  $OUT_PREFIX 1>$OUT_PREFIX.i2s.log 2>&1  || exit 1
 print_info "Step 4 , done ."
