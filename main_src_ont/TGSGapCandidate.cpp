@@ -218,7 +218,7 @@ struct AppConfig
                 const auto & ont_read = reads.at(m1.target_name).atcgs ;
                 if( cut_start<0 ||  cut_start + cut_len  >= (int) ont_read.size() )
                 {
-                    assert(0);
+                    continue ;
                 }
                 // expand 2K from left & right
                 int new_cut_start =cut_start - max_hang;
@@ -280,7 +280,7 @@ struct AppConfig
                 }
                 if( cut_start<0 ||  cut_start + cut_len  >= (int) ont_read.size() )
                 {
-                    assert(0);
+                    continue ;
                 }
                 if( ! candidate_shake_filter )
                     UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1, false);
