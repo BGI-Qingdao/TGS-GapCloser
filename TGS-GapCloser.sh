@@ -400,7 +400,7 @@ else
         else
             ln -s $OUT_PREFIX.ont.fasta $OUT_PREFIX.ont.0.0.fasta
         fi
-        date >>'done_step2.2_tag'
+        date >>'done_step2.3_tag'
     else
         echo 'skip step2.3 since done_step2.3_tag exists'
     fi
