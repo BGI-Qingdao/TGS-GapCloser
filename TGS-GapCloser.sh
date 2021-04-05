@@ -274,6 +274,10 @@ while true; do
     esac
 done
 
+pilon_mem_numer=${PILON_MEM%?}
+samtools_mem_number=$((pilon_mem_numer / THREAD))
+SAMTOOLS_MEM=${samtools_mem_number}"G"
+
 print_info "Parsing args end ."
 #####################################################################
 #
@@ -513,7 +517,7 @@ else
                             >$OUT_PREFIX.samtool_01.$curr_tag.log 2>&1 || exit 1
                     # remove used sam
                     rm $OUT_PREFIX.fiter.sam
-                    $SAMTOOL sort -m 8G $OUT_PREFIX.bam -o $OUT_PREFIX.sort.bam -@ $THREAD \
+                    $SAMTOOL sort -m $SAMTOOLS_MEM $OUT_PREFIX.bam -o $OUT_PREFIX.sort.bam -@ $THREAD \
                             >$OUT_PREFIX.samtool_02.$curr_tag.log 2>&1 || exit 1
                     # remove used bam
                     rm  $OUT_PREFIX.bam
