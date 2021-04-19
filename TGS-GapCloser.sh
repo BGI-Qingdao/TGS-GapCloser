@@ -359,39 +359,38 @@ print_info "Step 1 , done ."
 #   step 2 , choose candidate filling sequences .
 #
 ############################################################3########
-if [[ $NE == "yes" ]] ; then 
-    print_info "Step 2 , skip TGSCandidate by --ne option."
+print_info "Step 2 , run TGSCandidate ... "
+if [[ ! -e 'done_step2.1_tag' ]] ; then
+    # run minimap2
+    print_info_line "2.1 , run minmap2 to map contigs against tgs reads."
+    check_file $TMP_INPUT_SCAFTIG
+    $MiniMap2  $MINIMAP2_PARAM  -t $THREAD  \
+        $TGS_READS  $TMP_INPUT_SCAFTIG \
+        1>$OUT_PREFIX.sub.paf 2>$OUT_PREFIX.minimap2.01.log || exit 1
+    date >>'done_step2.1_tag'
 else
-    print_info "Step 2 , run TGSCandidate ... "
-    if [[ ! -e 'done_step2.1_tag' ]] ; then
-        # run minimap2
-        print_info_line "2.1 , run minmap2 to map contigs against tgs reads."
-        check_file $TMP_INPUT_SCAFTIG
-        $MiniMap2  $MINIMAP2_PARAM  -t $THREAD  \
-            $TGS_READS  $TMP_INPUT_SCAFTIG \
-            1>$OUT_PREFIX.sub.paf 2>$OUT_PREFIX.minimap2.01.log || exit 1
-        date >>'done_step2.1_tag'
-    else
-        echo 'skip step2.1 since done_step2.1_tag exists'
-    fi
+    echo 'skip step2.1 since done_step2.1_tag exists'
+fi
 
-    if [[ ! -e 'done_step2.2_tag' ]] ; then
-    # run candidate
-        print_info_line "2.2 , run TGSGapCandidate to choose candidate seqs."
+if [[ ! -e 'done_step2.2_tag' ]] ; then
+# run candidate
+    print_info_line "2.2 , run TGSGapCandidate to choose candidate seqs."
 
-        TMP_INPUT_SCAFF_INFO=$OUT_PREFIX".orignial_scaff_infos"
-        check_file $TMP_INPUT_SCAFF_INFO
-        $Candidate --ont_reads_a $TGS_READS \
-        --contig2ont_paf $OUT_PREFIX.sub.paf \
-        --candidate_max 10 --candidate_shake_filter --candidate_merge \
-        <$TMP_INPUT_SCAFF_INFO >$OUT_PREFIX.ont.fasta 2>$OUT_PREFIX.cand.log || exit 1
-        # remove used paf here
-        rm $OUT_PREFIX.sub.paf
-        date >>'done_step2.2_tag'
-    else
-        echo 'skip step2.2 since done_step2.2_tag exists'
-    fi
-
+    TMP_INPUT_SCAFF_INFO=$OUT_PREFIX".orignial_scaff_infos"
+    check_file $TMP_INPUT_SCAFF_INFO
+    $Candidate --ont_reads_a $TGS_READS \
+    --contig2ont_paf $OUT_PREFIX.sub.paf \
+    --candidate_max 10 --candidate_shake_filter --candidate_merge \
+    <$TMP_INPUT_SCAFF_INFO >$OUT_PREFIX.ont.fasta 2>$OUT_PREFIX.cand.log || exit 1
+    # remove used paf here
+    rm $OUT_PREFIX.sub.paf
+    date >>'done_step2.2_tag'
+else
+    echo 'skip step2.2 since done_step2.2_tag exists'
+fi
+if [[ $NE == "yes" ]] ; then 
+    print_info_line "Step 2.3 , skip chunking by --ne option."
+else
     if [[ ! -e 'done_step2.3_tag' ]] ; then
         # split candidate into chunk
         print_info_line "2.3 , break candidates into $CHUNK_NUM chunk(s)."
@@ -406,10 +405,10 @@ else
         fi
         date >>'done_step2.3_tag'
     else
-        echo 'skip step2.3 since done_step2.3_tag exists'
+        echo 'skip step2.3 since done_step2.3_tag exists'        
     fi
-    print_info "Step 2 , done ."
 fi
+print_info "Step 2 , done ."
 
 #####################################################################
 #
@@ -572,8 +571,8 @@ fi
 print_info "Step 4 , gap filling ... "
 FINAL_READS=""
 if [[ $NE == "yes" ]] ; then 
-    print_info_line "Use $TGS_READS as final TGS READS input."
-    FINAL_READS=$TGS_READS
+    print_info_line "Use candidate reads ${OUT_PREFIX}.ont.fasta as final TGS READS input."
+    FINAL_READS=$OUT_PREFIX.ont.fasta
 else
     if [[ $USE_RACON == "yes" ]]  ; then  
         print_info_line "Use $OUT_PREFIX.ont.racon.fasta as final TGS READS input"
