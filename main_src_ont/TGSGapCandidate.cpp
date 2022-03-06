@@ -357,6 +357,7 @@ struct AppConfig
         int no_common = 0 ;
         int no_choose = 0 ;
         int no_match = 0 ;
+        int nread_limit = 0;
 
         BGIQD::FREQ::Freq<int> gap_both_read_freq ;
         BGIQD::FREQ::Freq<int> gap_oo_read_freq ;
@@ -410,6 +411,11 @@ struct AppConfig
                     a_read_oo_choose_freq.Touch(used_pair);
                 }
                 gap_oo_read_freq.Touch(used_read);
+                if( used_read <min_nread)
+                {
+                    nread_limit ++;
+                    continue;
+                }
                 filler_choose_freq.Touch(chooses.size());
                 if( chooses.empty() )
                 {
@@ -421,7 +427,6 @@ struct AppConfig
                 LogAllChoose(chooses,prev);
             }
         }
-
     }
 
     void PrintCandidate()
@@ -472,6 +477,7 @@ struct AppConfig
     std::string ont_read_a  ;
     std::string ont_read_q  ;
     int min_match ;
+    int min_nread ;
     float min_idy ;
     bool candidate_merge ;
     int candidate_max ;
@@ -490,6 +496,7 @@ int main(int argc , char ** argv)
     DEFINE_ARG_OPTIONAL(float, factor_a,"factor_a for ont aligned factor","1");
     DEFINE_ARG_OPTIONAL(float, factor_b,"factor_b for ont idy factor","6");
     DEFINE_ARG_OPTIONAL(int, min_match,"min match for ont","0");
+    DEFINE_ARG_OPTIONAL(int, min_nread,"min read to cross the gap","1");
     DEFINE_ARG_OPTIONAL(float, min_idy,"min idy for ont","0");
     DEFINE_ARG_OPTIONAL(bool , candidate_merge , "merge cadidates from same reads with overlaps ","0");
     DEFINE_ARG_OPTIONAL(bool , candidate_shake_filter, "filter cadidates that overlaps with others","0");
@@ -514,6 +521,7 @@ int main(int argc , char ** argv)
     config.fa = factor_a.to_float();
     config.fb = factor_b.to_float();
     config.min_match = min_match.to_int();
+    config.min_nread = min_nread.to_int();
     config.min_idy = min_idy.to_float() ;
     config.contig_2_ont_paf_file = contig2ont_paf.to_string() ;
     config.candidate_merge = candidate_merge.to_bool();

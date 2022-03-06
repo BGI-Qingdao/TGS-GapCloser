@@ -73,6 +73,8 @@ function print_help()
     echo "          --p_round   <pilon_round>        iteration # of error corretion by pilon. 3 by default."
     echo "          --r_round   <racon_round>        iteration # of error corretion by racon. 1 by default."
     echo "          --g_check                        gapsize diff check. off by default."
+    echo "          --min_nread <min_nread>          minimum number of reads that can cross this gap. 1 by default."
+    echo "          --max_candidate <max_candidate>  maximum number of candidate alignment used for error correction and gapfilling. 10 by default"
 }
 
 function check_arg_null() {
@@ -137,13 +139,15 @@ USE_RACON="yes"
 PILON_ROUND=3
 RACON_ROUND=1
 G_CHECK=0
+MIN_NREAD=1
+MAX_CANDIDATE=10
 
 print_info "Parsing args starting ..."
 if [[ $# -lt 1 ]] ; then 
     print_help
     exit 1 ;
 fi
-ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtools:,java:,tgstype:,chunk:,thread:,minmap_arg:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne,g_check  -- "$@"`
+ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtools:,java:,tgstype:,chunk:,thread:,minmap_arg:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne,min_nread:,max_candidate:,g_check  -- "$@"`
 eval set -- "$ARGS"
 while true; do
     case "$1" in
@@ -262,6 +266,18 @@ while true; do
             shift;
             echo  "             --chunk $CHUNK_NUM"
         ;;
+        --min_nread)
+            shift;
+            MIN_NREAD=$1
+            shift;
+            echo  "             --min_nread $MIN_NREAD"
+        ;;
+        --max_candidate)
+            shift;
+            MAX_CANDIDATE=$1
+            shift;
+            echo  "             --max_candidate $MAX_CANDIDATE"
+        ;;
         --ne)
             shift;
             NE="yes"
@@ -304,6 +320,10 @@ check_arg_exist "input_scaff" $INPUT_SCAFF
 check_arg_exist "reads"  $TGS_READS
 check_arg_null "output" $OUT_PREFIX
 
+if [[ $MIN_NREAD -lt 1 ]] ; then 
+    echo "Error : min_nread < 1. exit ..."
+    exit 1
+fi
 
 if [[ $NE == "no" ]] ; then
     if [[ $NGS_READS != "" ]] ; then 
@@ -383,7 +403,8 @@ else
         check_file $TMP_INPUT_SCAFF_INFO
         $Candidate --ont_reads_a $TGS_READS \
         --contig2ont_paf $OUT_PREFIX.sub.paf \
-        --candidate_max 10 --candidate_shake_filter --candidate_merge \
+        --min_nread $MIN_NREAD \
+        --candidate_max $MAX_CANDIDATE --candidate_shake_filter --candidate_merge \
         <$TMP_INPUT_SCAFF_INFO >$OUT_PREFIX.ont.fasta 2>$OUT_PREFIX.cand.log || exit 1
         # remove used paf here
         rm $OUT_PREFIX.sub.paf
