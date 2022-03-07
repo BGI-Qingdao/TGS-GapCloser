@@ -132,7 +132,7 @@ MIN_IDY_USER="no"
 MIN_MATCH="300"
 MIN_MATCH_USER="no"
 PILON_MEM="300G"
-MINIMAP2_PARAM="  -I 20g  --split-prefix -x ava-ont "
+MINIMAP2_PARAM="  -I 20g  --split-prefix=mindex -x ava-ont "
 USE_NEW_MINMAP2_ARG="no"
 CHUNK_NUM=3
 USE_RACON="yes"
@@ -344,7 +344,7 @@ fi
 # pacbio special default values.
 if [[ $TGS_TYPE == "pb" ]] ; then 
     if [[ $USE_NEW_MINMAP2_ARG != "yes" ]] ; then 
-        MINIMAP2_PARAM="  -I 20g  --split-prefix  -x ava-pb "
+        MINIMAP2_PARAM="  -I 20g  --split-prefix=mindex  -x ava-pb "
     fi
     if [[ $MIN_IDY_USER == "no" ]] ; then
         MIN_IDY="0.2"
