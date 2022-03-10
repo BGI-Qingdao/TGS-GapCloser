@@ -97,6 +97,7 @@ Usage:
           --r_round   <int>                iteration number for racon error-correction. 1 by default.
           --g_check                        gapsize diff check , none by default.
           --min_nread <min_nread>          minimum number of reads that can cross this gap. 1 by default.
+          --max_nread <max_nread>          maximum number of reads that can cross this gap. -1 by default.
           --max_candidate <max_candidate>  maximum number of candidate alignment used for error correction and gapfilling. 10 by default
 
 ```

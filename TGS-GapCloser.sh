@@ -12,8 +12,8 @@
 #   version 
 #
 ############################################################3########
-VERSION="1.1.1"
-RELEASE_TIME="2019-12-31"
+VERSION="1.1.2"
+RELEASE_TIME="2022-02-10"
 HOOM_DIR=`dirname $0`
 echo "INFO  :   Run TGS-GapCloser from $HOOM_DIR ;"
 echo "          Version : $VERSION ;"
@@ -74,6 +74,7 @@ function print_help()
     echo "          --r_round   <racon_round>        iteration # of error corretion by racon. 1 by default."
     echo "          --g_check                        gapsize diff check. off by default."
     echo "          --min_nread <min_nread>          minimum number of reads that can cross this gap. 1 by default."
+    echo "          --max_nread <max_nread>          maximum number of reads that can cross this gap. -1 by default."
     echo "          --max_candidate <max_candidate>  maximum number of candidate alignment used for error correction and gapfilling. 10 by default"
 }
 
@@ -140,6 +141,7 @@ PILON_ROUND=3
 RACON_ROUND=1
 G_CHECK=0
 MIN_NREAD=1
+MAX_NREAD=-1
 MAX_CANDIDATE=10
 
 print_info "Parsing args starting ..."
@@ -147,7 +149,7 @@ if [[ $# -lt 1 ]] ; then
     print_help
     exit 1 ;
 fi
-ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtools:,java:,tgstype:,chunk:,thread:,minmap_arg:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne,min_nread:,max_candidate:,g_check  -- "$@"`
+ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtools:,java:,tgstype:,chunk:,thread:,minmap_arg:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne,min_nread:,max_nread:,max_candidate:,g_check  -- "$@"`
 eval set -- "$ARGS"
 while true; do
     case "$1" in
@@ -265,6 +267,12 @@ while true; do
             CHUNK_NUM=$1
             shift;
             echo  "             --chunk $CHUNK_NUM"
+        ;;
+        --max_nread)
+            shift;
+            MAX_NREAD=$1
+            shift;
+            echo  "             --max_nread $MAX_NREAD"
         ;;
         --min_nread)
             shift;
@@ -404,6 +412,7 @@ else
         $Candidate --ont_reads_a $TGS_READS \
         --contig2ont_paf $OUT_PREFIX.sub.paf \
         --min_nread $MIN_NREAD \
+        --max_nread $MAX_NREAD \
         --candidate_max $MAX_CANDIDATE --candidate_shake_filter --candidate_merge \
         <$TMP_INPUT_SCAFF_INFO >$OUT_PREFIX.ont.fasta 2>$OUT_PREFIX.cand.log || exit 1
         # remove used paf here

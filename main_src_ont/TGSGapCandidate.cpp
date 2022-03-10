@@ -411,15 +411,20 @@ struct AppConfig
                     a_read_oo_choose_freq.Touch(used_pair);
                 }
                 gap_oo_read_freq.Touch(used_read);
+                filler_choose_freq.Touch(chooses.size());
+                if( chooses.empty() )
+                {
+                    no_choose ++ ;
+                    continue;
+                }
                 if( used_read <min_nread)
                 {
                     nread_limit ++;
                     continue;
                 }
-                filler_choose_freq.Touch(chooses.size());
-                if( chooses.empty() )
+                if( max_nread >0 && used_read >max_nread )
                 {
-                    no_choose ++ ;
+                    nread_limit ++;
                     continue;
                 }
                 if( candidate_max > 0 )
@@ -427,6 +432,11 @@ struct AppConfig
                 LogAllChoose(chooses,prev);
             }
         }
+        loger<<BGIQD::LOG::lstart()<<"#gaps : "<<gap_tatal<<BGIQD::LOG::lend() ;
+        loger<<BGIQD::LOG::lstart()<<"#failed by no alignment: "<<no_match<<BGIQD::LOG::lend() ;
+        loger<<BGIQD::LOG::lstart()<<"#failed by no common alignment: "<<no_common<<BGIQD::LOG::lend() ;
+        loger<<BGIQD::LOG::lstart()<<"#failed by orientation check: "<<no_choose<<BGIQD::LOG::lend() ;
+        loger<<BGIQD::LOG::lstart()<<"#failed by nread check: "<<nread_limit<<BGIQD::LOG::lend() ;
     }
 
     void PrintCandidate()
@@ -477,6 +487,7 @@ struct AppConfig
     std::string ont_read_a  ;
     std::string ont_read_q  ;
     int min_match ;
+    int max_nread ;
     int min_nread ;
     float min_idy ;
     bool candidate_merge ;
@@ -497,6 +508,7 @@ int main(int argc , char ** argv)
     DEFINE_ARG_OPTIONAL(float, factor_b,"factor_b for ont idy factor","6");
     DEFINE_ARG_OPTIONAL(int, min_match,"min match for ont","0");
     DEFINE_ARG_OPTIONAL(int, min_nread,"min read to cross the gap","1");
+    DEFINE_ARG_OPTIONAL(int, max_nread,"max read to cross the gap","-1");
     DEFINE_ARG_OPTIONAL(float, min_idy,"min idy for ont","0");
     DEFINE_ARG_OPTIONAL(bool , candidate_merge , "merge cadidates from same reads with overlaps ","0");
     DEFINE_ARG_OPTIONAL(bool , candidate_shake_filter, "filter cadidates that overlaps with others","0");
@@ -522,6 +534,7 @@ int main(int argc , char ** argv)
     config.fb = factor_b.to_float();
     config.min_match = min_match.to_int();
     config.min_nread = min_nread.to_int();
+    config.max_nread = max_nread.to_int();
     config.min_idy = min_idy.to_float() ;
     config.contig_2_ont_paf_file = contig2ont_paf.to_string() ;
     config.candidate_merge = candidate_merge.to_bool();
