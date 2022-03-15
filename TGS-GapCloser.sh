@@ -12,8 +12,8 @@
 #   version 
 #
 ############################################################3########
-VERSION="1.1.2"
-RELEASE_TIME="2022-02-10"
+VERSION="1.2.0"
+RELEASE_TIME="2022-03-15"
 HOOM_DIR=`dirname $0`
 echo "INFO  :   Run TGS-GapCloser from $HOOM_DIR ;"
 echo "          Version : $VERSION ;"
