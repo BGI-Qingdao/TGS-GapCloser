@@ -4,10 +4,10 @@ scripts="\
 "
 
 apps="\
- TGSGapCloser\
- TGSGapCandidate\
- TGSSeqSplit\
- TGSSeqGen\
+ tgsgapcloser\
+ tgsgapcandidate\
+ tgsseqsplit\
+ tgsseqgen\
 "
 
 jobs_o=" "
@@ -22,9 +22,9 @@ echo """
 
 $AppName"_cpp 	=	"$AppName".cpp"
 $AppName"_o   =	"$AppName".o"
-$AppName" : clean \${"$AppName"_o} \${source_o} ../bin"
+$AppName" : clean \${"$AppName"_o} \${source_o} ../tgsgapcloserbin"
 	\${CXX} \${$AppName"_o} \${source_o} \${LD_FLAGS} \${DEUBG_CXX} -o "$AppName
-	mv \$@ ../bin/
+	mv \$@ ../tgsgapcloserbin/
 
 """>>Makefile
 
@@ -104,8 +104,8 @@ echo "jobs_o=$jobs_o">>Makefile
 echo """
 dirty	   =\${jobs_o} \${jobs} \${source_o}
 
-../bin:
-	mkdir -p ../bin
+../tgsgapcloserbin:
+	mkdir -p ../tgsgapcloserbin
 
 clean:
 	rm -rf \${dirty}

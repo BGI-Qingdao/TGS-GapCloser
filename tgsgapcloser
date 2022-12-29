@@ -1,7 +1,7 @@
 #!/bin/bash
 #####################################################################
 #
-#   brief :  main pipeline script of TGSGapCloser.
+#   brief :  main pipeline script of tgsgapcloser.
 #   usage :  use -h/--help for details.
 #   autor :  xumengyang@genomics.cn && guolidong@genomics.cn
 #
@@ -12,10 +12,10 @@
 #   version 
 #
 ############################################################3########
-VERSION="1.2.0"
-RELEASE_TIME="2022-03-15"
+VERSION="1.2.1"
+RELEASE_TIME="2022-12-30"
 HOOM_DIR=`dirname $0`
-echo "INFO  :   Run TGS-GapCloser from $HOOM_DIR ;"
+echo "INFO  :   Run tgsgapcloser. from $HOOM_DIR ;"
 echo "          Version : $VERSION ;"
 echo "          Release time : $RELEASE_TIME ."
 echo ""
@@ -43,7 +43,7 @@ function print_fatal()
 function print_help()
 {
     echo "Usage:"
-    echo "      TGS-GapCloser.sh  --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]"
+    echo "      tgsgapcloser  --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]"
     echo "      required :"
     echo "          --scaff     <scaffold_file>      input scaffold file."
     echo "          --reads     <tgs_reads_file>     input TGS read file."
@@ -147,7 +147,7 @@ MAX_CANDIDATE=10
 print_info "Parsing args starting ..."
 if [[ $# -lt 1 ]] ; then 
     print_help
-    exit 1 ;
+    exit 0 ;
 fi
 ARGS=`getopt -o h  --long scaff:,reads:,output:,racon:,pilon:,ngs:,samtools:,java:,tgstype:,chunk:,thread:,minmap_arg:,min_idy:,min_match:,pilon_mem:,p_round:,r_round:,ne,min_nread:,max_nread:,max_candidate:,g_check  -- "$@"`
 eval set -- "$ARGS"
@@ -156,7 +156,7 @@ while true; do
         -h|--help)
             shift;
             print_help;
-            exit 1;
+            exit 0;
         ;;
         --minmap_arg)
             shift
@@ -310,11 +310,12 @@ print_info "Parsing args end ."
 ############################################################3########
 
 # check binary
-Candidate=$HOOM_DIR"/bin/TGSGapCandidate"
-GapCloser=$HOOM_DIR"/bin/TGSGapCloser"
-SeqGen=$HOOM_DIR"/bin/TGSSeqGen"
-SeqSplit=$HOOM_DIR"/bin/TGSSeqSplit"
-MiniMap2=$HOOM_DIR"/minimap2/minimap2"
+Candidate=$HOOM_DIR"/tgsgapcloserbin/tgsgapcandidate"
+GapCloser=$HOOM_DIR"/tgsgapcloserbin/tgsgapcloser"
+SeqGen=$HOOM_DIR"/tgsgapcloserbin/tgsseqgen"
+SeqSplit=$HOOM_DIR"/tgsgapcloserbin/tgsseqsplit"
+#MiniMap2=$HOOM_DIR"/minimap2/minimap2"
+MiniMap2=minimap2
 
 print_info "Checking basic args & env ..."
 
@@ -322,7 +323,7 @@ check_file_exe $Candidate
 check_file_exe $GapCloser
 check_file_exe $SeqGen
 check_file_exe $SeqSplit
-check_file_exe $MiniMap2
+#check_file_exe $MiniMap2
 # check input args.
 check_arg_exist "input_scaff" $INPUT_SCAFF
 check_arg_exist "reads"  $TGS_READS
