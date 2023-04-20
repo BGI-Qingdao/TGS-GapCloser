@@ -221,4 +221,4 @@ YOUR-INSTALL-DIR/tgsgapcloser  \
 ## Contact
 Any questions, please feel free to ask xumengyang@genomics.cn or guolidong@genomics.cn
 
-<iframe style="width:100%;height:auto;min-width:600px;min-height:400px;" src="https://star-history.com/embed?secret=Z2hwX1BRR1FOd0hsb0pPMzU1Tnc5N05DNGI5Y0xiUm1uaDMySUVOdSA=#BGI-Qingdao/TGS-GapCloser&Date" frameBorder="0"></iframe>
+https://star-history.com/#BGI-Qingdao/TGS-GapCloser&Date
