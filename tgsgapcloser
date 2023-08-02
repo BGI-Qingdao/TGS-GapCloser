@@ -410,8 +410,10 @@ else
 
         TMP_INPUT_SCAFF_INFO=$OUT_PREFIX".orignial_scaff_infos"
         check_file $TMP_INPUT_SCAFF_INFO
+        # pre filter unwanted alignments.
+        awk '{if(($3<1000000)||($2-$3<1000000)) print $0}' $OUT_PREFIX.sub.paf >$OUT_PREFIX.sub.filter.paf
         $Candidate --ont_reads_a $TGS_READS \
-        --contig2ont_paf $OUT_PREFIX.sub.paf \
+        --contig2ont_paf $OUT_PREFIX.sub.filter.paf \
         --min_nread $MIN_NREAD \
         --max_nread $MAX_NREAD \
         --candidate_max $MAX_CANDIDATE --candidate_shake_filter --candidate_merge \
@@ -626,14 +628,16 @@ else
 fi
 if [[ ! -e 'done_step_4.2_tag' ]] ; then
     print_info_line "4,2 , filling gaps ... "
+    # pre filter unwanted alignments.
+    awk '{if(($3<1000000)||($2-$3<1000000)) print $0}' $OUT_PREFIX.fill.paf >$OUT_PREFIX.fill.filter.paf
     if [[ $G_CHECK == 0 ]] ; then
-        $GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
+        $GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.filter.paf \
             --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
             --prefix $OUT_PREFIX 1>$OUT_PREFIX.fill.log  2>&1|| exit 1
         # remove used paf 
         rm $OUT_PREFIX.fill.paf
     else
-        $GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.paf \
+        $GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.filter.paf \
             --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
             --prefix $OUT_PREFIX --use_gapsize_check  1>$OUT_PREFIX.fill.log  2>&1|| exit 1
         rm $OUT_PREFIX.fill.paf
