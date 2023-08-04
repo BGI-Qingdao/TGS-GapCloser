@@ -19,6 +19,7 @@ GigaScience, Volume 9, Issue 9, 1 September 2020, giaa094, https://doi.org/10.10
 ## Dependencies
 1. gcc 4.4+
 2. make 3.8+
+3. minimap2
 
 ## Installation
 
