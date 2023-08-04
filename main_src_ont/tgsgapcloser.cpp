@@ -371,6 +371,7 @@ struct AppConfig
                     pass_gap_size ++ ;
                     if( tmp.gap_size < 0 )
                     {
+                        ont_overlap = true ;
                         std::cerr
                                <<"overlap check c1="<< prev.contig_id<<'\t'
                                <<"and Try c2="<< next.contig_id<<'\t'
@@ -378,7 +379,6 @@ struct AppConfig
                         if( tmp.gap_size < -max_hang *1.3 )
                             continue ;
 
-                        ont_overlap = true ;
                         // verify this overlap
                         //const auto & left = contigs
                         int true_overlap = VerifyOverlap(
@@ -409,6 +409,7 @@ struct AppConfig
                         else
                             continue ;
                     }
+                    ont_overlap = false;
                     if( tmp.gap_size == 0 )
                     {
                         ont_negotive_gap_size ++ ;

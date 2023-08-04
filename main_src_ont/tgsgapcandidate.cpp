@@ -188,9 +188,10 @@ struct AppConfig
         }
         pos_caches_non.clear();
     }
-    void LogAllChoose(const BGIQD::ONT::ONT2GapInfos & chooses ,
+    bool LogAllChoose(const BGIQD::ONT::ONT2GapInfos & chooses ,
             const BGIQD::stLFR::ContigDetail & prev )
     {
+        bool succ = false;
         for ( const auto & pair : chooses )
         {
             //auto & pair = chooses.front() ;
@@ -231,6 +232,7 @@ struct AppConfig
                 else 
                     cut_len += max_hang ;
                 cut_start = new_cut_start;
+                succ = true;
                 if( ! candidate_shake_filter )
                     UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1 , false);
                 else
@@ -282,6 +284,7 @@ struct AppConfig
                 {
                     continue ;
                 }
+                succ = true;
                 if( ! candidate_shake_filter )
                     UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1, false);
                 else
@@ -289,6 +292,7 @@ struct AppConfig
             }
         }
         CleanNonRepeatCache();
+        return succ;
     }
 
 
@@ -358,6 +362,7 @@ struct AppConfig
         int no_choose = 0 ;
         int no_match = 0 ;
         int nread_limit = 0;
+        int noverlap_f = 0 ;
 
         BGIQD::FREQ::Freq<int> gap_both_read_freq ;
         BGIQD::FREQ::Freq<int> gap_oo_read_freq ;
@@ -429,7 +434,8 @@ struct AppConfig
                 }
                 if( candidate_max > 0 )
                     SortAndFilterChoose(chooses);
-                LogAllChoose(chooses,prev);
+                if(LogAllChoose(chooses,prev) == false)
+                    noverlap_f ++ ;
             }
         }
         loger<<BGIQD::LOG::lstart()<<"#gaps : "<<gap_tatal<<BGIQD::LOG::lend() ;
@@ -437,6 +443,7 @@ struct AppConfig
         loger<<BGIQD::LOG::lstart()<<"#failed by no common alignment: "<<no_common<<BGIQD::LOG::lend() ;
         loger<<BGIQD::LOG::lstart()<<"#failed by orientation check: "<<no_choose<<BGIQD::LOG::lend() ;
         loger<<BGIQD::LOG::lstart()<<"#failed by nread check: "<<nread_limit<<BGIQD::LOG::lend() ;
+        loger<<BGIQD::LOG::lstart()<<"#failed by overlap check: "<<noverlap_f<<BGIQD::LOG::lend() ;
     }
 
     void PrintCandidate()
