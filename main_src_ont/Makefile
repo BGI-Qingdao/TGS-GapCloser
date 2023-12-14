@@ -3,7 +3,7 @@
 CC 		   ?=	gcc
 CXX 	   ?=	g++
 
-CXXFLAGS   +=	-std=c++11\
+CXXFLAGS   +=	-std=c++11 -no-pie\
 				-I../\
 
 
