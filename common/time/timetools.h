@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sys/time.h>
+#include <ctime>
 
 namespace BGIQD{
 namespace TIME{
